@@ -1,33 +1,35 @@
+English | [简体中文](README.zh-CN.md)
+
 # nexus-browser-mcp
 
-**事件驱动确定性快照的浏览器操控 MCP 服务器。**
+**A browser-automation MCP server with event-driven, deterministic snapshots.**
 
-基于 Playwright,通过 Accessibility Tree(无障碍树)让 LLM 驱动浏览器——导航、点击、输入、读取、表单、多标签。与市面同类产品(Playwright MCP 等)的核心差异:
+Built on Playwright. Drives a browser for LLMs through the Accessibility Tree — navigate, click, type, read, fill forms, manage tabs. Key differences from alternatives (e.g. Playwright MCP):
 
-1. **确定性快照**:不靠固定间隔 `sleep` 硬等,而是注入 `MutationObserver` 记录最后一次 DOM 变异,由浏览器自身的 `requestAnimationFrame` 循环判定"页面已静默 `STABLE_WINDOW_MS`(默认 800ms)"后才提取快照。杜绝"快照抓在动画/加载中"的竞态。
-2. **内嵌治理门**:HITL 规则(如点击"支付/确认"需人工)、`browser_evaluate` 默认禁用+无条件确认、JSONL 审计(含敏感参数脱敏)。
-3. **多 task 隔离**:一个 MCP 连接(session)内可建多个独立 `task_id`,各自独立 BrowserContext(登录态互不污染),TTL 空闲回收、回收后再次使用时自动重建并恢复上次页面。
-4. **死亡可观测 + 自愈**:标签页/浏览器被外部关闭或崩溃后,下次调用自动重建(持久化 profile 登录态不丢),并在工具返回前置 `[状态变更]` 通知,明确告知"恢复了什么、丢了什么",不再泄漏 Playwright 底层异常。
+1. **Deterministic snapshots**: no fixed-interval `sleep` guessing. A `MutationObserver` records the last DOM mutation and the browser's own `requestAnimationFrame` loop decides when the page has been quiet for `STABLE_WINDOW_MS` (default 800ms) before extracting a snapshot — eliminating "captured mid-animation" races.
+2. **Built-in governance gates**: HITL rules (e.g. clicking "pay/confirm" requires human approval), `browser_evaluate` disabled by default with unconditional confirmation, JSONL audit log (with sensitive-parameter redaction).
+3. **Multi-task isolation**: one MCP connection (session) can host multiple independent `task_id`s, each with its own BrowserContext (no login-state cross-contamination). Idle tasks are reclaimed by TTL; on next use they're rebuilt and the last page is restored automatically.
+4. **Death observability + self-healing**: if a tab or the whole browser is closed externally or crashes, the next call rebuilds it automatically (a persistent profile keeps your login state) and prepends a `[state change]` notice telling the agent exactly what was restored and what was lost — no raw Playwright exceptions leak through.
 
-## 安装
+## Installation
 
 ```bash
 pip install nexus-browser-mcp
-# 或
+# or
 uvx nexus-browser-mcp
 ```
 
-安装后提供 `nexus-browser-mcp` / `nexus-browser` 两个可执行入口;兜底启动方式(一定可用):`python -m nexus_browser.server`。
+Two executable entry points are installed: `nexus-browser-mcp` and `nexus-browser`. A guaranteed fallback: `python -m nexus_browser.server`.
 
-依赖 `playwright` 及其浏览器内核:
+Requires `playwright` and its browser binary:
 
 ```bash
 pip install playwright && playwright install chromium
 ```
 
-## 接入(任意 MCP 客户端)
+## Integrate (any MCP client)
 
-**opencode**(`~/.config/opencode/opencode.json`):
+**opencode** (`~/.config/opencode/opencode.json`):
 
 ```json
 {
@@ -41,7 +43,7 @@ pip install playwright && playwright install chromium
 }
 ```
 
-**Claude Code**(`.mcp.json`,项目根):
+**Claude Code** (`.mcp.json`, project root):
 
 ```json
 {
@@ -55,7 +57,7 @@ pip install playwright && playwright install chromium
 }
 ```
 
-**Pi Coding Agent**:读取标准 MCP 配置 —— 项目 `.mcp.json` 或用户全局 `~/.config/mcp/mcp.json`,stdio 默认 transport:
+**Pi Coding Agent**: reads standard MCP configuration — project `.mcp.json` or user-global `~/.config/mcp/mcp.json`; stdio is the default transport:
 
 ```json
 {
@@ -68,81 +70,81 @@ pip install playwright && playwright install chromium
 }
 ```
 
-详细见 `docs/INTEGRATE.md`。
+See `docs/INTEGRATE.md` for details (Chinese).
 
-## 使用你自己的浏览器(带登录态)
+## Use your own browser (with login state)
 
-默认 `isolated` 模式启动 Playwright 内置 Chromium,**不带你的 cookie/登录态**。要用你自己的浏览器,二选一:
+By default, `isolated` mode launches Playwright's bundled Chromium **without your cookies/login state**. To use your own browser, pick one:
 
-**方式 A — 直接加载你的浏览器 profile(推荐,最省事)**
+**Option A — load your browser profile directly (recommended, simplest)**
 
-用系统 Chrome 加载你平时的用户数据目录(Cookie/登录态/书签都在):
-
-```
-BROWSER_CHANNEL=chrome
-BROWSER_USER_DATA_DIR="C:\Users\你的用户名\AppData\Local\Google\Chrome\User Data"
-```
-
-> 注意:用自己的 User Data 时,进程会占用浏览器,期间你自己开 Chrome 会冲突。建议复制一份 profile 或用独立的 `--user-data-dir` 指向一个专用目录。
-
-**推荐做法:工具专用 profile(不与日常浏览器冲突)**
-
-用 `BROWSER_CHANNEL=chrome` + 指向一个专用 user data 目录(如 `C:\Users\<你>\.nexus-browser\chrome-profile`):
+Use system Chrome with your everyday user data directory (cookies/login/bookmarks included):
 
 ```
 BROWSER_CHANNEL=chrome
-BROWSER_USER_DATA_DIR="C:\Users\你的用户名\.nexus-browser\chrome-profile"
+BROWSER_USER_DATA_DIR="C:\Users\<you>\AppData\Local\Google\Chrome\User Data"
 ```
 
-首次使用需要在 agent 调浏览器工具时弹出的专用 Chrome 里**登录一次**目标网站,之后 cookie 永久保存在该 profile,agent 从此自带登录态;且与你日常浏览器完全隔离,互不干扰。
+> Note: while running against your real User Data, the process owns the browser — launching your own Chrome concurrently will conflict. Prefer a copied profile or a dedicated `--user-data-dir`.
 
-**方式 B — CDP 连接运行中的 Chrome**
+**Recommended: a tool-dedicated profile (no conflict with your daily browser)**
 
-先启动: `chrome --remote-debugging-port=9222`,然后 `BROWSER_MODE=cdp`。
+Use `BROWSER_CHANNEL=chrome` plus a dedicated user data dir (e.g. `C:\Users\<you>\.nexus-browser\chrome-profile`):
 
-> 若 CDP 连接失败,服务器现在会**明确报错**(不再静默启动全新浏览器),提示你先启动调试端口浏览器。
+```
+BROWSER_CHANNEL=chrome
+BROWSER_USER_DATA_DIR="C:\Users\<you>\.nexus-browser\chrome-profile"
+```
 
-## 配置(环境变量)
+On first use, log in to target sites once in the dedicated Chrome window that pops up when the agent calls a browser tool. Cookies persist in that profile forever after — the agent carries login state while staying fully isolated from your daily browser.
 
-所有可选项通过 `BROWSER_` 前缀环境变量覆盖:
+**Option B — attach to a running Chrome via CDP**
 
-| 变量 | 默认 | 说明 |
+Start `chrome --remote-debugging-port=9222` first, then set `BROWSER_MODE=cdp`.
+
+> If the CDP connection fails, the server now **fails loudly** (no silent fallback to a fresh browser) and tells you to start the debug-port browser first.
+
+## Configuration (environment variables)
+
+Every option can be overridden via `BROWSER_`-prefixed env vars:
+
+| Variable | Default | Description |
 |---|---|---|
-| `BROWSER_MODE` | `isolated` | `isolated`(隔离新浏览器) / `cdp`(连你的 Chrome) |
-| `BROWSER_CDP_ENDPOINT` | `http://localhost:9222` | CDP 地址 |
-| `BROWSER_CHANNEL` | `""` | 系统浏览器通道: `chrome`/`msedge` 等(空=Playwright 内置 Chromium) |
-| `BROWSER_USER_DATA_DIR` | `""` | 用户数据目录(带登录态)。设置后为共享登录态的 persistent context, 多 task 共享。空=全新 profile |
-| `BROWSER_HEADLESS` | `false` | 无头模式(仅 isolated) |
-| `BROWSER_DEFAULT_TIMEOUT_MS` | `30000` | Playwright 单次操作超时(导航等) |
-| `BROWSER_TOOL_TIMEOUT_MS` | `60000` | 单次工具调用的外层超时护栏(超时返回 ERROR, 不挂死) |
-| `BROWSER_STABLE_WINDOW_MS` | `800` | DOM 静默窗口: 无变异持续多久判"稳定" |
-| `BROWSER_STABLE_REQUIRED` | `2` | 稳定后连拍确认快照数(防纯动画/非 DOM 变化) |
-| `BROWSER_STABLE_TIMEOUT_MS` | `3000` | 稳定性等待总超时, 超时优雅降级 |
-| `BROWSER_SNAPSHOT_MAX_NODES` | `100` | 快照最大节点数 |
-| `BROWSER_CONTEXT_TTL_SEC` | `600` | 空闲 task 自动回收(秒) |
-| `BROWSER_STREAM_CHAR_CAP` | `16000` | 单条流式缓冲最大字符数(溢出丢最旧,保留丢弃标记) |
-| `BROWSER_STREAM_PAGE_CAP` | `64000` | 单页面全部流的总字符上限 |
-| `BROWSER_ALLOW_JS_EXECUTION` | `false` | 是否允许 `browser_evaluate`(开启后无条件 HITL) |
-| `BROWSER_HITL_RULES` | `[]` | JSON 数组: HITL 规则, 如 `[{"action":"click","name_pattern":"支付|确认"}]` |
-| `BROWSER_AUDIT_PATH` | `~/.nexus-browser/audit.jsonl` | 审计日志路径 |
+| `BROWSER_MODE` | `isolated` | `isolated` (fresh isolated browser) / `cdp` (attach to your Chrome) |
+| `BROWSER_CDP_ENDPOINT` | `http://localhost:9222` | CDP endpoint |
+| `BROWSER_CHANNEL` | `""` | System browser channel: `chrome`/`msedge` etc. (empty = Playwright bundled Chromium) |
+| `BROWSER_USER_DATA_DIR` | `""` | User data dir (carries cookies/login). When set, one shared persistent context across tasks. Empty = fresh profile |
+| `BROWSER_HEADLESS` | `false` | Headless mode (isolated only) |
+| `BROWSER_DEFAULT_TIMEOUT_MS` | `30000` | Playwright per-operation timeout (navigation etc.) |
+| `BROWSER_TOOL_TIMEOUT_MS` | `60000` | Outer timeout guard per tool call (returns ERROR instead of hanging) |
+| `BROWSER_STABLE_WINDOW_MS` | `800` | Quiet window: how long without DOM mutations counts as "stable" |
+| `BROWSER_STABLE_REQUIRED` | `2` | Consecutive identical snapshots confirming stability (guards non-DOM changes like animations) |
+| `BROWSER_STABLE_TIMEOUT_MS` | `3000` | Total stability-wait timeout; degrades gracefully on expiry |
+| `BROWSER_SNAPSHOT_MAX_NODES` | `100` | Max nodes per snapshot |
+| `BROWSER_CONTEXT_TTL_SEC` | `600` | Idle task auto-reclaim (seconds) |
+| `BROWSER_STREAM_CHAR_CAP` | `16000` | Max chars per stream buffer (oldest dropped with a seam marker) |
+| `BROWSER_STREAM_PAGE_CAP` | `64000` | Total stream buffer chars per page |
+| `BROWSER_ALLOW_JS_EXECUTION` | `false` | Allow `browser_evaluate` (unconditional HITL when enabled) |
+| `BROWSER_HITL_RULES` | `[]` | JSON array of HITL rules, e.g. `[{"action":"click","name_pattern":"pay|confirm"}]` |
+| `BROWSER_AUDIT_PATH` | `~/.nexus-browser/audit.jsonl` | Audit log path |
 
-## 工具
+## Tools
 
-20 个工具:`browser_navigate`、`browser_snapshot`、`browser_click`、`browser_type`、`browser_read`、`browser_screenshot`、`browser_evaluate`、`browser_wait`、`browser_wait_stable`、`browser_wait_ms`、`browser_scroll`、`browser_scroll_to`、`browser_wait_navigation`、`browser_dismiss_popup`、`browser_list_pages`、`browser_switch_page` 及 4 个生命周期工具 `browser_tasks`、`browser_close_task`、`browser_list_sessions`、`browser_close_session`。
+20 tools: `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_read`, `browser_screenshot`, `browser_evaluate`, `browser_wait`, `browser_wait_stable`, `browser_wait_ms`, `browser_scroll`, `browser_scroll_to`, `browser_wait_navigation`, `browser_dismiss_popup`, `browser_list_pages`, `browser_switch_page`, plus 4 lifecycle tools: `browser_tasks`, `browser_close_task`, `browser_list_sessions`, `browser_close_session`.
 
-流式内容(AI 回复等):`browser_read(wait_stable=true)` 等 DOM 静默后一次读全;`browser_read(selector=..., follow=true)` 增量跟踪,每次只回新增部分,`full=true` 取缓冲全文。`browser_wait_stable` / `browser_wait_ms` 提供事件驱动等待与纯等待两种原语。
+Streaming content (AI replies etc.): `browser_read(wait_stable=true)` waits for DOM quiet and reads the full text in one call; `browser_read(selector=..., follow=true)` tracks incrementally and returns only new content per call (`full=true` returns the whole buffer). `browser_wait_stable` / `browser_wait_ms` provide event-driven and fixed-duration waiting primitives.
 
-多数工具接受可选 `task_id`(不传则用默认 task)。见 `docs/` 中的用法指南。
+Most tools accept an optional `task_id` (defaults to a shared `default` task). See usage guides in `docs/` (Chinese).
 
-## 开发
+## Development
 
 ```bash
 uv venv
 uv pip install -e ".[dev]"
 python -m pytest tests -q
 ruff check src tests
-python -m smokes.test_e2e           # 真实浏览器冒烟
-python -m smokes.test_e2e_interact  # 表单 + 多 task 冒烟
+python -m smokes.test_e2e           # real-browser smoke
+python -m smokes.test_e2e_interact  # forms + multi-task smoke
 ```
 
 ## License
