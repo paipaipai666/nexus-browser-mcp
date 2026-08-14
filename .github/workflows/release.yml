@@ -23,9 +23,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: Test before publish
         run: |
-          uv venv
           uv pip install -e ".[dev]"
-          uv run pytest tests -q
+          uv run --no-sync pytest tests -q
       - name: Build
         run: uv build
       - name: Publish to PyPI

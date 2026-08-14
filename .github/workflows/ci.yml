@@ -17,10 +17,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
+        run: uv pip install -e ".[dev]"   # setup-uv 已创建并激活 .venv (VIRTUAL_ENV 已导出)
       - name: Lint
-        run: uv run ruff check src tests
+        run: uv run --no-sync ruff check src tests
       - name: Test
-        run: uv run pytest tests -q
+        run: uv run --no-sync pytest tests -q
