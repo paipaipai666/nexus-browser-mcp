@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexus-browser-mcp"
+version = "0.1.0"
+description = "事件驱动确定性快照的浏览器操控 MCP 服务器 (Playwright + Accessibility Tree)"
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.0",
+    "playwright>=1.59",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2",
+]
+
+[project.scripts]
+nexus-browser-mcp = "nexus_browser.server:main"
+nexus-browser = "nexus_browser.server:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "pytest-mock>=3", "ruff>=0.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E402", "E501"]
