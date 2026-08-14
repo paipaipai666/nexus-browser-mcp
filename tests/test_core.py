@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from time import monotonic
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -356,7 +357,8 @@ async def test_ttl_evicts_idle_task_and_saves_snapshot(mgr, fake_playwright):
 
     # 老 bug: _touch 把 task 永久加进 _active_tasks → TTL 永不触发。
     # 现在空闲即回收, 无需任何手工摘除; 只有 pin(操作进行中) 才豁免。
-    mgr._last_access["sess-1"]["task-a"] = 0  # 很久前
+    # 伪造为"2 小时前": 用 monotonic()-7200 而非 0 —— 0 在新启动的机器(uptime<60s)上不触发回收
+    mgr._last_access["sess-1"]["task-a"] = monotonic() - 7200
     await mgr._evict_idle_tasks()
 
     snap = mgr.get_evicted_snapshot("sess-1", "task-a")
@@ -474,7 +476,7 @@ async def test_ttl_skips_pinned_task(mgr, fake_playwright):
     """pin(操作进行中) 豁免回收; unpin 后恢复可回收。"""
     await mgr.get_page("sess-1", "task-a")
     mgr._ttl_enabled = False
-    mgr._last_access["sess-1"]["task-a"] = 0
+    mgr._last_access["sess-1"]["task-a"] = monotonic() - 7200
     mgr.pin("sess-1", "task-a")
     await mgr._evict_idle_tasks()
     assert "task-a" in mgr._sessions["sess-1"].tasks
@@ -490,7 +492,7 @@ async def test_evicted_task_recreates_with_url_restore(mgr, fake_playwright):
     page.url = "https://example.com"
     page.title = AsyncMock(return_value="Example")
     mgr._ttl_enabled = False
-    mgr._last_access["sess-1"]["task-a"] = 0
+    mgr._last_access["sess-1"]["task-a"] = monotonic() - 7200
     await mgr._evict_idle_tasks()
 
     new_page = await mgr.get_page("sess-1", "task-a")
