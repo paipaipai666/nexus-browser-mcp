@@ -100,6 +100,22 @@ def test_format_includes_text_and_url():
     assert "→" not in _format_a11y_tree(nodes, show_url=False)
 
 
+def test_include_generic_overrides_mode_filter():
+    """include_generic 是显式覆盖, 不被 mode 分支吞掉 (旧版经 MCP 枚举不可达)。"""
+    from nexus_browser.snapshot import assemble_snapshot
+
+    nodes = [
+        {"role": "generic", "name": "", "ref": "e2", "attrs": "", "depth": 0, "box": None},
+        {"role": "button", "name": "OK", "ref": "e3", "attrs": "", "depth": 1, "box": None},
+    ]
+    out = assemble_snapshot(nodes, (1280, 720), mode="reading", include_generic=True)
+    roles = [n["role"] for n in out["detail"]]
+    assert "generic" in roles and "button" in roles
+    # 不开 generic 时 reading 只剩 button
+    out2 = assemble_snapshot(nodes, (1280, 720), mode="reading", include_generic=False)
+    assert [n["role"] for n in out2["detail"]] == ["button"]
+
+
 def test_format_a11y_tree_includes_box_for_unnamed():
     nodes = [
         {"role": "textbox", "name": "", "ref": "s1e2", "attrs": "",

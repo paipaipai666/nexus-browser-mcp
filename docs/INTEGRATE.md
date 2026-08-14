@@ -1,8 +1,6 @@
 # 接入指南:Claude Code / Pi Coding Agent
 
-同一份 `nexus-browser-mcp` 服务器,三个 agent 通过 stdio MCP 接入,只换配置。发布到 PyPI 后全部改用 `uvx nexus-browser-mcp`。
-
-> 尚未发布 PyPI 时的本地路径接入见各节"未发布时"。
+同一份 `nexus-browser-mcp` 服务器(已发布 PyPI),三个 agent 通过 stdio MCP 接入,只换配置。统一入口:`uvx nexus-browser-mcp`。
 
 ## Claude Code
 
@@ -33,21 +31,6 @@ claude mcp add --scope user --transport stdio browser -- uvx nexus-browser-mcp
 }
 ```
 
-未发布时(本地路径,同样需 `type: stdio`):
-
-```json
-{
-  "mcpServers": {
-    "browser": {
-      "type": "stdio",
-      "command": "D:\\code\\nexus-browser-mcp\\.venv\\Scripts\\nexus-browser.exe",
-      "args": [],
-      "env": {}
-    }
-  }
-}
-```
-
 字段备忘:`.mcp.json` 支持 `${VAR}`/`${VAR:-default}` 环境变量展开;服务器进程里可读 `CLAUDE_PROJECT_DIR`(项目根)。三个 scope:项目(`.mcp.json`)、local(`~/.claude.json`,默认)、user(`~/.claude.json` 全局)。
 
 可用性:`~/.claude/skills/browser-agent/SKILL.md` 已放好,Claude Code 会自动扫描该目录。
@@ -64,19 +47,6 @@ Pi 读取的是**标准 MCP 配置路径**,优先级从高到低:`.pi/mcp.json`(
     "browser": {
       "command": "uvx",
       "args": ["nexus-browser-mcp"]
-    }
-  }
-}
-```
-
-未发布时(本地路径):
-
-```json
-{
-  "mcpServers": {
-    "browser": {
-      "command": "D:\\code\\nexus-browser-mcp\\.venv\\Scripts\\nexus-browser.exe",
-      "args": []
     }
   }
 }

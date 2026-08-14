@@ -1,5 +1,20 @@
 # Nexus Browser MCP — 实测踩坑记录（供修复参考）
 
+> **修复状态（2026-08-14，全部已修复并验收）**
+>
+> | # | 状态 | 修复内容 |
+> |---|------|----------|
+> | A | ✅ | 入口名修正为 `nexus-browser-mcp`/`nexus-browser` 双入口；0.1.0 已发布 PyPI,`uvx` 实测拉起 |
+> | B/C | ✅ | 根因是快照解析器正则丢节点(非 a11y 提取弱):两段式重写 + 定位链(ref 落地/输入族回退/失败自救清单) |
+> | D | ✅ | 同 B 根因;行内文本进快照,reading 模式极简页可见正文 |
+> | E | ✅ | 实测证明视口过滤原是惰性代码;现为 reading/interactive 视口内、full 全局(标 `[offscreen]`);滚动后自动 settle 修掉快照塌方 |
+> | F | ✅ | `scope` 支持 ref(`e57`→`aria-ref=e57`)+ 5s 超时 + 明确报错 |
+> | G | ✅ | 死亡观测 + 自愈:外部关闭/崩溃自动重建恢复 URL,`[状态变更]` 显式上报;TTL 回收从死代码修复为真实生效 |
+> | H | ✅ | `browser_read(wait_stable=true)` 一次读全;`follow=true` 增量环形缓冲;新增 `browser_wait_stable`/`browser_wait_ms` |
+> | I | ✅ | 弹窗重做:dialog 域优先 + 图标关闭钮 + 多轮防重复;授权类按钮(同意/接受)不再自动点 |
+>
+> 另有 4 个分析中新发现的 bug 一并修复:`ref` 死参数、`include_generic` 不可达、共享 context 新标签扇出、`_page_owners` 泄漏。
+
 > 本文档记录以**真实 MCP 客户端驱动**方式（非单元测试）使用 `nexus-browser-mcp` 时踩到的所有坑。
 > 测试方式：将本项目接入 WorkBuddy 的 MCP 系统后，直接调用 `browser_*` 工具真实导航、输入、读取、截图。
 > 测试时间：2026-08-13。测试环境：Windows 11 / Python 3.13.12（venv）/ Playwright Chromium / 持久化 profile 带登录态。

@@ -1,0 +1,32 @@
+name: release
+
+# tag 驱动发布: git tag v0.1.1 && git push --tags
+# 采用 PyPI trusted publishing (OIDC), 无需在仓库/本地存任何 token。
+# 前置配置(一次性, 在 PyPI 网页操作):
+#   pypi.org → 项目 nexus-browser-mcp → Publishing → Add a new publisher:
+#     Owner: paipaipai666   Repository: nexus-browser-mcp
+#     Workflow: release.yml  Environment: pypi
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  id-token: write  # OIDC, trusted publishing 必需
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Test before publish
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
+          uv run pytest tests -q
+      - name: Build
+        run: uv build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

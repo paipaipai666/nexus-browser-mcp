@@ -308,15 +308,15 @@ def assemble_snapshot(
     """
     skeleton = [n for n in all_nodes if n.get("role") in LANDMARK_ROLES or n.get("role") == "heading"]
 
-    if mode == "interactive":
+    if include_generic:
+        # 显式覆盖: 抖音/B站等 SPA 的内容在非语义 div, 不做角色过滤
+        # (旧版该分支排在 mode 三分支之后, 经 MCP 枚举约束永远不可达)
+        detail = [n for n in all_nodes if n.get("role") not in {"none", "presentation"}]
+    elif mode == "interactive":
         detail = [n for n in all_nodes if n.get("role") in INTERACTIVE_ROLES]
     elif mode == "reading":
         detail = [n for n in all_nodes if n.get("role") in READING_ROLES]
-    elif mode == "full":
-        detail = [n for n in all_nodes if n.get("role") in NON_GENERIC_ROLES]
-    elif include_generic:
-        detail = [n for n in all_nodes if n.get("role") not in {"none", "presentation"}]
-    else:
+    else:  # full
         detail = [n for n in all_nodes if n.get("role") in NON_GENERIC_ROLES]
 
     vp_w, vp_h = page_viewport or (1280, 720)
