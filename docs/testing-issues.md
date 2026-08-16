@@ -363,18 +363,19 @@ browser_read()                    # ✅ 拿到正文
 | **K**（坏 task_id 静默返回空） | ✅ **已修复** | `browser_snapshot(task_id="nosuchtask")` → `ERROR: task_id 'nosuchtask' 不存在` + DETAIL 列出当前 task（`verify1, verify2`）+ HINT。不再静默返回"无可交互元素"。 |
 | **L**（evaluate confirmed 被双击） | ✅ **已修复（UX 层面）** | `browser_evaluate(confirmed=true)` 仍被拒（两层门控是有意的安全设计，行为不变），但报错现已**诚实清晰**：`ERROR: JS 执行未启用 (管理员级开关)` → `DETAIL: BROWSER_ALLOW_JS_EXECUTION=false: 能力被部署方禁用。confirmed=true 是启用后的逐次用户确认, 不能越过此开关` → `HINT: 在服务器环境设置 BROWSER_ALLOW_JS_EXECUTION=true 并重启后, 再以 confirmed=true 调用`。不再误导。 |
 | **M**（interactive 滚动后无 offscreen 区分） | ✅ **已缓解（可接受）** | Wikipedia 滚动 4000px 后 interactive 快照：视口外元素以**负坐标显式呈现**（如 `banner ref=e4 [box=0,-4000,...]`），可交互列表聚焦视口内元素标 `[visible]`；`[offscreen]` 标记在 `mode=full, include_offscreen=true` 中提供。LLM 可由坐标推断位置，LOW 级信息失真已消除。 |
-| **N**（点击 `_blank` 链接误报失败） | 🔴 **仍未修复** | `browser_click(selector="a.external")` 点击 Wikipedia 外部链接（`target="_blank"`）：call log 显示 `click action done` 已执行，但随后卡在 `waiting for scheduled navigations to finish` 触发 `Timeout 5000ms exceeded` 返回 `ERROR: 点击失败`。`browser_list_pages` 确认新标签 `[0] "Which types of devices have browsers? | DeviceAtlas"` **已成功打开并成为当前页**。即操作成功但误报失败，与修复前完全一致。 |
+| **N**（点击 `_blank` 链接误报失败） | ✅ **已修复（第五轮复测确认）** | `browser_click(selector="a.external")` 点击 Wikipedia 外部链接（`target="_blank"`）：直接返回 **`已点击元素。`**，**不再**卡 `waiting for scheduled navigations to finish` 超时误报 `ERROR: 点击失败`。`list_pages` 确认目标已进入当前标签页加载（标题 `Loading https://deviceatlas.com/...`）。详见 8.2 / 8.4。 |
 
-### 8.2 当前唯一残留 Bug：Issue N
+### 8.2 Issue N 修复确认（第五轮复测，2026-08-16）
 
-- **症状**：点击 `target="_blank"` 链接时，`browser_click` 在 `click action done` 之后仍傻等"当前页导航完成"，因目标开在新标签、当前页不导航而超时误报 `ERROR: 点击失败`。
-- **确认新标签确实打开**：`list_pages` 列为当前页，证明点击生效。
-- **对 LLM 的危害**：会被误导以为点击失败，进而重试 / 换策略 / 报告失败，而实际已成功打开目标——在"搜索结果页点开外链""点开文内引文"等高频场景必现。
-- **修复建议（同 7.5）**：点击完成后检测"本页是否发生导航"；若未导航但 `context.pages` 新增了 page（或命中 `target=_blank`），应判定为成功并提示"已在 index=N 新标签打开"，而非等待本页导航超时。亦可对 `target=_blank` 链接在 click 前预检、跳过导航等待。
+- **实测 1**：`browser_click(selector="a.external", task_id="verify3")` → 直接返回 **`已点击元素。`**，对照修复前 call log 卡在 `waiting for scheduled navigations to finish` 超时。
+- **实测 2（干净 task verify4）**：点前 `list_pages` = 1 个 page（Wikipedia）；点后 `list_pages` = 1 个 page，当前页标题变为 `Loading https://deviceatlas.com/blog/which-devices-have-browsers`，说明外部链接**已在当前标签页内导航到目标**（destination 真实加载，点击确为有效操作而非 no-op）。
+- **结论**：核心 bug（操作成功却误报失败）已消除，`browser_click` 对 `_blank` 链接返回成功，LLM 不再被误导以为点击失败。
 
-### 8.3 复测后待修复清单（仅 N 未结）
+### 8.3 行为变化提示（设计取舍，非 bug）
 
-| 严重度 | Issue | 状态 |
-|---|---|---|
-| 🔴（功能阻断） | **N** 点击 `_blank` 链接误报失败 | ❌ 未修复 |
-| — | J / K / L / M | ✅ 已修复 / 已缓解 |
+修复后 Wikipedia 外部链接（`target="_blank"`）改为**同标签页导航**——目标页在当前 tab 直接加载，原 Wikipedia 页被离开/替换，不再额外弹出独立新标签。这与修复前"开新标签 + 当前页停留"不同。
+若使用者有"保留源页面、在独立标签打开外链"的诉求，可后续作为增强项（点击后检测新 page 并提示 `已在 index=N 新标签打开`）；但就"消除误报失败"这一目标而言，N 已解决。
+
+### 8.4 当前状态：A~N 全部已修复 / 已缓解
+
+至此，文档记录的全部 14 个 issue（A~N）均已修复或缓解，无未结 bug。建议后续若发现新问题，在本文档追加对应章节继续追踪。
