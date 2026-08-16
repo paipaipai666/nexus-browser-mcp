@@ -3,6 +3,12 @@
 > 官方 MCP Registry 已由 release.yml 自动发布（tag 推送 → PyPI → registry），本文件是其余货架的提交文案。
 > 更新文案时同步改这里，避免多处口径漂移。
 
+## Glama build spec（admin/dockerfile 表单实测要点）
+
+- Glama **不用仓库的 Dockerfile**（那文件是给用户的）；它在表单里填自己的 build spec
+- 表单字段（2026-08 实测版）：base image `python:3.13-slim-bookworm`；build steps `pip install .`（**别装 chromium**——内省/tools-list 不需要浏览器，装了徒增构建失败面）；command `python`；arguments `-m nexus_browser.server`（arguments 至少一条是硬校验，空报 "At least one command argument is required"）
+- 新仓库的 Maintenance 分受"6 个月"结构性限制，B 是天花板，半年后自然升 A（先例：linksee-memory）
+
 ## 一句话定位
 
 - EN: A browser-automation MCP server that gives LLMs deterministic, event-driven page snapshots plus governance (HITL gates, audit) and developer observability (console, JS errors, network, Web Vitals) — built for unattended agents, not just coding demos.
