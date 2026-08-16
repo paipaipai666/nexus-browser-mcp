@@ -1,4 +1,4 @@
-"""MCP 服务器: 17 个浏览器工具 + session/task 生命周期 + 治理门。
+"""MCP 服务器: 25 个浏览器工具 + session/task 生命周期 + 治理门。
 
 session 模型: 一个 MCP 连接 = 一个 session_id (服务器启动生成, uuid4)。
 同 session 内多个 task_id 各自隔离 (isolated: 独立 BrowserContext; cdp: 独立 Page)。
@@ -11,14 +11,26 @@ import asyncio
 import logging
 import re
 import uuid
+from contextvars import ContextVar
 from time import monotonic
 from typing import Any
 
+from mcp.server.mcpserver.context import Context as _MCPContext
+
 from nexus_browser import fmt
 from nexus_browser.core import BrowserManager
+from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST
 from nexus_browser.gates import AuditLogger, hitl_required
 from nexus_browser.settings import BrowserSettings
-from nexus_browser.snapshot import assemble_snapshot, ensure_watcher, get_stable_tree, wait_dom_settled
+from nexus_browser.snapshot import (
+    assemble_snapshot,
+    ensure_vitals,
+    ensure_watcher,
+    format_vitals,
+    get_stable_tree,
+    nodes_digest,
+    wait_dom_settled,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +38,28 @@ _settings = BrowserSettings()
 _session_id = "conn-" + uuid.uuid4().hex[:12]
 _manager = BrowserManager(_settings)
 _audit = AuditLogger(_settings.resolve_audit_path())
+
+# HTTP 传输: 每请求的 MCP session id 置位于此; stdio 下恒为 None → 回落全局单例。
+_session_var: ContextVar[str | None] = ContextVar("nexus_mcp_session", default=None)
+
+
+def _sid() -> str:
+    """当前请求的 session id: HTTP 多客户端按请求解析, stdio 回落进程级单例。"""
+    return _session_var.get() or _session_id
+
+
+def _session_from_ctx(ctx) -> str | None:
+    """从注入的 MCP Context 取 HTTP session id (mcp-session-id 头); stdio → None。"""
+    if ctx is None:
+        return None
+    try:
+        req_ctx = ctx.request_context  # 无请求上下文时抛异常 (SDK 属性)
+    except Exception:
+        return None
+    headers = getattr(getattr(req_ctx, "request", None), "headers", None)
+    if not headers:
+        return None
+    return headers.get("mcp-session-id")
 
 
 def tool_names() -> list[str]:
@@ -35,6 +69,8 @@ def tool_names() -> list[str]:
         "browser_wait_stable", "browser_wait_ms",
         "browser_scroll", "browser_scroll_to", "browser_wait_navigation",
         "browser_dismiss_popup", "browser_list_pages", "browser_switch_page",
+        "browser_console", "browser_errors", "browser_network", "browser_perf",
+        "browser_network_body",
         "browser_tasks", "browser_close_task",
         "browser_list_sessions", "browser_close_session",
     ]
@@ -62,7 +98,7 @@ def _op_error(op: str, e: Exception, hint: str = "") -> str:
 def _attach_notice(result: str, task_id: str) -> str:
     """自愈/回收恢复发生过 → 状态变更前置到工具返回, agent 必须感知世界变了。"""
     try:
-        notice = _manager.pop_notice(_session_id, task_id)
+        notice = _manager.pop_notice(_sid(), task_id)
     except Exception:
         notice = None
     if notice and not result.startswith(notice):
@@ -70,20 +106,52 @@ def _attach_notice(result: str, task_id: str) -> str:
     return result
 
 
-def _hitl_block(action: str, role, name, task_id) -> str | None:
+def _hitl_block(action: str, role, name, task_id, confirmed: bool = False) -> str | None:
+    if confirmed:
+        return None  # 用户已在对话中同意, agent 带 confirmed=true 重调
     if hitl_required(_settings.hitl_rules, action, role, name):
         return (
             fmt.warning(f"操作需要人工确认: {action} role={role} name={name}")
-            + "\nCONFIRMATION_REQUIRED"
+            + "\n向用户说明该操作, 用户同意后以 confirmed=true 重调。\nCONFIRMATION_REQUIRED"
         )
     return None
 
 
-def _record(tool: str, task_id: str, params: dict, risk: str, hitl: bool = False, error: str | None = None) -> None:
+# 工具风险分级: 默认 low(只读/导航); 改变页面状态 medium; JS 执行 high。
+_RISK = {
+    "browser_click": "medium", "browser_type": "medium",
+    "browser_dismiss_popup": "medium", "browser_evaluate": "high",
+    "browser_network_body": "high",
+}
+
+
+async def _guarded_call(name: str, fn, args=(), kwargs=None) -> str:
+    """单次工具调用的统一护栏: pin → 外层超时 → 状态变更前置 → 审计(含字符计量)。
+
+    审计在此单点完成(全覆盖): 入参字符数(脱敏前计量) + 返回字符数 + 耗时 +
+    HITL 命中(CONFIRMATION_REQUIRED 出现在返回里)。token 成本可由此直接对账。
+    """
+    kwargs = kwargs or {}
+    tid = kwargs.get("task_id") or "default"
+    _manager.pin(_sid(), tid)  # 操作期间钉住, TTL 不回收
+    t0 = monotonic()
     try:
-        _audit.log(_session_id, task_id, tool, params, risk, hitl_triggered=hitl, error=error)
+        result = await _with_tool_timeout(fn, name, _settings.tool_timeout_ms, args, kwargs)
+    finally:
+        _manager.unpin(_sid(), tid)
+    out = _attach_notice(result, tid)
+    try:
+        _audit.log(
+            _sid(), tid, name, dict(kwargs),
+            risk=_RISK.get(name, "low"),
+            hitl_triggered="CONFIRMATION_REQUIRED" in out,
+            duration_ms=(monotonic() - t0) * 1000,
+            in_chars=sum(len(str(v)) for v in kwargs.values()),
+            out_chars=len(out),
+        )
     except Exception as e:  # 审计失败不影响工具执行
         logger.warning("audit failed: %s", e)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -92,9 +160,9 @@ def _record(tool: str, task_id: str, params: dict, risk: str, hitl: bool = False
 
 
 async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offscreen=False,
-                         include_generic=False, wait_stable=True) -> str:
+                         include_generic=False, wait_stable=True, diff=True) -> str:
     mgr = _manager
-    ts = await mgr.ensure_task(_session_id, task_id)
+    ts = await mgr.ensure_task(_sid(), task_id)
     if wait_stable:
         await ensure_watcher(ts.page, _settings)
     try:
@@ -133,7 +201,81 @@ async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offsc
     popup = assembled["popup_hint"]
     if popup:
         parts.append(f"\n[弹窗检测] 存在弹窗: \"{popup}\", 建议 browser_dismiss_popup()。")
-    return "\n".join(parts)
+    text = "\n".join(parts)
+
+    if not diff:
+        # navigate 等附加快照: 不抑制输出; 本次 aria_snapshot 已重写 DOM ref 属性
+        # → 过代际跟踪 (变了则旧映射作废, 没变则旧 ref 链式续命)
+        _track_ref_gen(ts, scope, nodes)
+        return text
+
+    key = (id(ts.page), scope or "", mode, include_offscreen, include_generic)
+    digest = nodes_digest(nodes)
+    hit = ts.snap_diff.get(key)
+    if hit and hit[0] == digest:
+        # 逐节点一致: 顺位链式映射旧代 ref → 新代, agent 手里的旧 ref 继续可用
+        _track_ref_gen(ts, scope, nodes)
+        return (f"[快照无变化] 与上次 browser_snapshot 完全一致 ({hit[2]} 个节点, "
+                f"上次全文 {hit[1]} 字符已省略)。\n"
+                "上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。")
+    ts.snap_diff[key] = (digest, len(text), len(nodes))
+    if len(ts.snap_diff) > 8:  # 有界: FIFO 丢最旧
+        ts.snap_diff.pop(next(iter(ts.snap_diff)))
+    _track_ref_gen(ts, scope, nodes)
+    return text
+
+
+# ── 快照 ref 代际管理 ─────────────────────────────────────────────
+# Playwright 每次 aria_snapshot 重写 DOM 里的 aria-ref 属性且按代际编号
+# (s1e3 的 s1 = 快照代), 旧 ref 在重拍后失效。diff 命中(逐节点一致)时顺位
+# 链式映射旧 ref → 新 ref, agent 不必因 ref 失效被迫重拍全文。
+
+
+def _snap_ref_entry(ts, page, scope) -> dict:
+    key = (id(page), scope or "")
+    entry = ts.snap_refs.get(key)
+    if entry is None:
+        entry = {"refs": [], "map": {}}
+        ts.snap_refs[key] = entry
+        if len(ts.snap_refs) > 4:  # 有界: FIFO
+            ts.snap_refs.pop(next(iter(ts.snap_refs)))
+    return entry
+
+
+def _record_ref_gen(ts, scope, nodes) -> None:
+    """新代际(树可能已变): 清空旧映射防误指, 记录当前代 ref 列表。"""
+    entry = _snap_ref_entry(ts, ts.page, scope)
+    entry["map"].clear()
+    entry["refs"] = [n["ref"] for n in nodes if n.get("ref")]
+
+
+def _chain_refs(ts, scope, nodes) -> None:
+    """diff 命中: 逐节点一致 → 上代 ref 顺位对到本代; 历史映射一并前链。"""
+    entry = _snap_ref_entry(ts, ts.page, scope)
+    new_refs = [n["ref"] for n in nodes if n.get("ref")]
+    new_map = dict(zip(entry["refs"], new_refs))
+    for k, v in list(entry["map"].items()):
+        if v in new_map:
+            entry["map"][k] = new_map[v]
+    entry["map"].update(new_map)
+    if len(entry["map"]) > 1000:  # 有界
+        entry["map"] = dict(list(entry["map"].items())[-1000:])
+    entry["refs"] = new_refs
+    entry["digest"] = nodes_digest(nodes)
+
+
+def _track_ref_gen(ts, scope, nodes) -> None:
+    """任何内部 aria_snapshot 调用后必须过这里: 按内容指纹决定链式映射还是代际作废。
+
+    browser_wait 等轮询路径同样重拍快照(重写 DOM 的 aria-ref 属性)——不过这道
+    的话, agent 走 snapshot → wait → click(ref) 标准路径时 ref 被 wait 静默杀死。
+    """
+    entry = _snap_ref_entry(ts, ts.page, scope)
+    if entry["refs"] and entry.get("digest") == nodes_digest(nodes):
+        _chain_refs(ts, scope, nodes)
+    else:
+        _record_ref_gen(ts, scope, nodes)
+        entry["digest"] = nodes_digest(nodes)
 
 
 async def _viewport(page) -> tuple[int, int] | None:
@@ -156,8 +298,7 @@ async def browser_navigate(url: str, wait_until: str = "load", *, task_id: str =
 async def _navigate(task_id: str, url: str, wait_until: str) -> str:
     if wait_until not in ("load", "domcontentloaded", "networkidle"):
         wait_until = "load"
-    result = await _manager.navigate(_session_id, task_id, url, wait_until)
-    _record("browser_navigate", task_id, {"url": url}, "low")
+    result = await _manager.navigate(_sid(), task_id, url, wait_until)
     if "error" in result:
         if _DEATH_RE.search(result["error"]):
             return fmt.error("导航失败: 页面或浏览器已被外部关闭/崩溃", detail=f"URL: {url}",
@@ -168,7 +309,7 @@ async def _navigate(task_id: str, url: str, wait_until: str) -> str:
     if result.get("timed_out"):
         parts.insert(0, fmt.warning("networkidle 超时, 已 fallback 继续", detail="可能为 WebSocket 或长轮询"))
     try:
-        skeleton = await _snapshot_text(task_id, mode="interactive", wait_stable=False)
+        skeleton = await _snapshot_text(task_id, mode="interactive", wait_stable=False, diff=False)
         parts.append(f"\n## 页面快照\n{skeleton}")
     except Exception:
         pass
@@ -177,24 +318,24 @@ async def _navigate(task_id: str, url: str, wait_until: str) -> str:
 
 async def browser_snapshot(scope: str | None = None, mode: str = "reading",
                       include_offscreen: bool = False, wait_stable: bool = True,
-                      include_generic: bool = False, *, task_id: str = ""):
+                      include_generic: bool = False, diff: bool = True, *, task_id: str = ""):
     return await _snapshot_text(_default_task(task_id), scope, mode,
-                                include_offscreen, include_generic, wait_stable)
+                                include_offscreen, include_generic, wait_stable, diff)
 
 
 async def browser_click(ref=None, role=None, name=None, selector=None, double_click=False,
-                   pos=None, wait_stable: bool = False, *, task_id: str = ""):
+                   pos=None, wait_stable: bool = False, confirmed: bool = False, *, task_id: str = ""):
     tid = _default_task(task_id)
-    block = _hitl_block("click", role, name, tid)
+    block = _hitl_block("click", role, name, tid, confirmed)
     if block:
         return block
     return await _click(tid, ref, role, name, selector, double_click, pos, wait_stable)
 
 
 async def _click(task_id, ref, role, name, selector, double_click, pos, wait_stable=False) -> str:
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     try:
-        locator = await _manager.find_element(_session_id, task_id, ref=ref, role=role,
+        locator = await _manager.find_element(_sid(), task_id, ref=ref, role=role,
                                               name=name, selector=selector, pos=pos)
         if isinstance(locator, str):  # pos: 坐标点击
             x, y, w, h = (int(p) for p in locator.split(","))
@@ -227,18 +368,18 @@ async def _settle_after_action(ts) -> None:
 
 async def browser_type(text: str, ref=None, role=None, name=None, selector=None,
                   clear: bool = True, press_enter: bool = False, pos=None,
-                  wait_stable: bool = False, *, task_id: str = ""):
+                  wait_stable: bool = False, confirmed: bool = False, *, task_id: str = ""):
     tid = _default_task(task_id)
-    block = _hitl_block("type", role, name, tid)
+    block = _hitl_block("type", role, name, tid, confirmed)
     if block:
         return block
     return await _type(tid, text, ref, role, name, selector, clear, press_enter, pos, wait_stable)
 
 
 async def _type(task_id, text, ref, role, name, selector, clear, press_enter, pos, wait_stable=False) -> str:
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     try:
-        locator = await _manager.find_element(_session_id, task_id, ref=ref, role=role,
+        locator = await _manager.find_element(_sid(), task_id, ref=ref, role=role,
                                               name=name, selector=selector, pos=pos)
         if isinstance(locator, str):
             x, y, w, h = (int(p) for p in locator.split(","))
@@ -279,7 +420,7 @@ def _wait_budget(max_wait_ms: int) -> int:
 
 
 async def _read(task_id, selector, ref, max_chars, wait_stable, max_wait_ms, follow, stream_id, full) -> str:
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     page = ts.page
 
     if wait_stable:
@@ -297,7 +438,7 @@ async def _read(task_id, selector, ref, max_chars, wait_stable, max_wait_ms, fol
 
     try:
         if ref:
-            locator = await _manager.find_element(_session_id, task_id, ref=ref)
+            locator = await _manager.find_element(_sid(), task_id, ref=ref)
         elif selector:
             locator = page.locator(selector)
         else:
@@ -377,7 +518,7 @@ async def _screenshot(task_id, path, full_page) -> str:
     import os
     from pathlib import Path
 
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     if not path:
         ss_dir = _settings.screenshot_dir or str(Path.home() / ".nexus-browser" / "screenshots")
         os.makedirs(ss_dir, exist_ok=True)
@@ -389,12 +530,20 @@ async def _screenshot(task_id, path, full_page) -> str:
         return _op_error("截图", e)
 
 
-async def browser_evaluate(expression: str, *, task_id: str = ""):
+async def browser_evaluate(expression: str, confirmed: bool = False, *, task_id: str = ""):
     if not _settings.allow_js_execution:
         return fmt.error("JS 执行未启用", detail="当前配置禁止执行 JavaScript",
                          hint="设置 BROWSER_ALLOW_JS_EXECUTION=true 以启用")
-    return "CONFIRMATION_REQUIRED\n" + fmt.warning(
-        "browser_evaluate 无条件人工确认", detail=f"expression={expression!r}",)
+    if not confirmed:
+        return "CONFIRMATION_REQUIRED\n" + fmt.warning(
+            "browser_evaluate 需人工确认",
+            detail=f"expression={expression!r}。向用户展示该表达式, 同意后以 confirmed=true 重调。")
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        result = await ts.page.evaluate(expression)
+        return f"结果: {result!r}"
+    except Exception as e:
+        return _op_error("JS 执行", e)
 
 
 async def browser_wait(role=None, name=None, ref=None, text=None, timeout: int = 5000, *, task_id: str = ""):
@@ -409,9 +558,10 @@ async def _wait(task_id, role, name, ref, text, timeout) -> str:
     from nexus_browser.snapshot import get_stable_tree
 
     deadline = monotonic() + timeout / 1000
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     while monotonic() < deadline:
         nodes = await get_stable_tree(ts.page, None, _settings, task=ts)
+        _track_ref_gen(ts, None, nodes)  # 轮询重拍会重写 DOM ref; 过代际跟踪防静默杀 ref
         for node in nodes:
             if ref and node.get("ref") == ref:
                 return f"元素 ref={ref} 已出现。"
@@ -429,13 +579,12 @@ async def browser_wait_stable(timeout_ms: int = 10000, *, task_id: str = ""):
 
 async def _wait_stable(task_id, timeout_ms) -> str:
     """等 DOM 静默窗口: 流式回复/连续动画"停止变化"的判定原语。"""
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     budget = _wait_budget(timeout_ms)
     await ensure_watcher(ts.page, _settings)
     t0 = monotonic()
     await wait_dom_settled(ts.page, _settings, task=ts, timeout_ms=budget)
     waited = (monotonic() - t0) * 1000
-    _record("browser_wait_stable", task_id, {"timeout_ms": timeout_ms}, "low")
     if waited >= budget:
         return fmt.warning(
             f"等待稳定超时 ({budget}ms): 页面仍在变化",
@@ -445,7 +594,6 @@ async def _wait_stable(task_id, timeout_ms) -> str:
 
 
 async def browser_wait_ms(ms: int, *, task_id: str = ""):
-    tid = _default_task(task_id)
     cap = _wait_budget(ms)
     if ms > cap:
         return fmt.error(
@@ -453,13 +601,12 @@ async def browser_wait_ms(ms: int, *, task_id: str = ""):
             hint="上限 = BROWSER_TOOL_TIMEOUT_MS - 5s; 更长等待请调大 BROWSER_TOOL_TIMEOUT_MS, 或用 browser_wait_stable",
         )
     await asyncio.sleep(ms / 1000)
-    _record("browser_wait_ms", tid, {"ms": ms}, "low")
     return f"已等待 {ms}ms。"
 
 
 async def _page_of(task_id):
 
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     return ts.page
 
 
@@ -470,7 +617,7 @@ async def browser_scroll(direction: str = "down", amount: int = 500, *, task_id:
 async def _scroll(task_id, direction, amount) -> str:
     if direction not in ("up", "down", "left", "right"):
         return fmt.error(f"不支持的滚动方向: {direction}")
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     dx, dy = 0, 0
     if direction == "down":
         dy = amount
@@ -495,7 +642,7 @@ async def browser_scroll_to(landmark=None, ref=None, selector=None, *, task_id: 
 async def _scroll_to(task_id, landmark, ref, selector) -> str:
     if not any([landmark, ref, selector]):
         return fmt.error("必须指定 landmark、ref 或 selector 中的至少一个参数")
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     try:
         if landmark:
             loc = ts.page.get_by_role("region", name=landmark)
@@ -541,7 +688,7 @@ async def _wait_navigation(task_id, url_contains, timeout) -> str:
     """
     from time import monotonic
 
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     deadline = monotonic() + timeout / 1000
     while True:
         ts.nav_event.clear()
@@ -608,7 +755,7 @@ async def _visible_dialogs(page) -> list:
 
 
 async def _dismiss_popup(task_id) -> str:
-    ts = await _manager.ensure_task(_session_id, task_id)
+    ts = await _manager.ensure_task(_sid(), task_id)
     page = ts.page
     clicked: list[str] = []
     last_sig = None
@@ -633,7 +780,6 @@ async def _dismiss_popup(task_id) -> str:
             clicked.append(f"{label}({where})")
             await page.wait_for_timeout(300)
         if clicked:
-            _record("browser_dismiss_popup", task_id, {"clicked": clicked}, "low")
             if await _visible_dialogs(page):
                 return ("已点击关闭控件: " + "、".join(clicked) +
                         "。但弹窗可能仍在(站点自绘关闭逻辑), 请 browser_snapshot 确认。")
@@ -649,7 +795,7 @@ async def browser_list_pages(*, task_id: str = ""):
 
 
 async def _list_pages(task_id) -> str:
-    pages = await _manager.list_pages(_session_id, task_id)
+    pages = await _manager.list_pages(_sid(), task_id)
     if not pages:
         return "当前 task 没有打开的页面。"
     parts = ["## 打开的标签页"]
@@ -666,10 +812,194 @@ async def browser_switch_page(index: int, *, task_id: str = ""):
 
 async def _switch_page(task_id, index) -> str:
     try:
-        page = await _manager.switch_page(_session_id, task_id, index)
+        page = await _manager.switch_page(_sid(), task_id, index)
         return f"已切换到标签页 [{index}]: {await page.title()} ({page.url})"
     except ValueError as e:
         return fmt.error(str(e))
+
+
+# ---------------------------------------------------------------------------
+# 观测性工具: console / pageerror / network 元数据 (事件缓冲, since-cursor 增量)
+# ---------------------------------------------------------------------------
+
+
+def _fmt_event(e) -> str:
+    if e.kind == KIND_NAV:
+        return f"  #{e.seq} ── 导航: {e.text}"
+    if e.kind == KIND_CONSOLE:
+        loc = f"  at {e.location}" if e.location else ""
+        return f"  #{e.seq} [{e.level}] {e.text}{loc}"
+    if e.kind == KIND_PAGEERROR:
+        return f"  #{e.seq} [pageerror] {e.text}"
+    # request
+    status = str(e.status) if e.status is not None else f"FAILED: {e.failure}"
+    rt = f" ({e.resource_type})" if e.resource_type else ""
+    return f"  #{e.seq} {e.method} {e.url} → {status}{rt}"
+
+
+def _render_events(label: str, evs, buf, more: int, empty: str) -> str:
+    if buf is None:
+        return f"[{label}] 尚无事件缓冲 (页面建立后的事件才会被记录)。"
+    head = [label]
+    if evs:
+        head.append(f"seq {evs[0].seq}-{evs[-1].seq}")
+        head.append(f"本次 {len(evs)} 条")
+    else:
+        head.append("无新增")
+    if more:
+        head.append(f"另有 {more} 条, 再调一次继续")
+    if buf.dropped:
+        head.append(f"溢出已丢 {buf.dropped} 条")
+    lines = ["[" + " | ".join(head) + "]"]
+    if buf.dead:
+        lines.append(f"[事件缓冲已失效: {buf.dead}]")
+    if evs:
+        lines.extend(_fmt_event(e) for e in evs)
+    else:
+        lines.append(empty)
+    return "\n".join(lines)
+
+
+def _clamp_limit(limit: int) -> int:
+    try:
+        return max(1, min(int(limit), 200))
+    except (TypeError, ValueError):
+        return 50
+
+
+async def browser_console(level=None, since=None, pattern=None, limit: int = 50, *, task_id: str = ""):
+    return await _console(_default_task(task_id), level, since, pattern, limit)
+
+
+async def _console(task_id, level, since, pattern, limit) -> str:
+    ts = await _manager.ensure_task(_sid(), task_id)
+    rx = None
+    if pattern:
+        try:
+            rx = re.compile(pattern, re.IGNORECASE)
+        except re.error:
+            return fmt.error(f"pattern 非法正则: {pattern!r}")
+
+    def match(e) -> bool:
+        if e.kind == KIND_NAV:
+            return True  # 分界事件不受过滤, 保留时间线参照
+        if level and e.level != level:
+            return False
+        if rx and not (rx.search(e.text) or rx.search(e.location)):
+            return False
+        return True
+
+    evs, buf, more = _manager.events.read(
+        ts.page, f"console|{level}|{pattern}", since=since,
+        kinds={KIND_CONSOLE, KIND_NAV}, match=match, limit=_clamp_limit(limit),
+    )
+    return _render_events("console", evs, buf, more, "无匹配 console 输出。")
+
+
+async def browser_errors(since=None, limit: int = 50, *, task_id: str = ""):
+    return await _errors(_default_task(task_id), since, limit)
+
+
+async def _errors(task_id, since, limit) -> str:
+    """一站式排障: 未捕获异常 + console.error + 失败请求, 按时间序。"""
+    ts = await _manager.ensure_task(_sid(), task_id)
+
+    def match(e) -> bool:
+        if e.kind in (KIND_NAV, KIND_PAGEERROR):
+            return True
+        if e.kind == KIND_CONSOLE:
+            return e.level == "error"
+        return e.failed  # request
+
+    evs, buf, more = _manager.events.read(
+        ts.page, "errors", since=since,
+        kinds={KIND_PAGEERROR, KIND_CONSOLE, KIND_REQUEST, KIND_NAV},
+        match=match, limit=_clamp_limit(limit),
+    )
+    return _render_events("errors", evs, buf, more, "未发现异常或失败请求。")
+
+
+async def browser_network(url_pattern=None, failed_only: bool = True, since=None, limit: int = 50, *, task_id: str = ""):
+    return await _network(_default_task(task_id), url_pattern, failed_only, since, limit)
+
+
+async def _network(task_id, url_pattern, failed_only, since, limit) -> str:
+    ts = await _manager.ensure_task(_sid(), task_id)
+    needle = url_pattern.lower() if url_pattern else ""
+
+    def match(e) -> bool:
+        if e.kind == KIND_NAV:
+            return True
+        if failed_only and not e.failed:
+            return False
+        if needle and needle not in e.url.lower():
+            return False
+        return True
+
+    evs, buf, more = _manager.events.read(
+        ts.page, f"network|{failed_only}|{url_pattern}", since=since,
+        kinds={KIND_REQUEST, KIND_NAV}, match=match, limit=_clamp_limit(limit),
+    )
+    return _render_events("network", evs, buf, more, "无匹配请求记录。")
+
+
+async def browser_network_body(seq: int, confirmed: bool = False, *, task_id: str = ""):
+    return await _network_body(_default_task(task_id), seq, confirmed)
+
+
+async def _network_body(task_id, seq, confirmed) -> str:
+    """按需单取响应体: 总开关 + 逐次 confirmed 确认 + 硬 cap。body 绝不进审计。
+
+    句柄时效: Response 句柄只在页面存活且未被淘汰时有效 (浏览器侧也可能驱逐)。
+    """
+    if not _settings.allow_network_body:
+        return fmt.error("网络 body 读取未启用",
+                         detail="默认关闭: 响应体可能携带敏感数据/注入内容",
+                         hint="设置 BROWSER_ALLOW_NETWORK_BODY=true 以启用")
+    ts = await _manager.ensure_task(_sid(), task_id)
+    ev = _manager.events.find(ts.page, seq)
+    if ev is None or ev.kind != KIND_REQUEST:
+        return fmt.error(f"seq={seq} 不是当前页面的有效请求事件",
+                         hint="先 browser_network(failed_only=false, since=0) 查有效 seq")
+    if not confirmed:
+        return ("CONFIRMATION_REQUIRED\n" + fmt.warning(
+            f"将读取响应体: {ev.method} {ev.url} (HTTP {ev.status})",
+            detail="响应体是页面方控制的内容, 可能含敏感数据或注入文本。"
+                   "向用户展示该 URL, 用户同意后以 confirmed=true 重调。"))
+    if ev.handle is None:
+        return fmt.error(f"seq={seq} 的响应句柄已失效 (页面导航或句柄淘汰)",
+                         hint="重新触发该请求后立即读取")
+    try:
+        body = await ev.handle.body()
+    except Exception as e:
+        return fmt.error(f"响应体读取失败: {e}",
+                         hint="浏览器侧可能已驱逐该响应; 重新触发请求后立即读取")
+    try:
+        ctype = (ev.handle.headers or {}).get("content-type", "")
+    except Exception:
+        ctype = ""
+    textual = any(t in ctype for t in ("json", "text", "html", "xml", "javascript", "css", "urlencoded"))
+    if not textual:
+        return f"[binary] {ev.method} {ev.url} → {len(body)} 字节 (content-type: {ctype or 'unknown'}, 不解码)"
+    text = body.decode("utf-8", errors="replace")
+    cap = _settings.network_body_cap
+    if len(text) > cap:
+        return f"{text[:cap]}\n\n... (已截断, 共 {len(text)} 字符, 上限 BROWSER_NETWORK_BODY_CAP={cap})"
+    return text
+
+
+async def browser_perf(*, task_id: str = ""):
+    return await _perf(_default_task(task_id))
+
+async def _perf(task_id) -> str:
+    """Web Vitals + 最慢资源: 惰性注入采集器, 读取 window.__nexusVitals。"""
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        await ensure_vitals(ts.page)
+        data = await ts.page.evaluate("window.__nexusVitals")
+    except Exception as e:
+        return _op_error("读取性能数据", e)
+    return format_vitals(data, ts.page.url)
 
 
 # ---------------------------------------------------------------------------
@@ -679,7 +1009,7 @@ async def _switch_page(task_id, index) -> str:
 
 async def browser_tasks():
     sessions = _manager.list_sessions()
-    sid = _session_id
+    sid = _sid()
     for s in sessions:
         if s.get("session_id") == sid:
             tasks = s.get("tasks") or []
@@ -693,7 +1023,7 @@ async def browser_close_task(*, task_id: str = ""):
 
 
 async def _close_task(task_id) -> str:
-    await _manager.close_task(_session_id, task_id)
+    await _manager.close_task(_sid(), task_id)
     return f"已关闭 task: {task_id}"
 
 
@@ -707,7 +1037,7 @@ async def browser_list_sessions():
 
 
 async def browser_close_session():
-    return await _close_session(_session_id)
+    return await _close_session(_sid())
 
 
 async def _close_session(sid) -> str:
@@ -729,20 +1059,23 @@ def build_server() -> tuple:
     server = MCPServer(
         "nexus-browser",
         description="浏览器操控: 事件驱动确定性快照 + HITL/审计治理",
-        version="0.1.0",
+        version="0.2.0",
     )
 
     def register(fn, name, description, params: dict) -> None:
         @functools.wraps(fn)
-        async def guarded(*args, **kwargs):
-            tid = kwargs.get("task_id") or "default"
-            _manager.pin(_session_id, tid)  # 操作期间钉住, TTL 不回收
+        async def guarded(*args, _mcp_ctx: _MCPContext | None = None, **kwargs):
+            # HTTP 多客户端: 从注入的 MCP Context 解析 session, 置位供 _sid() 读取
+            tok = _session_var.set(_session_from_ctx(_mcp_ctx) or _session_id)
             try:
-                result = await _with_tool_timeout(fn, name, _settings.tool_timeout_ms, args, kwargs)
+                return await _guarded_call(name, fn, args, kwargs)
             finally:
-                _manager.unpin(_session_id, tid)
-            return _attach_notice(result, tid)
+                _session_var.reset(tok)
 
+        # functools.wraps 只复制 fn 的 __annotations__; SDK 的 find_context_parameter
+        # 靠类型注解找 Context 注入位 → 必须显式重建注解表 (不污染 fn 自身)。
+        guarded.__annotations__ = {**getattr(fn, "__annotations__", {}),
+                                   "_mcp_ctx": _MCPContext | None}
         server.add_tool(guarded, name=name, description=description)
         _TOOLS[name] = (fn, params)
 
@@ -784,6 +1117,7 @@ def _register_all(register) -> None:
              "include_offscreen": {"type": "boolean", "default": False, "description": "包含视口外节点(full 模式默认开启)"},
              "wait_stable": {"type": "boolean", "default": True},
              "include_generic": {"type": "boolean", "default": False, "description": "抖音/B站等SPA页面非语义div时用"},
+             "diff": {"type": "boolean", "default": True, "description": "与上次快照逐节点一致时只回'无变化'(旧ref仍有效); false=总是全量"},
              "task_id": {"type": "string"},
          }, "required": []}),
         (browser_click, "browser_click",
@@ -793,6 +1127,7 @@ def _register_all(register) -> None:
              "role": {"type": "string"}, "name": {"type": "string"},
              "selector": {"type": "string"}, "double_click": {"type": "boolean", "default": False},
              "wait_stable": {"type": "boolean", "default": False},
+             "confirmed": {"type": "boolean", "default": False, "description": "命中 HITL 且用户已同意时置 true 重调"},
              "task_id": {"type": "string"},
          }, "required": []}),
         (browser_type, "browser_type",
@@ -802,6 +1137,7 @@ def _register_all(register) -> None:
              "name": {"type": "string"}, "selector": {"type": "string"},
              "clear": {"type": "boolean", "default": True}, "press_enter": {"type": "boolean", "default": False},
              "pos": {"type": "string"}, "wait_stable": {"type": "boolean", "default": False},
+             "confirmed": {"type": "boolean", "default": False, "description": "命中 HITL 且用户已同意时置 true 重调"},
              "task_id": {"type": "string"},
          }, "required": ["text"]}),
         (browser_read, "browser_read",
@@ -825,9 +1161,11 @@ def _register_all(register) -> None:
              "task_id": {"type": "string"},
          }, "required": []}),
         (browser_evaluate, "browser_evaluate",
-         "执行JavaScript表达式。默认禁用; 开启后无条件人工确认。",
+         "执行JavaScript表达式。默认禁用(BROWSER_ALLOW_JS_EXECUTION); 开启后每次需人工确认(confirmed=true)。",
          {"type": "object", "properties": {
-             "expression": {"type": "string"}, "task_id": {"type": "string"},
+             "expression": {"type": "string"},
+             "confirmed": {"type": "boolean", "default": False, "description": "用户已审阅表达式并同意时置 true"},
+             "task_id": {"type": "string"},
          }, "required": ["expression"]}),
         (browser_wait, "browser_wait",
          "等待元素或文本出现。超时返回WARNING。",
@@ -874,6 +1212,46 @@ def _register_all(register) -> None:
         (browser_switch_page, "browser_switch_page",
          "切换到指定索引的标签页。",
          {"type": "object", "properties": {"index": {"type": "integer"}, "task_id": {"type": "string"}}, "required": ["index"]}),
+        (browser_console, "browser_console",
+         "读取页面 console 输出(级别/文本/位置)。增量游标: 不传 since=接着上次读, since=0=全量; "
+         "level 过滤(error/warning/log/...), pattern 正则过滤文本, limit 封顶(默认50, 超了再调一次继续)。",
+         {"type": "object", "properties": {
+             "level": {"type": "string", "description": "级别过滤, 如 error/warning"},
+             "since": {"type": "integer", "description": "增量游标: 省略=上次读到位置, 0=全量"},
+             "pattern": {"type": "string", "description": "正则过滤文本/位置"},
+             "limit": {"type": "integer", "default": 50},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_errors, "browser_errors",
+         "一站式排障: JS 未捕获异常(pageerror) + console.error + 失败请求(网络层失败或HTTP≥400)合并视图, 按时间排序。"
+         "点了没反应/页面白屏时先调它。增量游标同 browser_console。",
+         {"type": "object", "properties": {
+             "since": {"type": "integer", "description": "增量游标: 省略=上次读到位置, 0=全量"},
+             "limit": {"type": "integer", "default": 50},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_network, "browser_network",
+         "读取网络请求元数据(method/url/status/资源类型; 不含 body)。"
+         "failed_only 默认 true 只看失败; url_pattern 子串过滤; 增量游标同上。",
+         {"type": "object", "properties": {
+             "url_pattern": {"type": "string", "description": "URL 子串过滤"},
+             "failed_only": {"type": "boolean", "default": True},
+             "since": {"type": "integer", "description": "增量游标: 省略=上次读到位置, 0=全量"},
+             "limit": {"type": "integer", "default": 50},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_perf, "browser_perf",
+         "读取页面性能指标: FCP/LCP/CLS/INP + TTFB/DOMContentLoaded/load + 最慢 5 条资源。"
+         "页面慢/加载异常时用它定位是后端慢(TTFB)还是资源重。SPA 导航不重置计时, 注意输出来源 URL。",
+         {"type": "object", "properties": {"task_id": {"type": "string"}}, "required": []}),
+        (browser_network_body, "browser_network_body",
+         "按 seq 读取单个请求的响应体(需 BROWSER_ALLOW_NETWORK_BODY=true)。文本类解码, 二进制只报字节数; "
+         "单条上限 BROWSER_NETWORK_BODY_CAP。需 confirmed=true 二次确认 —— 响应体是页面方控制内容, 先把 URL 给用户看。",
+         {"type": "object", "properties": {
+             "seq": {"type": "integer", "description": "browser_network 输出中的 #N"},
+             "confirmed": {"type": "boolean", "default": False, "description": "用户已同意读取该 URL 的响应体时置 true"},
+             "task_id": {"type": "string"},
+         }, "required": ["seq"]}),
         (browser_tasks, "browser_tasks",
          "列出当前session的所有task及其页面数。",
          {"type": "object", "properties": {}, "required": []}),
@@ -891,12 +1269,46 @@ def _register_all(register) -> None:
         register(fn, name, desc, schema)
 
 
+def _token_guard(app, token: str):
+    """Bearer token 校验的 ASGI 包装: 无/错 token → 401。lifespan 等非 http scope 透传。"""
+    from starlette.responses import PlainTextResponse
+
+    async def wrapped(scope, receive, send):
+        if scope["type"] == "http":
+            headers = dict(scope.get("headers") or [])
+            if headers.get(b"authorization", b"").decode() != f"Bearer {token}":
+                await PlainTextResponse("Unauthorized", status_code=401)(scope, receive, send)
+                return
+        await app(scope, receive, send)
+
+    return wrapped
+
+
 def main() -> None:
-    """uvx 入口: 启动 stdio MCP 服务器。"""
+    """uvx 入口: 按 BROWSER_TRANSPORT 启动 stdio / streamable-http MCP 服务器。"""
     import asyncio
 
     server = build_server()
-    asyncio.run(server.run_stdio_async())
+    s = _settings
+    if s.transport == "stdio":
+        asyncio.run(server.run_stdio_async())
+        return
+    host = s.http_host
+    if host not in ("127.0.0.1", "localhost", "::1") and not s.http_token:
+        raise SystemExit(
+            "拒绝启动: HTTP 绑定非 localhost 且未设 BROWSER_HTTP_TOKEN。"
+            "浏览器控制端口裸奔等于把本机浏览器交给网络。"
+        )
+    app = server.streamable_http_app(host=host, json_response=True)
+    if s.http_token:
+        app = _token_guard(app, s.http_token)
+    try:
+        import uvicorn
+    except ImportError:
+        raise SystemExit("HTTP 传输需要 uvicorn: pip install uvicorn")
+    asyncio.run(uvicorn.Server(
+        uvicorn.Config(app, host=host, port=s.http_port, log_level="warning")
+    ).serve())
 
 
 if __name__ == "__main__":

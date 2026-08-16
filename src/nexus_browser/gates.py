@@ -64,6 +64,8 @@ class AuditLogger:
         hitl_triggered: bool = False,
         duration_ms: float = 0.0,
         error: str | None = None,
+        in_chars: int = 0,
+        out_chars: int = 0,
     ) -> None:
         entry = {
             "ts": time.time(),
@@ -74,6 +76,8 @@ class AuditLogger:
             "risk": risk,
             "hitl_triggered": hitl_triggered,
             "duration_ms": round(duration_ms, 1),
+            "in_chars": in_chars,
+            "out_chars": out_chars,
             "error": error,
         }
         with self._lock:

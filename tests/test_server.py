@@ -31,8 +31,13 @@ class FakeTask:
         self.settle_count = 0
         self.settle_event = asyncio.Event()
         self.nav_event = asyncio.Event()
+        self.snap_diff: dict = {}
+        self.snap_refs: dict = {}
         self.page = AsyncMock()
         self.page.url = "https://example.com"
+        # __nexusLastMutation 返回 100s 前 → wait_dom_settled 走快路径, 不傻等
+        import time as _time
+        self.page.evaluate = AsyncMock(return_value=_time.time() * 1000 - 100_000)
         # locator 返回可 await 的 aria_snapshot, 支持 get_stable_tree
         loc = AsyncMock()
         loc.aria_snapshot = AsyncMock(return_value='- button "Login" [ref=s1e3]\n')
@@ -51,8 +56,10 @@ class FakeManager:
 
     def __init__(self):
         self.tasks: dict[str, FakeTask] = {}
+        from nexus_browser.events import EventStore
         from nexus_browser.streams import StreamStore
         self.streams = StreamStore()
+        self.events = EventStore()
 
     async def navigate(self, session_id, task_id, url, wait_until="load"):
         task = await self.ensure_task(session_id, task_id)
@@ -74,6 +81,12 @@ class FakeManager:
 
     def list_sessions(self):
         return [{"session_id": "s", "task_count": len(self.tasks)}]
+
+    def pin(self, session_id, task_id):
+        pass
+
+    def unpin(self, session_id, task_id):
+        pass
 
 
 async def test_session_id_stable_across_calls(monkeypatch):
@@ -147,11 +160,36 @@ async def test_close_task_lifecycle(patch_server):
 
 
 async def test_audit_written_on_tool_call(patch_server):
+    """审计在 _guarded_call 单点完成: 工具名 + 字符计量 + HITL 检测。"""
     mgr, settings = patch_server
-    await server_mod.browser_navigate("https://example.com", task_id="tx")
+    out = await server_mod._guarded_call(
+        "browser_navigate", server_mod.browser_navigate, (),
+        {"url": "https://example.com", "task_id": "tx"},
+    )
+    assert "已导航至" in out or "Example" in out
     lines = settings.resolve_audit_path().read_text(encoding="utf-8").strip().splitlines()
-    assert len(lines) >= 1
-    assert "browser_navigate" in lines[0]
+    assert len(lines) == 1
+    import json
+    entry = json.loads(lines[0])
+    assert entry["tool"] == "browser_navigate"
+    assert entry["params"]["url"] == "[redacted]"  # 敏感参数脱敏
+    assert entry["in_chars"] == len("https://example.com") + len("tx")  # 计量在脱敏前
+    assert entry["out_chars"] == len(out)
+
+
+async def test_audit_detects_hitl_from_result(patch_server):
+    """HITL 拦截的调用, 审计 hitl_triggered=True。"""
+    mgr, settings = patch_server
+    settings.hitl_rules = [{"action": "click", "name_pattern": "支付|确认"}]
+    await server_mod._guarded_call(
+        "browser_click", server_mod.browser_click, (),
+        {"role": "button", "name": "确认支付", "task_id": "t"},
+    )
+    import json
+    line = settings.resolve_audit_path().read_text(encoding="utf-8").strip().splitlines()[0]
+    entry = json.loads(line)
+    assert entry["hitl_triggered"] is True
+    assert entry["risk"] == "medium"
 
 
 async def test_tool_timeout_returns_error_not_hang():
@@ -213,7 +251,12 @@ async def test_new_tools_listed(patch_server):
     names = server_mod.tool_names()
     assert "browser_wait_stable" in names
     assert "browser_wait_ms" in names
-    assert len(names) == 20
+    assert "browser_console" in names
+    assert "browser_errors" in names
+    assert "browser_network" in names
+    assert "browser_perf" in names
+    assert "browser_network_body" in names
+    assert len(names) == 25
 
 
 async def test_read_follow_creates_stream_and_returns_delta(patch_server):
@@ -294,6 +337,291 @@ async def test_op_error_classifies_death():
     assert "外部关闭" in out and "重试" in out
     out2 = server_mod._op_error("点击", Exception("timeout 5000ms exceeded"))
     assert "timeout" in out2 and "外部关闭" not in out2
+
+
+# ── 快照 diff + ref 代际链 ────────────────────────────────────────
+
+
+async def test_snapshot_diff_suppresses_identical(patch_server):
+    """逐节点一致 → 第二次只回'无变化', 全文字符全省。"""
+    mgr, _ = patch_server
+    out1 = await server_mod.browser_snapshot(task_id="t")
+    assert "Login" in out1
+    out2 = await server_mod.browser_snapshot(task_id="t")
+    assert "快照无变化" in out2 and "Login" not in out2
+    out3 = await server_mod.browser_snapshot(diff=False, task_id="t")
+    assert "Login" in out3  # diff=false 总是全量
+
+
+async def test_snapshot_diff_keyed_by_mode(patch_server):
+    """换 mode 属另一缓存键 → 不被误抑制。"""
+    mgr, _ = patch_server
+    await server_mod.browser_snapshot(mode="reading", task_id="t")
+    out = await server_mod.browser_snapshot(mode="interactive", task_id="t")
+    assert "快照无变化" not in out and "Login" in out
+
+
+async def test_snapshot_diff_hit_chains_refs(patch_server):
+    """diff 命中: 同内容新代际 ref → 旧 ref 链到新 ref; 内容变化 → 全量且映射清空。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    await server_mod.browser_snapshot(task_id="t")
+    task.page.locator.return_value.aria_snapshot = AsyncMock(
+        return_value='- button "Login" [ref=s2e3]\n')
+    out = await server_mod.browser_snapshot(task_id="t")
+    assert "快照无变化" in out
+    entry = task.snap_refs[(id(task.page), "")]
+    assert entry["map"].get("s1e3") == "s2e3"
+    task.page.locator.return_value.aria_snapshot = AsyncMock(
+        return_value='- button "Logout" [ref=s3e3]\n')
+    out = await server_mod.browser_snapshot(task_id="t")
+    assert "Logout" in out
+    assert entry["map"] == {}  # 树变了: 旧映射作废, 防误指别的元素
+
+
+async def test_navigate_snapshot_does_not_pollute_diff(patch_server):
+    """navigate 附加快照走 diff=False: 不建 diff 缓存, 且清旧 ref 映射。"""
+    mgr, _ = patch_server
+    out = await server_mod.browser_navigate("https://example.com", task_id="t")
+    assert "页面快照" in out
+    assert mgr.tasks["t"].snap_diff == {}
+
+
+async def test_wait_preserves_refs_via_tracking(patch_server):
+    """browser_wait 轮询重拍(同内容新代际) → 旧 ref 链式续命, 不被 wait 静默杀死。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    await server_mod.browser_snapshot(task_id="t")
+    task.page.locator.return_value.aria_snapshot = AsyncMock(
+        return_value='- button "Login" [ref=s2e3]\n')
+    out = await server_mod.browser_wait(text="Login", task_id="t")
+    assert "已出现" in out
+    entry = task.snap_refs[(id(task.page), "")]
+    assert entry["map"].get("s1e3") == "s2e3"
+
+
+async def test_wait_tree_change_invalidates_refs(patch_server):
+    """wait 期间树真的变了 → 代际作废, 旧 ref 不得误指。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    await server_mod.browser_snapshot(task_id="t")
+    task.page.locator.return_value.aria_snapshot = AsyncMock(
+        return_value='- button "Login" [ref=s2e3]\n- button "New" [ref=s2e4]\n')
+    out = await server_mod.browser_wait(text="Login", task_id="t")
+    assert "已出现" in out
+    entry = task.snap_refs[(id(task.page), "")]
+    assert entry["map"] == {} and entry["refs"] == ["s2e3", "s2e4"]
+
+
+# ── 观测性工具: console / errors / network ─────────────────────────
+
+
+async def test_console_empty_buffer(patch_server):
+    out = await server_mod.browser_console(task_id="t")
+    assert "尚无事件缓冲" in out
+
+
+async def test_console_incremental_and_level_filter(patch_server):
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    from nexus_browser.events import KIND_CONSOLE
+    mgr.events.record(task.page, KIND_CONSOLE, level="log", text="noise")
+    mgr.events.record(task.page, KIND_CONSOLE, level="error", text="boom", location="https://x/a.js:1")
+    out = await server_mod.browser_console(level="error", task_id="t")
+    assert "boom" in out and "noise" not in out
+    out2 = await server_mod.browser_console(level="error", task_id="t")
+    assert "无匹配" in out2  # 增量游标: 不重复返回
+    out3 = await server_mod.browser_console(level="error", since=0, task_id="t")
+    assert "boom" in out3  # since=0 全量重读
+
+
+async def test_errors_merges_pageerror_console_error_failed_request(patch_server):
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    from nexus_browser.events import KIND_CONSOLE, KIND_PAGEERROR, KIND_REQUEST
+    mgr.events.record(task.page, KIND_PAGEERROR, level="error", text="Uncaught TypeError")
+    mgr.events.record(task.page, KIND_CONSOLE, level="error", text="console-bad")
+    mgr.events.record(task.page, KIND_CONSOLE, level="log", text="console-ok")
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/ok", status=200)
+    mgr.events.record(task.page, KIND_REQUEST, method="POST", url="https://a/pay", status=502)
+    out = await server_mod.browser_errors(since=0, task_id="t")
+    assert "Uncaught TypeError" in out and "console-bad" in out and "502" in out
+    assert "console-ok" not in out and "https://a/ok" not in out
+
+
+async def test_network_failed_only_default_and_url_filter(patch_server):
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    from nexus_browser.events import KIND_REQUEST
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/ok", status=200)
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://cdn/x.png",
+                      status=None, failure="net::ERR_FAILED", resource_type="image")
+    out = await server_mod.browser_network(since=0, task_id="t")
+    assert "ERR_FAILED" in out and "https://a/ok" not in out  # 默认只看失败
+    out = await server_mod.browser_network(since=0, failed_only=False, url_pattern="a/ok", task_id="t")
+    assert "https://a/ok" in out and "cdn/x.png" not in out
+
+
+async def test_observability_tools_have_no_impl_audit(patch_server):
+    """新工具走 _guarded_call 单点审计, 不依赖 impl 内手工 _record。"""
+    mgr, settings = patch_server
+    await server_mod._guarded_call("browser_console", server_mod.browser_console, (), {"task_id": "t"})
+    import json
+    entry = json.loads(settings.resolve_audit_path().read_text(encoding="utf-8").strip())
+    assert entry["tool"] == "browser_console" and entry["risk"] == "low"
+
+
+# ── browser_network_body + confirmed 确认原语 ─────────────────────
+
+
+async def test_network_body_disabled_by_default(patch_server):
+    out = await server_mod.browser_network_body(seq=1, task_id="t")
+    assert "未启用" in out and "BROWSER_ALLOW_NETWORK_BODY" in out
+
+
+async def test_network_body_requires_confirmation(patch_server):
+    mgr, settings = patch_server
+    settings.allow_network_body = True
+    task = await mgr.ensure_task("s", "t")
+    from nexus_browser.events import KIND_REQUEST
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/api", status=200)
+    out = await server_mod.browser_network_body(seq=1, task_id="t")
+    assert "CONFIRMATION_REQUIRED" in out and "https://a/api" in out
+
+
+async def test_network_body_reads_text_with_handle(patch_server):
+    mgr, settings = patch_server
+    settings.allow_network_body = True
+    task = await mgr.ensure_task("s", "t")
+    handle = AsyncMock()
+    handle.body = AsyncMock(return_value=b'{"ok": true}')
+    handle.headers = {"content-type": "application/json"}
+    from nexus_browser.events import KIND_REQUEST
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/api",
+                      status=200, handle=handle)
+    out = await server_mod.browser_network_body(seq=1, confirmed=True, task_id="t")
+    assert '{"ok": true}' in out
+
+
+async def test_network_body_binary_not_decoded(patch_server):
+    mgr, settings = patch_server
+    settings.allow_network_body = True
+    task = await mgr.ensure_task("s", "t")
+    handle = AsyncMock()
+    handle.body = AsyncMock(return_value=b"\x89PNG" * 100)
+    handle.headers = {"content-type": "image/png"}
+    from nexus_browser.events import KIND_REQUEST
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/x.png",
+                      status=200, handle=handle)
+    out = await server_mod.browser_network_body(seq=1, confirmed=True, task_id="t")
+    assert "[binary]" in out and "400 字节" in out
+
+
+async def test_network_body_stale_handle_clear_error(patch_server):
+    mgr, settings = patch_server
+    settings.allow_network_body = True
+    task = await mgr.ensure_task("s", "t")
+    from nexus_browser.events import KIND_REQUEST
+    mgr.events.record(task.page, KIND_REQUEST, method="GET", url="https://a/old",
+                      status=200, handle=None)
+    out = await server_mod.browser_network_body(seq=1, confirmed=True, task_id="t")
+    assert "句柄已失效" in out
+
+
+async def test_network_body_bad_seq(patch_server):
+    mgr, settings = patch_server
+    settings.allow_network_body = True
+    await mgr.ensure_task("s", "t")
+    out = await server_mod.browser_network_body(seq=999, confirmed=True, task_id="t")
+    assert "不是当前页面的有效请求事件" in out
+
+
+async def test_hitl_confirmed_bypasses_block(patch_server):
+    """confirmed=true = 用户已同意 → 不再拦截 (完成 HITL 闭环)。"""
+    mgr, settings = patch_server
+    settings.hitl_rules = [{"action": "click", "name_pattern": "支付|确认"}]
+    out = await server_mod.browser_click(role="button", name="确认支付", confirmed=True, task_id="t")
+    assert "CONFIRMATION_REQUIRED" not in out  # FakeManager 无 find_element → 落到 ERROR, 但不被 HITL 拦
+
+
+async def test_evaluate_confirmed_executes(patch_server):
+    mgr, settings = patch_server
+    settings.allow_js_execution = True
+    out = await server_mod.browser_evaluate("1+1", confirmed=True, task_id="t")
+    assert "CONFIRMATION_REQUIRED" not in out and "结果:" in out
+
+
+# ── HTTP transport: session 解析 + token 门 ───────────────────────
+
+
+def test_sid_fallback_to_global():
+    """stdio / 非请求上下文 → 进程级单例 session id。"""
+    assert server_mod._sid() == server_mod._session_id
+    tok = server_mod._session_var.set("conn-http-x")
+    try:
+        assert server_mod._sid() == "conn-http-x"
+    finally:
+        server_mod._session_var.reset(tok)
+    assert server_mod._sid() == server_mod._session_id
+
+
+def test_session_from_ctx():
+    class _Req:
+        headers = {"mcp-session-id": "sess-abc"}
+
+    class _ReqCtx:
+        request = _Req()
+
+    class _Ctx:
+        @property
+        def request_context(self):
+            return _ReqCtx()
+
+    assert server_mod._session_from_ctx(_Ctx()) == "sess-abc"
+    assert server_mod._session_from_ctx(None) is None
+
+    class _NoReq:
+        @property
+        def request_context(self):
+            raise ValueError("outside request")
+
+    assert server_mod._session_from_ctx(_NoReq()) is None
+
+
+def test_token_guard_401_and_pass():
+    import anyio
+
+    from nexus_browser.server import _token_guard
+
+    async def app(scope, receive, send):
+        from starlette.responses import PlainTextResponse
+        await PlainTextResponse("ok")(scope, receive, send)
+
+    guarded = _token_guard(app, "secret")
+
+    async def call(headers):
+        status = {}
+        scope = {"type": "http", "headers": headers}
+
+        async def receive():
+            return {"type": "http.request", "body": b""}
+
+        async def send(msg):
+            if msg["type"] == "http.response.start":
+                status["code"] = msg["status"]
+
+        await guarded(scope, receive, send)
+        return status["code"]
+
+    assert anyio.run(call, []) == 401
+    assert anyio.run(call, [(b"authorization", b"Bearer secret")]) == 200
+
+
+def test_transport_validator():
+    from nexus_browser.settings import BrowserSettings
+    assert BrowserSettings(transport="HTTP").transport == "http"
+    with pytest.raises(Exception):
+        BrowserSettings(transport="websocket")
 
 
 # ── 弹窗重做 (Issue I) / scroll_to ref / snapshot scope ─────────────

@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import re
 import time
 from time import monotonic
@@ -92,6 +93,97 @@ async def ensure_watcher(page: Any, settings: BrowserSettings) -> None:
         await page.evaluate(js + "\ntrue")
     except Exception:
         pass  # 页面环境受限时跳过, 走 REQUIRED 兜底
+
+
+# ── Web Vitals 采集 (browser_perf) ────────────────────────────────
+
+
+def build_vitals_js() -> str:
+    """注入脚本: PerformanceObserver 累积指标到 window.__nexusVitals, 不推送。
+
+    拉取式设计: LCP/CLS/INP 会持续更新, 推送太吵; buffered:true 让迟到的
+    观察者也拿到已发生条目。资源摘要在 resource 事件回调里重算 top5。
+    """
+    return """
+(() => {
+  try {
+    if (window.__nexusVitals) return;
+    const v = window.__nexusVitals = {
+      fcp: null, lcp: null, cls: 0, inp: null,
+      ttfb: null, dcl: null, load: null,
+      resources: [], navUrl: location.href, ts: Date.now(),
+    };
+    try {
+      const nav = performance.getEntriesByType("navigation")[0];
+      if (nav) {
+        v.ttfb = Math.round(nav.responseStart);
+        v.dcl = Math.round(nav.domContentLoadedEventEnd);
+        v.load = Math.round(nav.loadEventEnd);
+      }
+    } catch (e) {}
+    const topResources = () => {
+      try {
+        v.resources = performance.getEntriesByType("resource")
+          .sort((a, b) => b.duration - a.duration).slice(0, 5)
+          .map((r) => ({
+            name: String(r.name).split("?")[0].slice(0, 120),
+            type: r.initiatorType, duration: Math.round(r.duration),
+          }));
+      } catch (e) {}
+    };
+    const obs = (type, cb, extra) => {
+      try {
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) cb(e);
+        }).observe(Object.assign({ type, buffered: true }, extra || {}));
+      } catch (e) {}
+    };
+    obs("paint", (e) => { if (e.name === "first-contentful-paint") v.fcp = Math.round(e.startTime); });
+    obs("largest-contentful-paint", (e) => { v.lcp = Math.round(e.startTime); });
+    obs("layout-shift", (e) => { if (!e.hadRecentInput) v.cls = Math.round((v.cls + e.value) * 1000) / 1000; });
+    obs("event", (e) => { if (v.inp === null || e.duration > v.inp) v.inp = Math.round(e.duration); },
+        { durationThreshold: 16 });
+    obs("resource", topResources);
+  } catch (e) {}
+})();
+"""
+
+
+async def ensure_vitals(page: Any) -> None:
+    """确保性能采集生效 (惰性: browser_perf 首次调用时注入, 导航后由 init script 重建)。"""
+    try:
+        await page.add_init_script(build_vitals_js())
+        await page.evaluate(build_vitals_js() + "\ntrue")
+    except Exception:
+        pass  # data:/受限上下文无计时数据, 读取端优雅降级
+
+
+def format_vitals(data: dict | None, page_url: str) -> str:
+    """window.__nexusVitals → LLM 可读小表。纯函数, 可测。"""
+    if not data or not isinstance(data, dict):
+        return fmt_no_vitals(page_url)
+    nav_url = data.get("navUrl") or page_url
+    spa_note = "" if nav_url == page_url else f" (计时数据属 {nav_url}, SPA 导航不重置)"
+
+    def ms(k: str) -> str:
+        v = data.get(k)
+        return f"{int(v)}ms" if isinstance(v, (int, float)) else "-"
+
+    cls = data.get("cls")
+    lines = [f"## 页面性能{spa_note}",
+             f"FCP {ms('fcp')} | LCP {ms('lcp')} | CLS {cls if cls is not None else '-'} | INP {ms('inp')}",
+             f"TTFB {ms('ttfb')} | DOMContentLoaded {ms('dcl')} | load {ms('load')}"]
+    res = data.get("resources") or []
+    if res:
+        lines.append("最慢资源:")
+        for r in res[:5]:
+            lines.append(f"  {r.get('duration', '?')}ms [{r.get('type', '?')}] {r.get('name', '?')}")
+    return "\n".join(lines)
+
+
+def fmt_no_vitals(page_url: str) -> str:
+    return ("暂无性能数据 (页面为 data:/受限上下文, 或尚未产生性能条目)。"
+            f"当前 URL: {page_url}")
 
 
 def _parse_aria_yaml(raw: str) -> list[dict]:
@@ -251,6 +343,21 @@ async def wait_dom_settled(page: Any, settings: BrowserSettings, task: Any | Non
 
 
 _SCOPE_REF_RE = re.compile(r"e\d+")
+
+
+def nodes_digest(nodes: list[dict]) -> str:
+    """快照内容指纹: 剥离 ref(按代际生成, 同 DOM 也变), 保留全部语义字段。
+
+    任一节点的 role/name/attrs/depth/box/text/url 变化 → digest 变 → 全量输出。
+    不做行级 diff 合并: diff 错了 = agent 看到假页面, 这里宁保守不冒险。
+    """
+    h = hashlib.sha1()
+    for n in nodes:
+        h.update(
+            f'{n["depth"]}|{n["role"]}|{n["name"]}|{n["attrs"]}'
+            f'|{n.get("box")}|{n["text"]}|{n.get("url", "")}\n'.encode()
+        )
+    return h.hexdigest()
 
 
 async def _snapshot_raw(page: Any, scope: str | None) -> str:

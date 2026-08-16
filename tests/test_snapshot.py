@@ -345,3 +345,54 @@ async def test_snapshot_raw_scope_miss_clear_error():
         await _snapshot_raw(page, "e99")
 
 
+# ── Web Vitals 格式化 ─────────────────────────────────────────────
+
+
+def test_format_vitals_full():
+    from nexus_browser.snapshot import format_vitals
+    data = {"fcp": 120.4, "lcp": 340, "cls": 0.021, "inp": 48, "ttfb": 80,
+            "dcl": 200, "load": 350, "navUrl": "https://a/",
+            "resources": [{"name": "https://a/x.png", "type": "img", "duration": 420}]}
+    out = format_vitals(data, "https://a/")
+    assert "FCP 120ms" in out and "LCP 340ms" in out and "CLS 0.021" in out
+    assert "420ms [img] https://a/x.png" in out
+    assert "SPA" not in out  # 同源导航不标注
+
+
+def test_format_vitals_partial_and_spa_note():
+    from nexus_browser.snapshot import format_vitals
+    out = format_vitals({"fcp": 120, "cls": 0, "navUrl": "https://a/"}, "https://a/page2")
+    assert "FCP 120ms" in out and "LCP -" in out  # 缺失显示 -
+    assert "SPA 导航不重置" in out  # navUrl ≠ 当前 URL → 标注来源
+
+
+def test_format_vitals_no_data():
+    from nexus_browser.snapshot import format_vitals
+    assert "暂无性能数据" in format_vitals(None, "https://a/")
+    assert "暂无性能数据" in format_vitals({}, "https://a/")
+
+
+# ── 快照 diff 指纹 ────────────────────────────────────────────────
+
+
+def test_nodes_digest_ignores_refs():
+    """同内容不同代际 ref → digest 相同 (ref 剥离)。"""
+    from nexus_browser.snapshot import nodes_digest
+    a = [{"depth": 0, "role": "button", "name": "登录", "ref": "s1e3",
+          "attrs": "", "box": [10, 20, 100, 30], "text": ""}]
+    b = [dict(a[0], ref="s2e3")]
+    assert nodes_digest(a) == nodes_digest(b)
+
+
+def test_nodes_digest_changes_on_content():
+    """name/box/text/节点数 任一变化 → digest 变 (宁可全量, 不谎报无变化)。"""
+    from nexus_browser.snapshot import nodes_digest
+    base = [{"depth": 0, "role": "button", "name": "登录", "ref": "s1e3",
+             "attrs": "", "box": [10, 20, 100, 30], "text": ""}]
+    d0 = nodes_digest(base)
+    assert nodes_digest([dict(base[0], name="退出")]) != d0
+    assert nodes_digest([dict(base[0], box=[0, 20, 100, 30])]) != d0  # 滚动/布局变化
+    assert nodes_digest([dict(base[0], text="hi")]) != d0
+    assert nodes_digest([base[0], dict(base[0], name="第二个")]) != d0
+
+

@@ -84,6 +84,27 @@ async def test_ensure_browser_singleton(mgr, fake_playwright):
     fake_playwright.new_context.assert_not_called()  # 只建浏览器, 未建 context
 
 
+async def test_resolve_ref_maps_old_generation(mgr, fake_playwright):
+    """diff 命中链: 旧代 ref → 当前代 ref; 无映射原样返回。"""
+    await mgr.ensure_task("s", "t")
+    ts = mgr._task("s", "t")
+    ts.snap_refs[(id(ts.page), "")] = {"refs": ["s2e3"], "map": {"s1e3": "s2e3"}}
+    assert mgr._resolve_ref("s", "t", "s1e3") == "s2e3"
+    assert mgr._resolve_ref("s", "t", "s9e9") == "s9e9"  # 无映射 → 原样
+
+
+async def test_heal_clears_snapshot_caches(mgr, fake_playwright):
+    """页面死亡自愈重建 → diff/ref 缓存清空 (旧页数据不得污染新页)。"""
+    await mgr.ensure_task("s", "t")
+    ts = mgr._task("s", "t")
+    ts.snap_diff[("k",)] = ("d", 1, 1)
+    ts.snap_refs[("k",)] = {"refs": [], "map": {"s1e1": "s1e1"}}
+    ts.page.is_closed.return_value = True
+    ts.died_reason = "closed"
+    await mgr.get_page("s", "t")
+    assert ts.snap_diff == {} and ts.snap_refs == {}
+
+
 async def test_two_tasks_isolated_contexts(mgr, fake_playwright):
     p1 = await mgr.get_page("sess-1", "task-a")
     p2 = await mgr.get_page("sess-1", "task-b")
@@ -126,6 +147,27 @@ async def test_navigate_returns_meta(mgr, fake_playwright):
     assert result["url"] == "about:blank"
     assert "title" in result
     assert "readyState" in result
+
+
+async def test_navigate_retries_once_on_err_aborted(mgr, fake_playwright):
+    """并发首批导航的 Chromium 竞态: ERR_ABORTED → 300ms 退避重试一次后成功。"""
+    await mgr.ensure_task("sess-1", "task-a")
+    page = mgr._task("sess-1", "task-a").page
+    good = AsyncMock()
+    page.goto = AsyncMock(side_effect=[Exception("Page.goto: net::ERR_ABORTED at x"), good()])
+    result = await mgr.navigate("sess-1", "task-a", "https://example.com")
+    assert "error" not in result
+    assert page.goto.await_count == 2
+
+
+async def test_navigate_no_retry_on_other_errors(mgr, fake_playwright):
+    """非 ERR_ABORTED 不重试: 真实超时/DNS 失败直接上报。"""
+    await mgr.ensure_task("sess-1", "task-a")
+    page = mgr._task("sess-1", "task-a").page
+    page.goto = AsyncMock(side_effect=TimeoutError("Timeout 30000ms exceeded"))
+    result = await mgr.navigate("sess-1", "task-a", "https://example.com")
+    assert result.get("timed_out") is True and "error" in result
+    assert page.goto.await_count == 1
 
 
 async def test_isolated_launch_passes_channel(monkeypatch):

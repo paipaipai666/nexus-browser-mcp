@@ -10,6 +10,7 @@
 2. **内嵌治理门**:HITL 规则(如点击"支付/确认"需人工)、`browser_evaluate` 默认禁用+无条件确认、JSONL 审计(含敏感参数脱敏)。
 3. **多 task 隔离**:一个 MCP 连接(session)内可建多个独立 `task_id`,各自独立 BrowserContext(登录态互不污染),TTL 空闲回收、回收后再次使用时自动重建并恢复上次页面。
 4. **死亡可观测 + 自愈**:标签页/浏览器被外部关闭或崩溃后,下次调用自动重建(持久化 profile 登录态不丢),并在工具返回前置 `[状态变更]` 通知,明确告知"恢复了什么、丢了什么",不再泄漏 Playwright 底层异常。
+5. **开发者可观测性**:每个页面把 console 消息、未捕获 JS 异常、网络请求元数据(method/URL/status/失败原因,**绝不记 body**)记入带容量上限的环形缓冲;`browser_console` / `browser_errors` / `browser_network` 以 `since` 游标增量读取——agent 能回答"点了为什么没反应",而不是只能靠猜。
 
 ## 安装
 
@@ -124,15 +125,42 @@ BROWSER_USER_DATA_DIR="C:\Users\你的用户名\.nexus-browser\chrome-profile"
 | `BROWSER_CONTEXT_TTL_SEC` | `600` | 空闲 task 自动回收(秒) |
 | `BROWSER_STREAM_CHAR_CAP` | `16000` | 单条流式缓冲最大字符数(溢出丢最旧,保留丢弃标记) |
 | `BROWSER_STREAM_PAGE_CAP` | `64000` | 单页面全部流的总字符上限 |
+| `BROWSER_EVENT_MAX_ENTRIES` | `500` | 单页事件(console/异常/请求)条数上限, 溢出丢最旧并计数 |
+| `BROWSER_EVENT_TEXT_CAP` | `500` | 单条事件文本截断长度 |
+| `BROWSER_EVENT_HANDLE_MAX` | `50` | 单页保留响应句柄的最近请求条数(供按需取 body) |
+| `BROWSER_ALLOW_NETWORK_BODY` | `false` | 是否允许 `browser_network_body`(响应体含敏感数据, 默认关) |
+| `BROWSER_NETWORK_BODY_CAP` | `4000` | 单条响应体返回字符上限 |
+| `BROWSER_TRANSPORT` | `stdio` | 传输方式: `stdio` / `http`(streamable-http, 远程/多客户端) |
+| `BROWSER_HTTP_HOST` | `127.0.0.1` | HTTP 绑定地址; 非 localhost 必须设 `BROWSER_HTTP_TOKEN`(否则拒绝启动) |
+| `BROWSER_HTTP_PORT` | `8817` | HTTP 端口 |
+| `BROWSER_HTTP_TOKEN` | `""` | HTTP 传输 Bearer token |
 | `BROWSER_ALLOW_JS_EXECUTION` | `false` | 是否允许 `browser_evaluate`(开启后无条件 HITL) |
 | `BROWSER_HITL_RULES` | `[]` | JSON 数组: HITL 规则, 如 `[{"action":"click","name_pattern":"支付|确认"}]` |
 | `BROWSER_AUDIT_PATH` | `~/.nexus-browser/audit.jsonl` | 审计日志路径 |
 
 ## 工具
 
-20 个工具:`browser_navigate`、`browser_snapshot`、`browser_click`、`browser_type`、`browser_read`、`browser_screenshot`、`browser_evaluate`、`browser_wait`、`browser_wait_stable`、`browser_wait_ms`、`browser_scroll`、`browser_scroll_to`、`browser_wait_navigation`、`browser_dismiss_popup`、`browser_list_pages`、`browser_switch_page` 及 4 个生命周期工具 `browser_tasks`、`browser_close_task`、`browser_list_sessions`、`browser_close_session`。
+25 个工具:`browser_navigate`、`browser_snapshot`、`browser_click`、`browser_type`、`browser_read`、`browser_screenshot`、`browser_evaluate`、`browser_wait`、`browser_wait_stable`、`browser_wait_ms`、`browser_scroll`、`browser_scroll_to`、`browser_wait_navigation`、`browser_dismiss_popup`、`browser_list_pages`、`browser_switch_page`,观测工具 `browser_console`、`browser_errors`、`browser_network`、`browser_perf`、`browser_network_body`,及 4 个生命周期工具 `browser_tasks`、`browser_close_task`、`browser_list_sessions`、`browser_close_session`。
+
+观测(排障):页面建立后所有 console 输出、未捕获异常、请求元数据持续入缓冲;`browser_errors()` 一次调用给出"JS 异常 + console.error + 失败请求"合并视图,三个工具均支持 `since` 增量游标(省略=接着上次读,`0`=全量)与 `limit` 分页。
+
+性能:`browser_perf()` 返回 FCP/LCP/CLS/INP、导航计时与最慢 5 条资源。响应体可用 `browser_network_body(seq)` 按需单取——默认关闭(`BROWSER_ALLOW_NETWORK_BODY`)、逐次 `confirmed=true` 确认、硬字符上限、body 绝不进审计日志。
+
+HITL 确认闭环:任何被拦截的调用先回 `CONFIRMATION_REQUIRED`,用户在对话中同意后 agent 以 `confirmed=true` 重调(HITL 规则、`browser_evaluate`、`browser_network_body` 通用)。
+
+## HTTP 传输(远程/多客户端)
+
+默认 stdio(单客户端)。远程或多客户端场景可起 streamable-http 服务:
+
+```bash
+BROWSER_TRANSPORT=http BROWSER_HTTP_PORT=8817 nexus-browser-mcp
+```
+
+每个 MCP session 获得独立 `session_id`(task 级隔离照旧)。安全硬规则:绑定非 localhost 且未设 `BROWSER_HTTP_TOKEN` 时**拒绝启动**——裸奔的浏览器控制端口等于把本机浏览器交给网络;设 token 后请求须带 `Authorization: Bearer <token>`。
 
 流式内容(AI 回复等):`browser_read(wait_stable=true)` 等 DOM 静默后一次读全;`browser_read(selector=..., follow=true)` 增量跟踪,每次只回新增部分,`full=true` 取缓冲全文。`browser_wait_stable` / `browser_wait_ms` 提供事件驱动等待与纯等待两种原语。
+
+快照 diff:重复 `browser_snapshot` 若与上次逐节点一致(ref 除外——Playwright 按代际重编号),只回约 120 字符的"无变化"通知而非全量树,旧 ref 经代际链式映射仍然有效;`diff=false` 强制全量。任何真实变化(内容/位置/属性)都返回全量——不做部分合并,不给过期视图。
 
 多数工具接受可选 `task_id`(不传则用默认 task)。见 `docs/` 中的用法指南。
 
@@ -145,6 +173,7 @@ python -m pytest tests -q
 ruff check src tests
 python -m smokes.test_e2e           # 真实浏览器冒烟
 python -m smokes.test_e2e_interact  # 表单 + 多 task 冒烟
+python -m smokes.test_e2e_observability  # console/异常/网络观测冒烟
 ```
 
 ## License

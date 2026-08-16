@@ -24,6 +24,8 @@ class BrowserSettings(BaseSettings):
     context_ttl_sec: int = Field(default=600, ge=60, le=3600, description="空闲 task 自动回收(秒)")
     screenshot_dir: str = Field(default="", description="截图保存目录, 空则 ~/.nexus-browser/screenshots")
     allow_js_execution: bool = Field(default=False, description="browser_evaluate 开关")
+    allow_network_body: bool = Field(default=False, description="browser_network_body 开关(响应体含敏感数据, 默认关)")
+    network_body_cap: int = Field(default=4000, ge=200, le=200000, description="单条响应体返回字符上限")
     snapshot_max_nodes: int = Field(default=100, ge=10, le=1000)
     # 事件驱动稳定性
     stable_window_ms: int = Field(default=800, ge=100, le=10000, description="无 DOM 变异静默窗口")
@@ -34,6 +36,10 @@ class BrowserSettings(BaseSettings):
     # 流式缓冲 (browser_read follow)
     stream_char_cap: int = Field(default=16000, ge=1000, le=1000000, description="单条流式缓冲最大字符数, 溢出丢最旧")
     stream_page_cap: int = Field(default=64000, ge=4000, le=4000000, description="单页面全部流的总字符上限")
+    # 事件缓冲 (browser_console/errors/network, 只记元数据不记 body)
+    event_max_entries: int = Field(default=500, ge=50, le=10000, description="单页事件条数上限, 溢出丢最旧")
+    event_text_cap: int = Field(default=500, ge=100, le=10000, description="单条事件文本截断长度")
+    event_handle_max: int = Field(default=50, ge=5, le=500, description="单页保留响应句柄的最近请求条数(供按需取 body)")
     # 治理
     hitl_rules: list[dict[str, str]] = Field(
         default_factory=list,
@@ -43,6 +49,11 @@ class BrowserSettings(BaseSettings):
         default="",
         description="审计 JSONL 路径, 空则 ~/.nexus-browser/audit.jsonl",
     )
+    # 传输 (默认 stdio; http=streamable-http 供远程/多客户端)
+    transport: str = Field(default="stdio", description="传输方式: stdio / http")
+    http_host: str = Field(default="127.0.0.1", description="HTTP 绑定地址; 非 localhost 必须设 BROWSER_HTTP_TOKEN")
+    http_port: int = Field(default=8817, ge=1, le=65535)
+    http_token: str = Field(default="", description="HTTP Bearer token, 空=仅 localhost 可用")
 
     @field_validator("mode")
     @classmethod
@@ -50,6 +61,14 @@ class BrowserSettings(BaseSettings):
         v = (v or "isolated").strip().lower()
         if v not in {"isolated", "cdp"}:
             raise ValueError(f"不支持的浏览器模式: {v}, 可选 isolated/cdp")
+        return v
+
+    @field_validator("transport")
+    @classmethod
+    def _transport_valid(cls, v: str) -> str:
+        v = (v or "stdio").strip().lower()
+        if v not in {"stdio", "http"}:
+            raise ValueError(f"不支持的传输方式: {v}, 可选 stdio/http")
         return v
 
     def resolve_audit_path(self) -> Path:

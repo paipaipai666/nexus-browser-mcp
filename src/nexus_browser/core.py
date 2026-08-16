@@ -20,6 +20,7 @@ try:
 except ImportError:  # pragma: no cover
     async_playwright = None  # type: ignore[assignment]
 
+from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST, EventStore
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import INTERACTIVE_ROLES, _parse_aria_yaml
 from nexus_browser.streams import StreamStore
@@ -44,6 +45,10 @@ class TaskState:
     last_title: str = ""
     died_reason: str | None = None      # "closed" | "crashed" | "disconnected"
     pending_notice: str | None = None   # 自愈后待上报的状态变更, 一次性消费
+    # 快照 diff 缓存: (id(page),scope,mode,off,generic)→(digest,chars,nodes)
+    # ref 代际映射: (id(page),scope)→{"refs": 当前代 ref 列表, "map": 旧 ref→当前 ref}
+    snap_diff: dict = field(default_factory=dict)
+    snap_refs: dict = field(default_factory=dict)
 
     @property
     def page(self) -> Any:
@@ -82,6 +87,9 @@ class BrowserManager:
         self._page_owners: dict[int, tuple[str, str]] = {}  # id(page) -> (session, task)
         # H-1: 流式内容环形缓冲 (page 关闭/导航时按 page 失效)
         self.streams = StreamStore(settings.stream_char_cap, settings.stream_page_cap)
+        # 观测性: 页面事件环形缓冲 (console/pageerror/network 元数据)
+        self.events = EventStore(settings.event_max_entries, settings.event_text_cap,
+                                 settings.event_handle_max)
 
     # ── 浏览器生命周期 ──────────────────────────────────────────────
 
@@ -243,6 +251,7 @@ class BrowserManager:
             self._page_hooked_contexts.clear()
             for old in ts.pages:
                 self._page_owners.pop(id(old), None)
+                self.events.drop_page(old)
             browser = await self._ensure_browser_inner()
             if self._persistent_context is not None:
                 session.shared_context = self._persistent_context
@@ -258,6 +267,8 @@ class BrowserManager:
             ts.context = task_ctx
             ts.pages = [page]
             ts.active_page_idx = 0
+            ts.snap_diff.clear()  # 页面重建: 旧页 diff/ref 缓存全部作废
+            ts.snap_refs.clear()
             self._hook_page(session_id, task_id, page)
         else:
             # 仅 page 死 (标签页被关/崩溃): context 活着, 登录态/DOM 之外的会话不丢
@@ -277,8 +288,11 @@ class BrowserManager:
                 return await self._heal_task_locked(session_id, task_id, for_navigation=for_navigation)
             for old in ts.pages:
                 self._page_owners.pop(id(old), None)
+                self.events.drop_page(old)
             ts.pages = [page]
             ts.active_page_idx = 0
+            ts.snap_diff.clear()
+            ts.snap_refs.clear()
             self._hook_page(session_id, task_id, page)
 
         ts.died_reason = None
@@ -399,28 +413,72 @@ class BrowserManager:
         return max(session.tasks, key=lambda t: access.get(t, 0.0))
 
     def _hook_page(self, session_id: str, task_id: str, page: Any) -> None:
-        """登记 page→task 归属 + 挂导航/关闭/崩溃事件钩子。"""
+        """登记 page→task 归属 + 挂导航/关闭/崩溃/观测事件钩子。"""
         self._page_owners[id(page)] = (session_id, task_id)
+        self.events.drop_page(page)  # id() 可能复用旧页: 清掉其死缓冲与游标
         ts = self._task(session_id, task_id)
 
-        def _notify_nav(*_args):
+        def _notify_nav(frame=None, *_args):
             ts.nav_event.set()
+            try:
+                if frame is not None and frame == page.main_frame:
+                    self.events.record(page, KIND_NAV, url=frame.url, text=frame.url)
+            except Exception:
+                pass
 
         def _on_close(*_args):
             self._page_owners.pop(id(page), None)  # 自清, 防 id 复用后脏路由
             if ts.died_reason is None:
                 ts.died_reason = "closed"
             self.streams.invalidate_page(page, "页面已关闭")
+            self.events.invalidate_page(page, "页面已关闭")
 
         def _on_crash(*_args):
             ts.died_reason = "crashed"
             self.streams.invalidate_page(page, "页面已崩溃")
+            self.events.invalidate_page(page, "页面已崩溃")
+
+        def _on_console(msg):
+            try:
+                loc = msg.location or {}
+                where = f"{loc.get('url', '')}:{loc.get('lineNumber', '')}".strip(":")
+                self.events.record(page, KIND_CONSOLE, level=msg.type,
+                                   text=msg.text or "", location=where)
+            except Exception:
+                pass
+
+        def _on_pageerror(err):
+            try:
+                self.events.record(page, KIND_PAGEERROR, level="error", text=str(err))
+            except Exception:
+                pass
+
+        def _on_response(resp):
+            try:
+                req = resp.request
+                self.events.record(page, KIND_REQUEST, method=req.method, url=resp.url,
+                                   status=resp.status, resource_type=req.resource_type,
+                                   handle=resp)
+            except Exception:
+                pass
+
+        def _on_request_failed(req):
+            try:
+                self.events.record(page, KIND_REQUEST, method=req.method, url=req.url,
+                                   status=None, failure=str(req.failure or "unknown"),
+                                   resource_type=req.resource_type)
+            except Exception:
+                pass
 
         try:
             page.on("framenavigated", _notify_nav)
             page.on("load", _notify_nav)
             page.on("close", _on_close)
             page.on("crash", _on_crash)
+            page.on("console", _on_console)
+            page.on("pageerror", _on_pageerror)
+            page.on("response", _on_response)
+            page.on("requestfailed", _on_request_failed)
         except Exception:
             pass
 
@@ -496,6 +554,22 @@ class BrowserManager:
             pass
         return base + "请调用 browser_snapshot 查看当前可交互元素。"
 
+    def _resolve_ref(self, session_id: str, task_id: str, ref: str) -> str:
+        """diff 命中链: agent 手里的旧代 ref → 当前代 ref; 无映射则原样返回。
+
+        查找范围限当前激活页的各 scope 条目。映射只由 server 层在 diff 命中
+        (逐节点一致)时建立, 树变化时代际清空, 不会把旧 ref 误指到别的元素。
+        """
+        session = self._sessions.get(session_id)
+        ts = session.tasks.get(task_id) if session else None
+        if not ts or not ts.pages:
+            return ref
+        pid = id(ts.page)
+        for (p, _scope), entry in ts.snap_refs.items():
+            if p == pid and ref in entry["map"]:
+                return entry["map"][ref]
+        return ref
+
     async def find_element(
         self,
         session_id: str,
@@ -522,7 +596,7 @@ class BrowserManager:
         if ref:
             if not re.fullmatch(r"e\d+", ref):
                 raise ValueError(f"ref 格式应为 e+数字 (来自 browser_snapshot 输出), 收到: {ref!r}")
-            loc = page.locator(f"aria-ref={ref}")
+            loc = page.locator(f"aria-ref={self._resolve_ref(session_id, task_id, ref)}")
             if await loc.count() > 0:
                 return loc.first
             raise ValueError(f"ref={ref} 已失效 (导航或重新快照后 ref 会变化)。请重新 browser_snapshot 获取。")
@@ -598,6 +672,21 @@ class BrowserManager:
         self._touch(session_id, task_id)
         return ts.pages[index]
 
+    async def _goto(self, page: Any, url: str, wait_until: str, timeout: int) -> Any:
+        """page.goto + ERR_ABORTED 一次性重试。
+
+        多 session 并发首批导航时 Chromium 偶发把其中一个 goto 中止
+        (ERR_ABORTED, 无任何页面侧原因) —— 唯一处理就是退避重试。
+        """
+        try:
+            return await page.goto(url, wait_until=wait_until, timeout=timeout)
+        except Exception as e:
+            if "ERR_ABORTED" not in str(e):
+                raise
+            logger.warning("goto %s 被并发导航中止 (ERR_ABORTED), 300ms 后重试一次", url)
+            await asyncio.sleep(0.3)
+            return await page.goto(url, wait_until=wait_until, timeout=timeout)
+
     async def navigate(self, session_id: str, task_id: str, url: str, wait_until: str = "load") -> dict:
         # for_navigation=True: 自愈/回收恢复时不再先跳回旧 URL (调用方马上要导航)
         page = await self.get_page(session_id, task_id, for_navigation=True)
@@ -608,7 +697,7 @@ class BrowserManager:
 
         if wait_until == "networkidle":
             try:
-                await asyncio.wait_for(page.goto(url, wait_until="load", timeout=timeout), timeout=timeout / 1000)
+                await asyncio.wait_for(self._goto(page, url, "load", timeout), timeout=timeout / 1000)
                 try:
                     await asyncio.wait_for(page.wait_for_load_state("networkidle"), timeout=s.networkidle_timeout_ms / 1000)
                 except asyncio.TimeoutError:
@@ -619,7 +708,7 @@ class BrowserManager:
                         "timed_out": "Timeout" in type(e).__name__}
         else:
             try:
-                await page.goto(url, wait_until=wait_until, timeout=timeout)
+                await self._goto(page, url, wait_until, timeout)
             except Exception as e:
                 # timed_out 只标真正的超时; 关闭/崩溃等错误由上层分类提示
                 return {"title": "", "url": url, "readyState": "unknown", "error": str(e),
@@ -648,6 +737,7 @@ class BrowserManager:
             for page in ts.pages:
                 self._page_owners.pop(id(page), None)  # 清理归属映射
                 self.streams.invalidate_page(page, "task 已关闭")
+                self.events.invalidate_page(page, "task 已关闭")
                 try:
                     await page.close()
                 except Exception:
