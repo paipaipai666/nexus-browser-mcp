@@ -31,3 +31,31 @@ jobs:
         run: uv build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  # 官方 MCP Registry: PyPI 发布成功后, 把 server.json 元数据发布到 registry。
+  # OIDC (github-oidc) 免 token; server.json 版本号从 tag 同步, 与 PyPI 包对齐。
+  publish-mcp-registry:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+      - name: Sync version from tag
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
+      - name: Publish to MCP Registry (PyPI 传播有延迟, 最多重试 3 次)
+        run: |
+          for i in 1 2 3; do
+            sleep 60
+            ./mcp-publisher publish && exit 0
+            echo "publish 未成功, 60s 后第 $((i+1)) 次重试..."
+          done
+          exit 1

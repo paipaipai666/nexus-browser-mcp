@@ -1,6 +1,14 @@
+<!-- mcp-name: io.github.paipaipai666/nexus-browser-mcp -->
+
 English | [简体中文](README.zh-CN.md)
 
 # nexus-browser-mcp
+
+[![PyPI](https://img.shields.io/pypi/v/nexus-browser-mcp)](https://pypi.org/project/nexus-browser-mcp/)
+[![CI](https://github.com/paipaipai666/nexus-browser-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/paipaipai666/nexus-browser-mcp/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.paipaipai666%2Fnexus--browser--mcp-purple)](https://registry.modelcontextprotocol.io/v0.1/servers?search=nexus-browser-mcp)
 
 **A browser-automation MCP server with event-driven, deterministic snapshots.**
 

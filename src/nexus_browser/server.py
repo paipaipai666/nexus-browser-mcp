@@ -1154,7 +1154,7 @@ def build_server() -> tuple:
     server = MCPServer(
         "nexus-browser",
         description="浏览器操控: 事件驱动确定性快照 + HITL/审计治理",
-        version="0.2.1",
+        version="0.2.2",
     )
 
     def register(fn, name, description, params: dict) -> None:

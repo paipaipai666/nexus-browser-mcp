@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexus-browser-mcp"
-version = "0.2.1"
+version = "0.2.2"
 description = "事件驱动确定性快照的浏览器操控 MCP 服务器 (Playwright + Accessibility Tree)"
 license = {text = "MIT"}
 readme = "README.md"
