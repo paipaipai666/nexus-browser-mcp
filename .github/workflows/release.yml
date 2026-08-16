@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"   # 与 ci.yml 一致: setup-uv 据此创建并激活 .venv (VIRTUAL_ENV 导出)
       - name: Test before publish
         run: |
           uv pip install -e ".[dev]"
