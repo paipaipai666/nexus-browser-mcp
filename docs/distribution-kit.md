@@ -39,8 +39,8 @@
 
 | 货架 | 状态 | 日期 |
 |---|---|---|
-| PyPI | ✅ 0.2.1 已发布（CI 自动） | 2026-08-16 |
-| 官方 MCP Registry | ⏳ 随 v0.2.2 tag 自动发布 | — |
+| PyPI | ✅ 0.2.2 已发布（CI 自动） | 2026-08-16 |
+| 官方 MCP Registry | ✅ `io.github.paipaipai666/nexus-browser-mcp` 0.2.2 已收录（tag/dispatch 自动） | 2026-08-16 |
 | awesome-mcp-servers (punkpeye) | ⬜ 待提 PR | — |
 | appcypher/awesome-mcp-servers | ⬜ 待提 PR | — |
 | mcp.so | ⬜ 待提交 | — |
