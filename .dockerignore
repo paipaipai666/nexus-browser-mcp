@@ -1,0 +1,13 @@
+.venv/
+.git/
+.github/
+tests/
+smokes/
+docs/
+.codegraph/
+.serena/
+.workbuddy/
+.ruff_cache/
+.pytest_cache/
+*.pyc
+__pycache__/

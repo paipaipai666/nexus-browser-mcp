@@ -9,6 +9,7 @@ English | [简体中文](README.zh-CN.md)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.paipaipai666%2Fnexus--browser--mcp-purple)](https://registry.modelcontextprotocol.io/v0.1/servers?search=nexus-browser-mcp)
+[![Glama](https://glama.ai/mcp/servers/paipaipai666/nexus-browser-mcp/badges/score.svg)](https://glama.ai/mcp/servers/paipaipai666/nexus-browser-mcp)
 
 **A browser-automation MCP server with event-driven, deterministic snapshots.**
 
