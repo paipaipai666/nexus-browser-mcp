@@ -56,10 +56,18 @@ async def main() -> None:
             print(f"[5] read result: {r.content[0].text!r}")
             assert "张三" in r.content[0].text, "表单闭环失败"
 
-            # 多 task 隔离: t2 应是空白新页
+            # 多 task 隔离: t2 先导航到独立页面 (Issue K 后: 读类工具不再静默建 task)
+            r = await session.call_tool("browser_navigate", {"url": "data:text/html,<h1>t2</h1>", "task_id": "t2"})
+            assert "已导航至" in r.content[0].text
             r = await session.call_tool("browser_snapshot", {"mode": "interactive", "task_id": "t2"})
             t2_snap = r.content[0].text
             print(f"[6] snap t2 (应无 点击我): {'点击我' not in t2_snap}")
+            assert "点击我" not in t2_snap
+
+            # Issue K 门禁: 不存在的 task 读类工具显式报错
+            r = await session.call_tool("browser_snapshot", {"task_id": "typo-task"})
+            assert "不存在" in r.content[0].text
+            print("[6.5] 坏 task_id 门禁: OK")
 
             r = await session.call_tool("browser_tasks", {})
             print(f"[7] tasks:\n{r.content[0].text}")

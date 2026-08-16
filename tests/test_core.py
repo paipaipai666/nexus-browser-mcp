@@ -93,6 +93,15 @@ async def test_resolve_ref_maps_old_generation(mgr, fake_playwright):
     assert mgr._resolve_ref("s", "t", "s9e9") == "s9e9"  # 无映射 → 原样
 
 
+async def test_known_task_includes_evicted(mgr, fake_playwright):
+    """known_task: 活跃 task + TTL 回收过的(有快照)都算存在 —— 回收重建契约不破。"""
+    await mgr.ensure_task("s", "t")
+    assert mgr.known_task("s", "t") is True
+    assert mgr.known_task("s", "nope") is False
+    mgr._evicted_snapshots.setdefault("s", {})["gone"] = {"url": "https://x"}
+    assert mgr.known_task("s", "gone") is True
+
+
 async def test_heal_clears_snapshot_caches(mgr, fake_playwright):
     """页面死亡自愈重建 → diff/ref 缓存清空 (旧页数据不得污染新页)。"""
     await mgr.ensure_task("s", "t")
@@ -604,6 +613,19 @@ async def test_find_element_by_ref(mgr, fake_playwright):
     out = await mgr.find_element("s-1", "t-a", ref="e12")
     page.locator.assert_called_with("aria-ref=e12")
     assert out is loc
+
+
+async def test_find_element_accepts_frame_scoped_ref(mgr, fake_playwright):
+    """Issue J 回归: iframe 页产出 f2e191 式 ref (fN=frame 前缀), 必须能通过校验回灌。"""
+    page = await mgr.get_page("s-1", "t-a")
+    loc = _Loc(1)
+    page.locator = MagicMock(return_value=loc)
+    out = await mgr.find_element("s-1", "t-a", ref="f2e191")
+    page.locator.assert_called_with("aria-ref=f2e191")
+    assert out is loc
+    # 仍拒绝真正的非法格式
+    with pytest.raises(ValueError, match="ref 格式"):
+        await mgr.find_element("s-1", "t-a", ref="f191")
 
 
 async def test_find_element_ref_bad_format(mgr, fake_playwright):

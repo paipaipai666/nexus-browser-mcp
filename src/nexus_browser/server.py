@@ -23,6 +23,7 @@ from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_RE
 from nexus_browser.gates import AuditLogger, hitl_required
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import (
+    REF_RE,
     assemble_snapshot,
     ensure_vitals,
     ensure_watcher,
@@ -78,6 +79,24 @@ def tool_names() -> list[str]:
 
 def _default_task(task_id: str) -> str:
     return task_id or "default"
+
+
+async def _require_task(task_id: str) -> str | None:
+    """读/操作类工具的 task 门卫: 未知 task_id 显式报错, 不静默建空 task 再谎报"页面为空"。
+
+    例外放行: default(隐式工作区)、TTL 回收过的 task(get_page 自愈重建, Issue G 契约)。
+    browser_navigate 不设此门卫 —— 它本就负责创建新 task。
+    """
+    if task_id == "default" or _manager.known_task(_sid(), task_id):
+        return None
+    sessions = _manager.list_sessions()
+    known = [t["task_id"] for s in sessions if s.get("session_id") == _sid()
+             for t in (s.get("tasks") or [])]
+    return fmt.error(
+        f"task_id '{task_id}' 不存在",
+        detail=f"当前 session 现有 task: {', '.join(known) or '(无)'}",
+        hint="检查 task_id 拼写; 或先用 browser_navigate 创建该 task",
+    )
 
 
 # 页面/浏览器死亡类错误的底层特征 (Playwright 原始异常信息)
@@ -161,6 +180,9 @@ async def _guarded_call(name: str, fn, args=(), kwargs=None) -> str:
 
 async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offscreen=False,
                          include_generic=False, wait_stable=True, diff=True) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     mgr = _manager
     ts = await mgr.ensure_task(_sid(), task_id)
     if wait_stable:
@@ -333,6 +355,9 @@ async def browser_click(ref=None, role=None, name=None, selector=None, double_cl
 
 
 async def _click(task_id, ref, role, name, selector, double_click, pos, wait_stable=False) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     try:
         locator = await _manager.find_element(_sid(), task_id, ref=ref, role=role,
@@ -344,10 +369,37 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
             if wait_stable:
                 await _settle_after_action(ts)
             return f"已点击坐标 ({cx}, {cy})。"
+        # Issue N: target=_blank 链接点击后本页不导航, Playwright 干等新标签导航超时误报失败
+        is_blank = False
+        try:
+            is_blank = (await locator.get_attribute("target")) == "_blank"
+        except Exception:
+            pass
+        click_err: Exception | None = None
         if double_click:
             await locator.dblclick(timeout=5000)
+        elif is_blank:
+            await locator.click(timeout=5000, no_wait_after=True)
         else:
-            await locator.click(timeout=5000)
+            try:
+                await locator.click(timeout=5000)
+            except Exception as e:
+                if "scheduled navigations" in str(e):
+                    click_err = e  # 可能是 _blank 新标签: 落入下方新标签检测再裁决
+                else:
+                    raise
+        # 新标签检测: context "page" 事件异步到达, 给 800ms 窗口
+        t0 = monotonic()
+        while monotonic() - t0 < 0.8 and ts.pending_new_page is None:
+            await asyncio.sleep(0.05)
+        if ts.pending_new_page is not None:
+            _manager.consume_pending_new_page(_sid(), task_id)
+            if wait_stable:
+                await _settle_after_action(ts)
+            idx = len(ts.pages) - 1
+            return f"已点击元素; 链接在新标签打开 (index={idx}), 已自动切换为当前页。"
+        if click_err is not None:
+            raise click_err  # 没有新标签: 是真超时, 原样抛
         if wait_stable:
             await _settle_after_action(ts)
         return "已点击元素。"
@@ -377,6 +429,9 @@ async def browser_type(text: str, ref=None, role=None, name=None, selector=None,
 
 
 async def _type(task_id, text, ref, role, name, selector, clear, press_enter, pos, wait_stable=False) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     try:
         locator = await _manager.find_element(_sid(), task_id, ref=ref, role=role,
@@ -420,6 +475,9 @@ def _wait_budget(max_wait_ms: int) -> int:
 
 
 async def _read(task_id, selector, ref, max_chars, wait_stable, max_wait_ms, follow, stream_id, full) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     page = ts.page
 
@@ -518,6 +576,9 @@ async def _screenshot(task_id, path, full_page) -> str:
     import os
     from pathlib import Path
 
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     if not path:
         ss_dir = _settings.screenshot_dir or str(Path.home() / ".nexus-browser" / "screenshots")
@@ -532,12 +593,17 @@ async def _screenshot(task_id, path, full_page) -> str:
 
 async def browser_evaluate(expression: str, confirmed: bool = False, *, task_id: str = ""):
     if not _settings.allow_js_execution:
-        return fmt.error("JS 执行未启用", detail="当前配置禁止执行 JavaScript",
-                         hint="设置 BROWSER_ALLOW_JS_EXECUTION=true 以启用")
+        return fmt.error("JS 执行未启用 (管理员级开关)",
+                         detail="BROWSER_ALLOW_JS_EXECUTION=false: 能力被部署方禁用。"
+                                "confirmed=true 是启用后的逐次用户确认, 不能越过此开关",
+                         hint="在服务器环境设置 BROWSER_ALLOW_JS_EXECUTION=true 并重启后, 再以 confirmed=true 调用")
     if not confirmed:
         return "CONFIRMATION_REQUIRED\n" + fmt.warning(
             "browser_evaluate 需人工确认",
             detail=f"expression={expression!r}。向用户展示该表达式, 同意后以 confirmed=true 重调。")
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     try:
         result = await ts.page.evaluate(expression)
@@ -558,6 +624,9 @@ async def _wait(task_id, role, name, ref, text, timeout) -> str:
     from nexus_browser.snapshot import get_stable_tree
 
     deadline = monotonic() + timeout / 1000
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     while monotonic() < deadline:
         nodes = await get_stable_tree(ts.page, None, _settings, task=ts)
@@ -579,6 +648,9 @@ async def browser_wait_stable(timeout_ms: int = 10000, *, task_id: str = ""):
 
 async def _wait_stable(task_id, timeout_ms) -> str:
     """等 DOM 静默窗口: 流式回复/连续动画"停止变化"的判定原语。"""
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     budget = _wait_budget(timeout_ms)
     await ensure_watcher(ts.page, _settings)
@@ -606,6 +678,9 @@ async def browser_wait_ms(ms: int, *, task_id: str = ""):
 
 async def _page_of(task_id):
 
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     return ts.page
 
@@ -617,6 +692,9 @@ async def browser_scroll(direction: str = "down", amount: int = 500, *, task_id:
 async def _scroll(task_id, direction, amount) -> str:
     if direction not in ("up", "down", "left", "right"):
         return fmt.error(f"不支持的滚动方向: {direction}")
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     dx, dy = 0, 0
     if direction == "down":
@@ -642,6 +720,9 @@ async def browser_scroll_to(landmark=None, ref=None, selector=None, *, task_id: 
 async def _scroll_to(task_id, landmark, ref, selector) -> str:
     if not any([landmark, ref, selector]):
         return fmt.error("必须指定 landmark、ref 或 selector 中的至少一个参数")
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     try:
         if landmark:
@@ -656,8 +737,8 @@ async def _scroll_to(task_id, landmark, ref, selector) -> str:
             await _settle_after_action(ts)
             return f"已滚动到区域 {landmark}。"
         if ref:
-            if not re.fullmatch(r"e\d+", ref):
-                return fmt.error(f"ref 格式应为 e+数字 (来自 browser_snapshot 输出), 收到: {ref!r}")
+            if not REF_RE.fullmatch(ref):
+                return fmt.error(f"ref 格式应为 e59 或 f2e191(iframe 内) (来自 browser_snapshot 输出), 收到: {ref!r}")
             loc = ts.page.locator(f"aria-ref={ref}")
             if await loc.count() == 0:
                 return fmt.error(f"ref={ref} 已失效, 请重新 browser_snapshot 获取")
@@ -688,6 +769,9 @@ async def _wait_navigation(task_id, url_contains, timeout) -> str:
     """
     from time import monotonic
 
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     deadline = monotonic() + timeout / 1000
     while True:
@@ -755,6 +839,9 @@ async def _visible_dialogs(page) -> list:
 
 
 async def _dismiss_popup(task_id) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     page = ts.page
     clicked: list[str] = []
@@ -795,6 +882,9 @@ async def browser_list_pages(*, task_id: str = ""):
 
 
 async def _list_pages(task_id) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
     pages = await _manager.list_pages(_sid(), task_id)
     if not pages:
         return "当前 task 没有打开的页面。"
@@ -811,6 +901,9 @@ async def browser_switch_page(index: int, *, task_id: str = ""):
 
 
 async def _switch_page(task_id, index) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
     try:
         page = await _manager.switch_page(_sid(), task_id, index)
         return f"已切换到标签页 [{index}]: {await page.title()} ({page.url})"
@@ -872,6 +965,9 @@ async def browser_console(level=None, since=None, pattern=None, limit: int = 50,
 
 
 async def _console(task_id, level, since, pattern, limit) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     rx = None
     if pattern:
@@ -902,6 +998,9 @@ async def browser_errors(since=None, limit: int = 50, *, task_id: str = ""):
 
 async def _errors(task_id, since, limit) -> str:
     """一站式排障: 未捕获异常 + console.error + 失败请求, 按时间序。"""
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
 
     def match(e) -> bool:
@@ -924,6 +1023,9 @@ async def browser_network(url_pattern=None, failed_only: bool = True, since=None
 
 
 async def _network(task_id, url_pattern, failed_only, since, limit) -> str:
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     needle = url_pattern.lower() if url_pattern else ""
 
@@ -956,6 +1058,9 @@ async def _network_body(task_id, seq, confirmed) -> str:
         return fmt.error("网络 body 读取未启用",
                          detail="默认关闭: 响应体可能携带敏感数据/注入内容",
                          hint="设置 BROWSER_ALLOW_NETWORK_BODY=true 以启用")
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     ev = _manager.events.find(ts.page, seq)
     if ev is None or ev.kind != KIND_REQUEST:
@@ -993,6 +1098,9 @@ async def browser_perf(*, task_id: str = ""):
 
 async def _perf(task_id) -> str:
     """Web Vitals + 最慢资源: 惰性注入采集器, 读取 window.__nexusVitals。"""
+    err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
+    if err:
+        return err
     ts = await _manager.ensure_task(_sid(), task_id)
     try:
         await ensure_vitals(ts.page)
@@ -1059,7 +1167,7 @@ def build_server() -> tuple:
     server = MCPServer(
         "nexus-browser",
         description="浏览器操控: 事件驱动确定性快照 + HITL/审计治理",
-        version="0.2.0",
+        version="0.2.1",
     )
 
     def register(fn, name, description, params: dict) -> None:

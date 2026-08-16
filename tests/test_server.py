@@ -80,7 +80,11 @@ class FakeManager:
             del self.tasks[task_id]
 
     def list_sessions(self):
-        return [{"session_id": "s", "task_count": len(self.tasks)}]
+        return [{"session_id": server_mod._session_id, "task_count": len(self.tasks),
+                 "tasks": [{"task_id": tid, "pages": 1} for tid in self.tasks]}]
+
+    def known_task(self, session_id, task_id):
+        return task_id in self.tasks
 
     def pin(self, session_id, task_id):
         pass
@@ -262,6 +266,7 @@ async def test_new_tools_listed(patch_server):
 async def test_read_follow_creates_stream_and_returns_delta(patch_server):
     """follow: 首次建立流返回全文, 后续只回增量, full 取缓冲全文。"""
     mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
     out1 = await server_mod.browser_read(selector=".msg", follow=True, task_id="t")
     assert "流 " in out1 and "+5 字符" in out1 and "Hello" in out1
 
@@ -279,6 +284,7 @@ async def test_read_follow_creates_stream_and_returns_delta(patch_server):
 
 async def test_read_follow_resumes_by_stream_id(patch_server):
     mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
     await server_mod.browser_read(selector=".msg", follow=True, task_id="t")
     sid = next(iter(mgr.streams._streams))
     out2 = await server_mod.browser_read(follow=True, stream_id=sid, task_id="t")
@@ -287,6 +293,8 @@ async def test_read_follow_resumes_by_stream_id(patch_server):
 
 
 async def test_read_follow_requires_selector(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
     out = await server_mod.browser_read(follow=True, task_id="t")
     assert "必须提供 selector" in out
 
@@ -345,6 +353,7 @@ async def test_op_error_classifies_death():
 async def test_snapshot_diff_suppresses_identical(patch_server):
     """逐节点一致 → 第二次只回'无变化', 全文字符全省。"""
     mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")  # Issue K 后: 读类工具要求 task 已存在
     out1 = await server_mod.browser_snapshot(task_id="t")
     assert "Login" in out1
     out2 = await server_mod.browser_snapshot(task_id="t")
@@ -356,6 +365,7 @@ async def test_snapshot_diff_suppresses_identical(patch_server):
 async def test_snapshot_diff_keyed_by_mode(patch_server):
     """换 mode 属另一缓存键 → 不被误抑制。"""
     mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
     await server_mod.browser_snapshot(mode="reading", task_id="t")
     out = await server_mod.browser_snapshot(mode="interactive", task_id="t")
     assert "快照无变化" not in out and "Login" in out
@@ -417,6 +427,8 @@ async def test_wait_tree_change_invalidates_refs(patch_server):
 
 
 async def test_console_empty_buffer(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
     out = await server_mod.browser_console(task_id="t")
     assert "尚无事件缓冲" in out
 
@@ -536,6 +548,67 @@ async def test_network_body_bad_seq(patch_server):
     assert "不是当前页面的有效请求事件" in out
 
 
+# ── Issue K: 坏 task_id 显式报错 / Issue N: _blank 新标签不误报 ──────
+
+
+async def test_unknown_task_explicit_error(patch_server):
+    """不存在的 task_id → 明确报错 + 列出现有 task, 不再伪装"页面为空"。"""
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "good")
+    out = await server_mod.browser_snapshot(task_id="nosuchtask")
+    assert "task_id 'nosuchtask' 不存在" in out and "good" in out
+
+
+async def test_navigate_still_autocreates_task(patch_server):
+    """navigate 不受门禁限制: 自动创建新 task 是设计行为。"""
+    mgr, _ = patch_server
+    out = await server_mod.browser_navigate("https://example.com", task_id="brand-new")
+    assert "已导航至" in out and "brand-new" in mgr.tasks
+
+
+async def test_default_task_not_gated(patch_server):
+    """default 是隐式工作区, 不存在时也放行 (首次使用零仪式)。"""
+    out = await server_mod.browser_snapshot()
+    assert "不存在" not in out
+
+
+async def test_click_blank_link_reports_new_tab(patch_server):
+    """target=_blank: 点击后新标签打开 → 成功回报 index, 不再误报超时。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    new_page = AsyncMock()
+    new_page.url = "https://new.example"
+    loc = AsyncMock()
+    loc.get_attribute = AsyncMock(return_value="_blank")
+
+    async def _open(*a, **k):
+        task.pending_new_page = new_page
+        task.pages = [task.page, new_page]
+
+    loc.click = AsyncMock(side_effect=_open)
+    task.pages = [task.page]
+    task.pending_new_page = None
+    mgr.find_element = AsyncMock(return_value=loc)
+    mgr.consume_pending_new_page = MagicMock(
+        side_effect=lambda s, t: setattr(task, "pending_new_page", None) or new_page)
+    out = await server_mod.browser_click(selector="a.ext", task_id="t")
+    assert "新标签打开" in out and "index=1" in out
+
+
+async def test_click_real_timeout_still_error(patch_server):
+    """无新标签的真超时 → 原样报错, 不被 _blank 兜底吞掉。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    task.pages = [task.page]
+    task.pending_new_page = None
+    loc = AsyncMock()
+    loc.get_attribute = AsyncMock(return_value=None)
+    loc.click = AsyncMock(side_effect=Exception("Timeout 5000ms exceeded waiting for scheduled navigations to finish"))
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_click(selector="a.x", task_id="t")
+    assert "点击失败" in out
+
+
 async def test_hitl_confirmed_bypasses_block(patch_server):
     """confirmed=true = 用户已同意 → 不再拦截 (完成 HITL 闭环)。"""
     mgr, settings = patch_server
@@ -547,6 +620,7 @@ async def test_hitl_confirmed_bypasses_block(patch_server):
 async def test_evaluate_confirmed_executes(patch_server):
     mgr, settings = patch_server
     settings.allow_js_execution = True
+    await mgr.ensure_task("s", "t")  # Issue K 后: evaluate 也过 task 门禁
     out = await server_mod.browser_evaluate("1+1", confirmed=True, task_id="t")
     assert "CONFIRMATION_REQUIRED" not in out and "结果:" in out
 

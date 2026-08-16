@@ -372,6 +372,25 @@ def test_format_vitals_no_data():
     assert "暂无性能数据" in format_vitals({}, "https://a/")
 
 
+def test_interactive_mode_drops_fully_offscreen():
+    """Issue M 复核钉死正确行为: 完全滚出视口(负 y 且 y+h<=0)的元素在 interactive
+    模式被剔除; 部分可见的保留并标 visible。标准文档流下坐标语义实测可信。"""
+    from nexus_browser.snapshot import assemble_snapshot
+    nodes = [
+        {"role": "link", "name": "above", "ref": "e1", "attrs": "", "depth": 0,
+         "box": [8, -400, 100, 30], "text": ""},
+        {"role": "link", "name": "partial", "ref": "e2", "attrs": "", "depth": 0,
+         "box": [8, -20, 100, 40], "text": ""},
+        {"role": "link", "name": "inview", "ref": "e3", "attrs": "", "depth": 0,
+         "box": [8, 100, 100, 30], "text": ""},
+    ]
+    out = assemble_snapshot(nodes, (1280, 720), mode="interactive")
+    names = [n["name"] for n in out["detail"]]
+    assert "above" not in names        # 完全视口外 → 剔除
+    assert "partial" in names and "inview" in names  # 部分/完全可见 → 保留
+    assert out["detail"][0]["viewport_status"] == "visible"
+
+
 # ── 快照 diff 指纹 ────────────────────────────────────────────────
 
 

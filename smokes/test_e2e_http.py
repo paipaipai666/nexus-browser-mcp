@@ -52,6 +52,9 @@ async def _client(tag: str, url: str) -> str:
 
 
 async def main() -> None:
+    # 本机代理(Clash 等 7890)会把 127.0.0.1 请求错误接管 → 502。显式绕开。
+    os.environ["NO_PROXY"] = "127.0.0.1,localhost"
+    os.environ["no_proxy"] = "127.0.0.1,localhost"
     env = {**os.environ,
            "BROWSER_TRANSPORT": "http", "BROWSER_HTTP_PORT": str(PORT),
            "BROWSER_HEADLESS": "1"}

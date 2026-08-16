@@ -13,6 +13,16 @@
 > | H | ✅ | `browser_read(wait_stable=true)` 一次读全;`follow=true` 增量环形缓冲;新增 `browser_wait_stable`/`browser_wait_ms` |
 > | I | ✅ | 弹窗重做:dialog 域优先 + 图标关闭钮 + 多轮防重复;授权类按钮(同意/接受)不再自动点 |
 >
+> **第三轮修复状态（2026-08-16，v0.2.1）**
+>
+> | # | 状态 | 修复内容 |
+> |---|------|----------|
+> | J | ✅ | ref 命名空间统一: `REF_RE=(?:f\d+)?e\d+` 接受 iframe 前缀(`f2e191`=frame f2+e191); core/server/snapshot 三处校验点合一 + 回归测试 |
+> | K | ✅ | 读/操作类工具加 task 门禁: 未知 task_id 显式报错并列出有效 task; `navigate` 保持自动创建; `default`/TTL 回收 task 放行 |
+> | L | ✅ | evaluate 报错写清层级: `BROWSER_ALLOW_JS_EXECUTION` 是管理员级能力开关, `confirmed` 是启用后的逐次确认, 不能越权 |
+> | M | ✅ 未复现 | 标准文档流实测: 完全视口外元素 interactive 模式正确剔除、部分可见正确标 `[visible]`; 已加回归测试钉死该行为; 若站点用 transform 虚拟滚动, box 坐标本身不可信(非本工具可修) |
+> | N | ✅ | `target=_blank` 点击: 预检 `target` 属性 `no_wait_after` + 新标签事件 800ms 裁决窗口, 回报"新标签打开 index=N 已切换"; 无新标签的真超时不再被吞 |
+>
 > 另有 4 个分析中新发现的 bug 一并修复:`ref` 死参数、`include_generic` 不可达、共享 context 新标签扇出、`_page_owners` 泄漏。
 
 > 本文档记录以**真实 MCP 客户端驱动**方式（非单元测试）使用 `nexus-browser-mcp` 时踩到的所有坑。
@@ -253,3 +263,88 @@ browser_read()                    # ✅ 拿到正文
 2. **G 的 TTL 自动回收场景未在本轮触发**：默认 task TTL 为 600s，本轮复测时间不足以等到自动回收。已验证 `close_task → navigate` 重建路径；TTL 回收走同一 `get_page` 检测+重建逻辑，建议用户长时间（>10 分钟）闲置后实测确认一次。
 3. **A 的连带提醒（已修正，2026-08-13 复核）**：`~/.workbuddy/mcp.json` 的 `command` 现已指向正确入口名 `D:\code\nexus-browser-mcp\.venv\Scripts\nexus-browser.exe`（带 s，正确拼写）。此前曾为 typo 版 `nexu-browser.exe`（少 s），已被更新覆盖。配置不再因 typo 失效。注意事项：若改用 `pip install`（非 editable）部署，`.venv` 内的 `nexus-browser.exe` 同样由入口名生成，拼写需与 `pyproject.toml` 的 `project.scripts` 一致。
 4. **登录态未跨 task 共享**：`doubao1`（新 task）初始为未登录态，默认 task 才有登录态——说明未设 `BROWSER_USER_DATA_DIR` 时各 task 独立 context 不共享 cookie。如需跨 task 带登录态，需配置 persistent profile（README 方式 A）。这非 bug，但影响"新建 task 直接聊豆包"的体验。
+
+---
+
+## 7. 第三轮新增痛点（2026-08-16，专门找痛点）
+
+本轮目标：不走 happy path，主动戳薄弱点。测试页面：GitHub 公开仓库、GitHub 登录墙（settings/profile）、Bing 首页、Bing 搜索结果页、playwright.dev。
+
+### 7.1 新发现的 Bug
+
+#### Issue J（HIGH）：ref 格式不统一，snapshot 产出的 ref 在特定页面无法回灌 click/type/read
+
+- **现象**：在 Bing 搜索结果页，`browser_snapshot` 产出的 ref 形如 `f2e191`、`f2e62`（前缀 `f2e` + 十六进制）；但 `browser_click`/`browser_type`/`browser_read` 的 ref 校验器只接受 `e+数字` 格式（`e59` 那种）。直接拿结果页的 ref 去 click 会报错：
+  ```
+  ERROR: ref 格式应为 e+数字 (来自 browser_snapshot 输出), 收到: 'f2e191'
+  ```
+- **复现**：`browser_navigate(task_id="diag_bing", url="https://cn.bing.com/search?q=...")` → `browser_snapshot` 拿到 `f2e191` → `browser_click(ref="f2e191")` 失败。
+- **对照（同轮其他页面正常）**：
+  - GitHub 仓库页 / Bing 首页 / playwright.dev → ref 为 `e9`/`e59`/`e4` 等 `e+数字` 格式，click 接受 ✅。
+  - 同一会话内，Bing **结果页** 才出现 `f2e...` 格式 → 说明 ref 命名空间是**页面相关**的（疑似结果页含 iframe / 不同 document / 快照走了另一套 ref 命名）。
+- **影响**：ref 定位闭环在 Bing 结果页这类页面**完全断裂**。LLM 若遵循"先 snapshot 拿 ref、再 click/type(ref=)"的标准范式，在结果页会直接卡死。
+- **Workaround（已验证可用）**：改用 `selector` 或 `role+name` 兜底 —— `browser_click(selector="a[href*='playwright.dev']")` 成功点击并跳转到 playwright.dev ✅。但依赖 ref 的自动化会失败。
+- **修复建议**：二选一 ——
+  1. snapshot 统一所有页面的 ref 格式（都用 `e+数字` 或统一带命名空间前缀但要可被 click/type/read 接受）；
+  2. 放宽 ref 校验器，接受 snapshot 实际产出的全部 ref 格式（含 `f2e...`）。优先方案 1，避免 ref 在不同页面"长得不一样"带来的其它隐患。
+
+**补充复现（2026-08-16 后续，影响面扩大）**：在同一会话内用 `https://en.wikipedia.org/wiki/Web_browser`（极常见的普通页面，**非**搜索结果页）实测，`browser_snapshot` 产出的 ref 同样是 `f1e...` 前缀（`f1e4`/`f1e239`/`f1e1121` 等）；对 `browser_click(ref="f1e239")` 直接报 `ref 格式应为 e+数字 (来自 browser_snapshot 输出), 收到: 'f1e239'`。
+
+**结论**：`e+数字` 与 `f...` 是两套 ref 命名空间，后者在 **Bing 搜索结果页** **和** **Wikipedia 主页** 这类高频页面都会出现。凡产出 `f` 前缀 ref 的页面，ref 定位闭环（snapshot→click/type/read）全部断裂。鉴于 Wikipedia 是 LLM 浏览器操作最易遇到的页面之一，本 issue 实际影响面远超"仅 Bing 结果页"，严重度上调至 🔴 **CRITICAL（直接阻断自主操作）**。
+
+#### Issue K（MEDIUM）：不存在的 task_id 被静默处理，返回误导性空结果
+
+- **现象**：给 `browser_snapshot` 传一个**不存在的 task_id**（`nosuchtask`），工具**不报错**，而是返回：
+  ```
+  当前页面无可交互元素。
+  ```
+- **影响**：把"task 不存在"伪装成"页面是空的"。LLM 会误判为"页面真没内容"而非"task 写错了"，进而做错误决策（比如反复重试、或认为目标站点是空页）。
+- **对照**：`browser_navigate` 到坏域名会清晰报错（`ERROR: 导航失败: ...ERR_CONNECTION_CLOSED` + Call log + HINT）。但快照类工具对坏 task_id 的容错不一致。
+- **修复建议**：所有以 `task_id` 为参数的工具，先校验 task 是否存在；不存在时返回明确错误（如 `ERROR: task_id 'nosuchtask' 不存在`，可附 `browser_tasks` 列出有效 task），而非静默返回空/无变化。同理 `browser_list_pages`/`browser_read`/`browser_click` 等都应显式校验。
+
+### 7.2 登录墙行为（限制，非 bug）
+
+- 导航到需登录的 URL（`https://github.com/settings/profile`）→ GitHub 重定向到 `/login`，`browser_navigate` 顺畅返回登录页标题，`browser_snapshot` 清晰暴露 `Username or email address` + `Password` 两个 textbox。**重定向处理无卡死/无超时，是良性的**。
+- **限制（固有）**：MCP 没有任何自动登录能力；要进入登录态必须由用户手动在浏览器里登录。建议在使用说明里明确"登录态站点需人工介入"，并可考虑提供一个"等待用户登录后继续"的辅助提示（非必须）。
+
+### 7.3 本轮验证为"正常/可用"的能力（对照，说明不是全盘问题）
+
+- **搜索闭环**（Issue B 修复稳定）：`browser_type(role=searchbox, name="输入搜索词", press_enter=true)` → `browser_wait_navigation` 跳转结果页 → `browser_snapshot` 拿到真实结果链接（playwright.dev、博客园等）✅。
+- **点击兜底**：`selector` 定位点击在结果页正常 ✅（仅 ref 格式问题，见 J）。
+- **错误处理（多数清晰）**：坏域名导航、坏 selector 读取、evaluate 未授权，均返回 `ERROR` + `DETAIL` + `HINT`，不 cryptic ✅（仅 task_id 静默问题，见 K）。
+- **等待原语**：`browser_wait_stable`（页面稳定判定）、`browser_wait(text=)`（等文本出现）、`browser_wait_ms`（纯延时）全部正常 ✅。
+- **差异快照 diff=true**：页面无变化时返回 `[快照无变化] 与上次完全一致 (211 个节点, 上次全文 3188 字符已省略)`，并明确提示"上次 ref/pos 仍有效，可直接操作"——既省 token 又反向确认了 ref 稳定性（无变化时）✅。
+
+### 7.4 本轮痛点优先级
+
+| Issue | 严重度 | 类别 | 是否确认 bug |
+|---|---|---|---|
+| J（ref 命名空间不统一，`f` 前缀 ref 在 Wikipedia / Bing 结果页等高频站点令 click/type/read 全部失效） | 🔴 CRITICAL | Bug | 确认 |
+| K（坏 task_id 静默返回空） | 🟠 MEDIUM | Bug / 容错不一致 | 确认 |
+| L（evaluate 的 `confirmed` 参数被环境变量双重门控，误导） | 🟠 MEDIUM | 设计一致性 | 确认 |
+| M（interactive 快照滚动后所有元素标 `[visible]`，无 `[offscreen]` 区分） | 🟡 LOW | 信息失真 | 确认 |
+| 登录墙无自动登录 | 🟡 LOW | 使用限制（固有） | 非 bug |
+
+### 7.5 本轮补充验证（2026-08-16 后续）
+
+#### Issue L（MEDIUM）：`browser_evaluate` 的 `confirmed` 参数被环境变量双重门控，存在误导
+- 现象：在已导航的页面上调用 `browser_evaluate(expression="1+1", confirmed=true)`，仍返回 `ERROR: JS 执行未启用` → `DETAIL: 当前配置禁止执行 JavaScript` → `HINT: 设置 BROWSER_ALLOW_JS_EXECUTION=true 以启用`。即 `confirmed=true` 并未真正解除执行权限，真正的开关是环境变量。
+- 影响：工具的 HITL 设计意图是"用户确认即可执行"，但 `confirmed` 参数实际无效、必须改环境变量重启。错误信息也未提示 `confirmed` 无效，给人"确认就能跑"的错觉，调试时易困惑。
+- 修复建议：要么让 `confirmed=true` 在没有环境变量时也生效（真正 HITL），要么在报错中明确说明 `confirmed` 已被环境变量覆盖、需先设变量；并在文档写清二者关系。
+
+#### Issue M（LOW）：滚动后 interactive 快照所有元素统一标 `[visible]`，无 `[offscreen]` 区分
+- 现象：在 Wikipedia 页 `browser_scroll(direction=down, amount=4000)` 后，`browser_snapshot(mode=interactive)` 仍列出全部元素（视口外元素以负坐标如 `box=0,-4000` 表示），但**所有交互元素都标 `[visible]`**，包括实际已在视口外（负 y）的元素。对照 `mode=full, include_offscreen=true` 会显式标注 `[offscreen]`。
+- 影响：LLM 无法仅凭 interactive 快照判断某元素当前是否在视口内、是否需要先滚动才能稳定交互；不过 Playwright 的 `click` 会自动滚动到目标元素，功能上不阻断，仅信息友好度不足。
+- 修复建议：interactive 模式也根据视口位置标注 `[offscreen]`/`[visible]`，与 full 模式一致。
+
+#### Issue E 修复复验（通过，加分）
+- 之前担心 `include_offscreen` 只在 `full` 模式生效、`interactive` 默认仍丢视口外。实测：`interactive` 模式滚动后**完整保留**视口外元素（以绝对坐标 + 负值呈现），未丢失。E 修复覆盖到位。
+
+#### Issue N（MEDIUM）：点击 `target=_blank` 链接时 `browser_click` 等待本页导航超时，误报失败
+- 现象：在 Wikipedia 页 `browser_click(selector="a.external.text")` 点击外部链接（`target="_blank"`），locator 命中、`click action done` 已执行，但随后卡在 `waiting for scheduled navigations to finish` 触发 `Timeout 5000ms exceeded` 返回 ERROR。实际新标签**已成功打开**——随后 `list_pages` 确认出现 `[1] DeviceAtlas` 页并成为当前页。
+- 影响：`browser_click` 的"等待导航完成"逻辑对 `_blank` 新标签链接不适用：目标在新标签打开、当前页不导航，于是误报失败。LLM 会被误导以为点击失败而重试或换策略，而操作其实成功了。
+- 修复建议：点击前检测链接是否为 `target=_blank`（或点击后未触发本页导航却出现了新 page），则判定为成功并提示"已在 index=N 新标签打开"，而非等待本页导航超时。
+
+#### 多标签页管理验证（通过，加分）
+- `browser_list_pages` 在点击 `_blank` 链接后正确列出 2 个 page（Bing 结果页 + DeviceAtlas）；`browser_switch_page(index=0)` 正确切回 Bing 结果页（`browser_snapshot` 确认已回到 Bing）。会话/多标签管理能力可用。
+- 顺带：切换回 Bing 结果页后快照自动检测到 `Citation details` 弹窗并提示 `browser_dismiss_popup()`，弹窗检测灵敏（Issue I 修复的持续加分）。

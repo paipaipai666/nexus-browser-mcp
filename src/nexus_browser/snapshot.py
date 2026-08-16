@@ -342,7 +342,11 @@ async def wait_dom_settled(page: Any, settings: BrowserSettings, task: Any | Non
         await asyncio.sleep(settings.stable_poll_ms / 1000)
 
 
-_SCOPE_REF_RE = re.compile(r"e\d+")
+_SCOPE_REF_RE = re.compile(r"(?:f\d+)?e\d+")  # iframe 页的 ref 带 frame 前缀: f2e191 = frame f2 + e191
+
+# ref 全格式: e59 (主文档) 或 f2e191 (iframe 内, fN=frame 编号) —— Playwright 按此产出,
+# aria-ref 选择器同样接受。所有校验点统一用 REF_RE, 杜绝"snapshot 产出的 ref 无法回灌"。
+REF_RE = re.compile(r"(?:f\d+)?e\d+")
 
 
 def nodes_digest(nodes: list[dict]) -> str:

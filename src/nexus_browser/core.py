@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 from dataclasses import dataclass, field
 from time import monotonic
 from typing import Any
@@ -22,7 +21,7 @@ except ImportError:  # pragma: no cover
 
 from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST, EventStore
 from nexus_browser.settings import BrowserSettings
-from nexus_browser.snapshot import INTERACTIVE_ROLES, _parse_aria_yaml
+from nexus_browser.snapshot import INTERACTIVE_ROLES, REF_RE, _parse_aria_yaml
 from nexus_browser.streams import StreamStore
 
 logger = logging.getLogger(__name__)
@@ -405,6 +404,13 @@ class BrowserManager:
 
         ctx.on("page", _on_page)
 
+    def known_task(self, session_id: str, task_id: str) -> bool:
+        """task 活跃存在, 或曾被 TTL 回收(有快照, get_page 会自动重建恢复)。"""
+        session = self._sessions.get(session_id)
+        if session and task_id in session.tasks:
+            return True
+        return task_id in self._evicted_snapshots.get(session_id, {})
+
     def _most_recent_task(self, session_id: str) -> str | None:
         session = self._sessions.get(session_id)
         if not session or not session.tasks:
@@ -594,8 +600,8 @@ class BrowserManager:
                 return await self._first_visible(loc)
             raise ValueError(f"找不到选择器 {selector} 对应的元素。")
         if ref:
-            if not re.fullmatch(r"e\d+", ref):
-                raise ValueError(f"ref 格式应为 e+数字 (来自 browser_snapshot 输出), 收到: {ref!r}")
+            if not REF_RE.fullmatch(ref):
+                raise ValueError(f"ref 格式应为 e59 或 f2e191(iframe 内) (来自 browser_snapshot 输出), 收到: {ref!r}")
             loc = page.locator(f"aria-ref={self._resolve_ref(session_id, task_id, ref)}")
             if await loc.count() > 0:
                 return loc.first
