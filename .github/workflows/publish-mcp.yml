@@ -1,0 +1,42 @@
+name: publish-mcp
+
+# 官方 MCP Registry 发布: tag 推送时跟随 release.yml (PyPI 先发布, 靠重试等传播);
+# 手动 dispatch 兜底 (修 server.json 元数据后无需重发 PyPI 版本)。
+# OIDC 认证, 无任何 token; server.json 版本: tag 来自 tag 名, dispatch 来自 pyproject.toml。
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-mcp-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+      - name: Sync version (tag 或 pyproject)
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(grep -m1 '^version' pyproject.toml | sed 's/.*"\(.*\)"/\1/')
+          fi
+          echo "registry version: $VERSION"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
+      - name: Publish to MCP Registry (PyPI 传播有延迟, 最多重试 4 次)
+        run: |
+          for i in 1 2 3 4; do
+            ./mcp-publisher publish && exit 0
+            echo "publish 未成功, 60s 后重试 ($i/4)..."
+            sleep 60
+          done
+          exit 1
