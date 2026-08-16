@@ -49,7 +49,7 @@
 | 官方 MCP Registry | ✅ `io.github.paipaipai666/nexus-browser-mcp` 0.2.2 已收录（tag/dispatch 自动） | 2026-08-16 |
 | awesome-mcp-servers (punkpeye, 92k★) | ✅ PR [#12264](https://github.com/punkpeye/awesome-mcp-servers/pull/12264) 已提交, Glama 徽章已补, CI 绿, 待合并 | 2026-08-16 |
 | appcypher/awesome-mcp-servers | ❌ 仓库已归档(2026-05), 不提 | — |
-| Glama | ✅ 已收录（awesome 榜前置要求已满足） | 2026-08-16 |
+| Glama | ✅ 已收录 + Release v0.2.3 发布, 作者已验证, 质量清单 67%(Coherence/Tool 分异步计算中; Maintenance B 受新仓库 6 个月结构上限) | 2026-08-16 |
 | mcp.so | ⬜ 待提交 | — |
 | Smithery | ⬜ 待 GitHub 连接 | — |
 | PulseMCP | ⬜ 待提交 | — |
