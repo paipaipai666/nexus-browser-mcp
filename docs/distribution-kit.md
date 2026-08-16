@@ -41,8 +41,8 @@
 |---|---|---|
 | PyPI | ✅ 0.2.2 已发布（CI 自动） | 2026-08-16 |
 | 官方 MCP Registry | ✅ `io.github.paipaipai666/nexus-browser-mcp` 0.2.2 已收录（tag/dispatch 自动） | 2026-08-16 |
-| awesome-mcp-servers (punkpeye) | ⬜ 待提 PR | — |
-| appcypher/awesome-mcp-servers | ⬜ 待提 PR | — |
+| awesome-mcp-servers (punkpeye, 92k★) | ✅ PR [#12264](https://github.com/punkpeye/awesome-mcp-servers/pull/12264) 已提交, check-submission 通过, 待维护者合并 | 2026-08-16 |
+| appcypher/awesome-mcp-servers | ❌ 仓库已归档(2026-05), 不提 | — |
 | mcp.so | ⬜ 待提交 | — |
 | Smithery | ⬜ 待 GitHub 连接 | — |
 | Glama | ⬜ 待提交 | — |
