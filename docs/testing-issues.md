@@ -224,7 +224,7 @@ browser_snapshot(mode="reading")  # 几乎为空
 browser_read()                    # ✅ 拿到正文
 ```
 
-> 截图证据留存于 `C:\Users\29218\.nexus-browser\screenshots\`（如 `screenshot_cbd57c68.png` = Bing 结果页；`screenshot_ec7dd150.png` = 豆包聊天页）。
+> 截图证据留存于测试机 `~/.nexus-browser/screenshots/`（如 `screenshot_cbd57c68.png` = Bing 结果页；`screenshot_ec7dd150.png` = 豆包聊天页）。
 
 ---
 
