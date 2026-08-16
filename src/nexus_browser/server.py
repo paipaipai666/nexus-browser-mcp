@@ -369,28 +369,17 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
             if wait_stable:
                 await _settle_after_action(ts)
             return f"已点击坐标 ({cx}, {cy})。"
-        # Issue N: target=_blank 链接点击后本页不导航, Playwright 干等新标签导航超时误报失败
-        is_blank = False
-        try:
-            is_blank = (await locator.get_attribute("target")) == "_blank"
-        except Exception:
-            pass
-        click_err: Exception | None = None
+        # Issue N 根治: Playwright 默认点击后等"scheduled navigations" —— target=_blank /
+        # window.open 的新标签导航把本等待拖死成 5s 误报。no_wait_after 跳过该等待:
+        # 点击动作在返回前已执行完毕; 导航等待交给 browser_wait_navigation / nav_event。
+        ts.nav_event.clear()
         if double_click:
-            await locator.dblclick(timeout=5000)
-        elif is_blank:
-            await locator.click(timeout=5000, no_wait_after=True)
+            await locator.dblclick(timeout=5000, no_wait_after=True)
         else:
-            try:
-                await locator.click(timeout=5000)
-            except Exception as e:
-                if "scheduled navigations" in str(e):
-                    click_err = e  # 可能是 _blank 新标签: 落入下方新标签检测再裁决
-                else:
-                    raise
-        # 新标签检测: context "page" 事件异步到达, 给 800ms 窗口
+            await locator.click(timeout=5000, no_wait_after=True)
+        # 新标签裁决: context "page" 事件异步到达, 短窗口内出现 → 明确告知并切换
         t0 = monotonic()
-        while monotonic() - t0 < 0.8 and ts.pending_new_page is None:
+        while monotonic() - t0 < 0.5 and ts.pending_new_page is None:
             await asyncio.sleep(0.05)
         if ts.pending_new_page is not None:
             _manager.consume_pending_new_page(_sid(), task_id)
@@ -398,8 +387,6 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
                 await _settle_after_action(ts)
             idx = len(ts.pages) - 1
             return f"已点击元素; 链接在新标签打开 (index={idx}), 已自动切换为当前页。"
-        if click_err is not None:
-            raise click_err  # 没有新标签: 是真超时, 原样抛
         if wait_stable:
             await _settle_after_action(ts)
         return "已点击元素。"

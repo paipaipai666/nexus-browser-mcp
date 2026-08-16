@@ -596,14 +596,13 @@ async def test_click_blank_link_reports_new_tab(patch_server):
 
 
 async def test_click_real_timeout_still_error(patch_server):
-    """无新标签的真超时 → 原样报错, 不被 _blank 兜底吞掉。"""
+    """无新标签的真超时 → 原样报错, 不被 _blank 竞速吞掉。"""
     mgr, _ = patch_server
     task = await mgr.ensure_task("s", "t")
     task.pages = [task.page]
     task.pending_new_page = None
     loc = AsyncMock()
-    loc.get_attribute = AsyncMock(return_value=None)
-    loc.click = AsyncMock(side_effect=Exception("Timeout 5000ms exceeded waiting for scheduled navigations to finish"))
+    loc.click = AsyncMock(side_effect=TimeoutError("waiting for scheduled navigations to finish"))
     mgr.find_element = AsyncMock(return_value=loc)
     out = await server_mod.browser_click(selector="a.x", task_id="t")
     assert "点击失败" in out

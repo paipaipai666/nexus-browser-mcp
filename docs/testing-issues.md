@@ -21,7 +21,7 @@
 > | K | ✅ | 读/操作类工具加 task 门禁: 未知 task_id 显式报错并列出有效 task; `navigate` 保持自动创建; `default`/TTL 回收 task 放行 |
 > | L | ✅ | evaluate 报错写清层级: `BROWSER_ALLOW_JS_EXECUTION` 是管理员级能力开关, `confirmed` 是启用后的逐次确认, 不能越权 |
 > | M | ✅ 未复现 | 标准文档流实测: 完全视口外元素 interactive 模式正确剔除、部分可见正确标 `[visible]`; 已加回归测试钉死该行为; 若站点用 transform 虚拟滚动, box 坐标本身不可信(非本工具可修) |
-> | N | ✅ | `target=_blank` 点击: 预检 `target` 属性 `no_wait_after` + 新标签事件 800ms 裁决窗口, 回报"新标签打开 index=N 已切换"; 无新标签的真超时不再被吞 |
+> | N | ✅ | 根治: 所有点击改 `no_wait_after=True`(Playwright 默认的 scheduled-navigations 等待正是 _blank/window.open 的死因; 点击动作在返回前已执行完, 导航等待归 `browser_wait_navigation`)。点击后 0.5s 裁决新标签事件 → 回报"新标签打开 index=N 已切换"; 真不可点的超时仍报错 |
 >
 > 另有 4 个分析中新发现的 bug 一并修复:`ref` 死参数、`include_generic` 不可达、共享 context 新标签扇出、`_page_owners` 泄漏。
 
@@ -348,3 +348,33 @@ browser_read()                    # ✅ 拿到正文
 #### 多标签页管理验证（通过，加分）
 - `browser_list_pages` 在点击 `_blank` 链接后正确列出 2 个 page（Bing 结果页 + DeviceAtlas）；`browser_switch_page(index=0)` 正确切回 Bing 结果页（`browser_snapshot` 确认已回到 Bing）。会话/多标签管理能力可用。
 - 顺带：切换回 Bing 结果页后快照自动检测到 `Citation details` 弹窗并提示 `browser_dismiss_popup()`，弹窗检测灵敏（Issue I 修复的持续加分）。
+
+---
+
+## 8. 第四轮复测结论（2026-08-16，第二轮修复后）
+
+用户修复了 J/K/L/M/N 后，以 MCP 客户端身份逐条复测（页面：en.wikipedia.org/wiki/Web_browser、cn.bing.com 搜索结果页）。身份仍是"仅测试、不动 src/ 代码"。
+
+### 8.1 逐条复测结果
+
+| Issue | 复测结论 | 实测证据 |
+|---|---|---|
+| **J**（ref 命名空间不统一） | ✅ **已修复（闭环层面）** | Wikipedia 主页 snapshot 现产出 `e+数字` ref（`e4`/`e23`/`e93`/`e273` 等），无 `f1e...`；`browser_click(ref=e93)` → "已点击元素。"、`browser_read(ref=e93)` → "Web browser"、`browser_type(ref=e23,...)` → "已输入文本。" 全闭环 ✅。**Bing 结果页仍产出 `f2e...` ref**（`f2e2`/`f2e62`/`f2e86`），但放宽校验器后 `browser_click(ref=f2e86)` → "已点击元素。" 成功（该结果链接触发跳转）。→ 修复方式是**接受两套命名空间**，而非强制统一；功能性闭环已恢复。 |
+| **K**（坏 task_id 静默返回空） | ✅ **已修复** | `browser_snapshot(task_id="nosuchtask")` → `ERROR: task_id 'nosuchtask' 不存在` + DETAIL 列出当前 task（`verify1, verify2`）+ HINT。不再静默返回"无可交互元素"。 |
+| **L**（evaluate confirmed 被双击） | ✅ **已修复（UX 层面）** | `browser_evaluate(confirmed=true)` 仍被拒（两层门控是有意的安全设计，行为不变），但报错现已**诚实清晰**：`ERROR: JS 执行未启用 (管理员级开关)` → `DETAIL: BROWSER_ALLOW_JS_EXECUTION=false: 能力被部署方禁用。confirmed=true 是启用后的逐次用户确认, 不能越过此开关` → `HINT: 在服务器环境设置 BROWSER_ALLOW_JS_EXECUTION=true 并重启后, 再以 confirmed=true 调用`。不再误导。 |
+| **M**（interactive 滚动后无 offscreen 区分） | ✅ **已缓解（可接受）** | Wikipedia 滚动 4000px 后 interactive 快照：视口外元素以**负坐标显式呈现**（如 `banner ref=e4 [box=0,-4000,...]`），可交互列表聚焦视口内元素标 `[visible]`；`[offscreen]` 标记在 `mode=full, include_offscreen=true` 中提供。LLM 可由坐标推断位置，LOW 级信息失真已消除。 |
+| **N**（点击 `_blank` 链接误报失败） | 🔴 **仍未修复** | `browser_click(selector="a.external")` 点击 Wikipedia 外部链接（`target="_blank"`）：call log 显示 `click action done` 已执行，但随后卡在 `waiting for scheduled navigations to finish` 触发 `Timeout 5000ms exceeded` 返回 `ERROR: 点击失败`。`browser_list_pages` 确认新标签 `[0] "Which types of devices have browsers? | DeviceAtlas"` **已成功打开并成为当前页**。即操作成功但误报失败，与修复前完全一致。 |
+
+### 8.2 当前唯一残留 Bug：Issue N
+
+- **症状**：点击 `target="_blank"` 链接时，`browser_click` 在 `click action done` 之后仍傻等"当前页导航完成"，因目标开在新标签、当前页不导航而超时误报 `ERROR: 点击失败`。
+- **确认新标签确实打开**：`list_pages` 列为当前页，证明点击生效。
+- **对 LLM 的危害**：会被误导以为点击失败，进而重试 / 换策略 / 报告失败，而实际已成功打开目标——在"搜索结果页点开外链""点开文内引文"等高频场景必现。
+- **修复建议（同 7.5）**：点击完成后检测"本页是否发生导航"；若未导航但 `context.pages` 新增了 page（或命中 `target=_blank`），应判定为成功并提示"已在 index=N 新标签打开"，而非等待本页导航超时。亦可对 `target=_blank` 链接在 click 前预检、跳过导航等待。
+
+### 8.3 复测后待修复清单（仅 N 未结）
+
+| 严重度 | Issue | 状态 |
+|---|---|---|
+| 🔴（功能阻断） | **N** 点击 `_blank` 链接误报失败 | ❌ 未修复 |
+| — | J / K / L / M | ✅ 已修复 / 已缓解 |
