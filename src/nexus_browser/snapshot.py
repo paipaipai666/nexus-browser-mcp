@@ -33,6 +33,10 @@ READING_ROLES = INTERACTIVE_ROLES | {
     "marquee", "timer", "note", "definition",
 }
 
+# 阅读保真: 带文本的内容容器 — 阅读模式下有 text 才保留 (纯壳容器仍是噪音)。
+# bench 实测捕获: 纯文本 <li> (如"动态追加项")曾被整类丢弃, agent 无法确认列表变更。
+TEXT_BEARING_ROLES = {"listitem", "cell"}
+
 LANDMARK_ROLES = {
     "banner", "complementary", "contentinfo", "form",
     "main", "navigation", "region", "search",
@@ -383,12 +387,29 @@ async def get_stable_tree(
     settings: BrowserSettings,
     task: Any | None = None,
 ) -> list[dict]:
-    """静默判定后连拍 REQUIRED 次一致才解析返回; 超时返回最后一次。"""
+    """静默判定后拍摄并验证稳定性; 超时返回最后一次。
+
+    主路径 — 突变时间线闭环: watcher 已注入时, 拍摄前后各读一次
+    window.__nexusLastMutation, 相等 = 拍摄窗口内零 DOM 变异 (一次拍摄即成立,
+    比"连拍两次一致"更强的直接证据 — 后者仍可能两次都拍到瞬态)。
+    兜底 — watcher 缺失或拍摄期间有变异: 退化为连拍 REQUIRED 次一致 (legacy)。
+    """
     deadline = monotonic() + settings.stable_timeout_ms / 1000
     raw: str | None = None
     while monotonic() < deadline:
         await wait_dom_settled(page, settings, task=task)
+        try:
+            m0 = await page.evaluate("window.__nexusLastMutation ?? 0")
+        except Exception:
+            m0 = 0
         raw = await _snapshot_raw(page, scope)
+        if m0:
+            try:
+                if await page.evaluate("window.__nexusLastMutation ?? 0") == m0:
+                    break  # 拍摄窗口内零变异, 单次拍摄成立
+            except Exception:
+                pass
+        # 兜底: 连拍确认
         ok = True
         for _ in range(settings.stable_required - 1):
             await asyncio.sleep(settings.stable_confirm_gap_ms / 1000)
@@ -426,7 +447,9 @@ def assemble_snapshot(
     elif mode == "interactive":
         detail = [n for n in all_nodes if n.get("role") in INTERACTIVE_ROLES]
     elif mode == "reading":
-        detail = [n for n in all_nodes if n.get("role") in READING_ROLES]
+        detail = [n for n in all_nodes
+                  if n.get("role") in READING_ROLES
+                  or (n.get("role") in TEXT_BEARING_ROLES and n.get("text"))]
     else:  # full
         detail = [n for n in all_nodes if n.get("role") in NON_GENERIC_ROLES]
 

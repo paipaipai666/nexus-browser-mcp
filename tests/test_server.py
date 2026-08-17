@@ -426,6 +426,17 @@ async def test_wait_tree_change_invalidates_refs(patch_server):
     assert entry["map"] == {} and entry["refs"] == ["s2e3", "s2e4"]
 
 
+async def test_wait_seeds_snapshot_diff(patch_server):
+    """单一渲染管道: wait 末帧记入 digest 基线 → 紧随的 snapshot 命中 diff,
+    且消息标注来源 browser_wait (日常模式: 等元素→读页面, 免一次全量)。"""
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    out = await server_mod.browser_wait(text="Login", task_id="t")
+    assert "已出现" in out
+    snap = await server_mod.browser_snapshot(task_id="t")
+    assert "快照无变化" in snap and "browser_wait" in snap
+
+
 # ── 观测性工具: console / errors / network ─────────────────────────
 
 
@@ -635,6 +646,18 @@ async def test_evaluate_default_task_empty_id(patch_server):
     out = await server_mod.browser_evaluate("1+1", confirmed=True, task_id="")
     assert "不存在" not in out and "结果:" in out
     assert "" not in mgr.tasks  # 不得创建幻影 task
+
+
+async def test_dispatch_normalizes_task_id(patch_server):
+    """分发层单点归一化: 经 _guarded_call 的 task_id='' 到达工具函数时已是 'default'。"""
+    seen = {}
+
+    async def probe(*, task_id: str = ""):
+        seen["tid"] = task_id
+        return "ok"
+
+    out = await server_mod._guarded_call("browser_evaluate", probe, kwargs={"task_id": ""})
+    assert out == "ok" and seen["tid"] == "default"
 
 
 # ── HTTP transport: session 解析 + token 门 ───────────────────────

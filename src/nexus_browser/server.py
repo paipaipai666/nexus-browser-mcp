@@ -151,7 +151,11 @@ async def _guarded_call(name: str, fn, args=(), kwargs=None) -> str:
     审计在此单点完成(全覆盖): 入参字符数(脱敏前计量) + 返回字符数 + 耗时 +
     HITL 命中(CONFIRMATION_REQUIRED 出现在返回里)。token 成本可由此直接对账。
     """
-    kwargs = kwargs or {}
+    kwargs = dict(kwargs or {})
+    if "task_id" in kwargs:
+        # 分发层归一化 (单点): '' → 'default'。下游 18+ 调用点不再依赖各包装层
+        # 记得 _default_task — 约定固化在边界, 新工具想错都难 (幻影 task 的根治)。
+        kwargs["task_id"] = _default_task(kwargs["task_id"])
     tid = kwargs.get("task_id") or "default"
     _manager.pin(_sid(), tid)  # 操作期间钉住, TTL 不回收
     t0 = monotonic()
@@ -177,6 +181,20 @@ async def _guarded_call(name: str, fn, args=(), kwargs=None) -> str:
 # ---------------------------------------------------------------------------
 # 快照辅助: 格式化 get_stable_tree 结果为 LLM 可读文本
 # ---------------------------------------------------------------------------
+
+
+def _record_view(ts, scope, mode, include_offscreen, include_generic, nodes,
+                 chars: int, source: str) -> None:
+    """页面视图生产者的统一记录点 (单管道副作用): digest 基线 + ref 代际。
+
+    _snapshot_text 与 _wait 共用: wait 结束时拍到的末帧就是 agent 下一眼看到的
+    页面, 记入基线后紧随的 browser_snapshot 直接命中 diff (日常模式: 等元素→读页面)。
+    """
+    key = (id(ts.page), scope or "", mode, include_offscreen, include_generic)
+    ts.snap_diff[key] = (nodes_digest(nodes), chars, len(nodes), source)
+    if len(ts.snap_diff) > 8:  # 有界: FIFO 丢最旧
+        ts.snap_diff.pop(next(iter(ts.snap_diff)))
+    _track_ref_gen(ts, scope, nodes)
 
 
 async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offscreen=False,
@@ -226,25 +244,17 @@ async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offsc
         parts.append(f"\n[弹窗检测] 存在弹窗: \"{popup}\", 建议 browser_dismiss_popup()。")
     text = "\n".join(parts)
 
-    if not diff:
-        # navigate 等附加快照: 不抑制输出; 本次 aria_snapshot 已重写 DOM ref 属性
-        # → 过代际跟踪 (变了则旧映射作废, 没变则旧 ref 链式续命)
-        _track_ref_gen(ts, scope, nodes)
-        return text
-
     key = (id(ts.page), scope or "", mode, include_offscreen, include_generic)
     digest = nodes_digest(nodes)
     hit = ts.snap_diff.get(key)
-    if hit and hit[0] == digest:
+    if diff and hit and hit[0] == digest:
         # 逐节点一致: 顺位链式映射旧代 ref → 新代, agent 手里的旧 ref 继续可用
         _track_ref_gen(ts, scope, nodes)
-        return (f"[快照无变化] 与上次 browser_snapshot 完全一致 ({hit[2]} 个节点, "
-                f"上次全文 {hit[1]} 字符已省略)。\n"
+        chars_note = f", 上次全文 {hit[1]} 字符已省略" if hit[1] else ""
+        return (f"[快照无变化] 与上次 {hit[3]} 的页面视图完全一致 ({hit[2]} 个节点{chars_note})。\n"
                 "上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。")
-    ts.snap_diff[key] = (digest, len(text), len(nodes))
-    if len(ts.snap_diff) > 8:  # 有界: FIFO 丢最旧
-        ts.snap_diff.pop(next(iter(ts.snap_diff)))
-    _track_ref_gen(ts, scope, nodes)
+    _record_view(ts, scope, mode, include_offscreen, include_generic, nodes,
+                 len(text), "browser_snapshot" if diff else "browser_snapshot(diff=false)")
     return text
 
 
@@ -294,6 +304,9 @@ def _track_ref_gen(ts, scope, nodes) -> None:
     的话, agent 走 snapshot → wait → click(ref) 标准路径时 ref 被 wait 静默杀死。
     """
     entry = _snap_ref_entry(ts, ts.page, scope)
+    new_refs = [n["ref"] for n in nodes if n.get("ref")]
+    if entry["refs"] == new_refs:
+        return  # 同代际重复跟踪 (wait 末帧再记录等): 恒等映射无信息量, 且会冲掉"代际作废"语义
     if entry["refs"] and entry.get("digest") == nodes_digest(nodes):
         _chain_refs(ts, scope, nodes)
     else:
@@ -620,18 +633,29 @@ async def _wait(task_id, role, name, ref, text, timeout) -> str:
     if err:
         return err
     ts = await _manager.ensure_task(_sid(), task_id)
+    nodes: list = []
+    result = fmt.warning(f"等待超时 ({timeout}ms): 未找到匹配元素")
     while monotonic() < deadline:
         nodes = await get_stable_tree(ts.page, None, _settings, task=ts)
         _track_ref_gen(ts, None, nodes)  # 轮询重拍会重写 DOM ref; 过代际跟踪防静默杀 ref
         for node in nodes:
             if ref and node.get("ref") == ref:
-                return f"元素 ref={ref} 已出现。"
+                result = f"元素 ref={ref} 已出现。"
+                break
             if role and name and node.get("role") == role and name.lower() in node.get("name", "").lower():
-                return f"元素 role={role} name={name} 已出现。"
+                result = f"元素 role={role} name={name} 已出现。"
+                break
             if text and text.lower() in node.get("name", "").lower():
-                return f"文本 \"{text}\" 已出现。"
-        await asyncio.sleep(0.4)
-    return fmt.warning(f"等待超时 ({timeout}ms): 未找到匹配元素")
+                result = f"文本 \"{text}\" 已出现。"
+                break
+        else:
+            await asyncio.sleep(0.4)
+            continue
+        break
+    if nodes:
+        # 末帧即 agent 下一眼: 记入 diff 基线, 紧随的 browser_snapshot 直接命中
+        _record_view(ts, None, "reading", False, False, nodes, 0, "browser_wait")
+    return result
 
 
 async def browser_wait_stable(timeout_ms: int = 10000, *, task_id: str = ""):
@@ -1210,7 +1234,8 @@ def _register_all(register) -> None:
          }, "required": ["url"]}),
         (browser_snapshot, "browser_snapshot",
          "获取页面可访问性快照(Accessibility Tree), 返回结构化元素列表(含ref/box)。基于事件驱动确定性快照, 等待DOM静默窗口。"
-         "reading/interactive 只看视口内; mode=full 自动包含全页面(视口外标注 offscreen)。",
+         "reading/interactive 只看视口内; mode=full 自动包含全页面(视口外标注 offscreen)。"
+         "reading 模式 = 交互元素 + 标题/段落等阅读节点 + 带文本的 listitem/cell (纯壳容器剔除)。",
          {"type": "object", "properties": {
              "scope": {"type": "string", "description": "限定区域: CSS selector 或快照 ref(如 e57)"},
              "mode": {"type": "string", "enum": ["interactive", "reading", "full"], "default": "reading"},

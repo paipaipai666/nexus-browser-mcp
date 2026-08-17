@@ -118,6 +118,8 @@ Start `chrome --remote-debugging-port=9222` first, then set `BROWSER_MODE=cdp`.
 
 Every option can be overridden via `BROWSER_`-prefixed env vars:
 
+> **评测/全功能使用**：两个高危能力默认关闭（安全优先）。需要 `browser_evaluate` 时设 `BROWSER_ALLOW_JS_EXECUTION=true`，需要 `browser_network_body` 时设 `BROWSER_ALLOW_NETWORK_BODY=true`——冷启动跑基准/评测不开它们，对应子任务会被拒（这是设计，不是故障）。
+
 | Variable | Default | Description |
 |---|---|---|
 | `BROWSER_MODE` | `isolated` | `isolated` (fresh isolated browser) / `cdp` (attach to your Chrome) |
@@ -128,7 +130,7 @@ Every option can be overridden via `BROWSER_`-prefixed env vars:
 | `BROWSER_DEFAULT_TIMEOUT_MS` | `30000` | Playwright per-operation timeout (navigation etc.) |
 | `BROWSER_TOOL_TIMEOUT_MS` | `60000` | Outer timeout guard per tool call (returns ERROR instead of hanging) |
 | `BROWSER_STABLE_WINDOW_MS` | `800` | Quiet window: how long without DOM mutations counts as "stable" |
-| `BROWSER_STABLE_REQUIRED` | `2` | Consecutive identical snapshots confirming stability (guards non-DOM changes like animations) |
+| `BROWSER_STABLE_REQUIRED` | `2` | Fallback only: consecutive identical snapshots confirming stability, used when the MutationObserver watcher is unavailable (primary path verifies "zero mutations during capture" via the mutation timeline directly) |
 | `BROWSER_STABLE_TIMEOUT_MS` | `3000` | Total stability-wait timeout; degrades gracefully on expiry |
 | `BROWSER_SNAPSHOT_MAX_NODES` | `100` | Max nodes per snapshot |
 | `BROWSER_CONTEXT_TTL_SEC` | `600` | Idle task auto-reclaim (seconds) |

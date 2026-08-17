@@ -278,40 +278,84 @@ async def test_get_stable_tree_returns_parsed_nodes():
     assert nodes[0]["name"] == "Login"
 
 
-async def test_get_stable_tree_waits_until_consecutive_equal():
-    """内容先变后定: 第一次快照被 REQUIRED 判定不一致而重试。"""
+async def test_get_stable_tree_mutation_bracket_single_shot():
+    """突变时间线闭环: watcher 报告拍摄前后零变异 → 单次拍摄即成立, 不再连拍确认。"""
     from nexus_browser.settings import BrowserSettings
 
-    raws = [
-        '- button "A" [ref=s1]\n',   # 第一次
-        '- button "B" [ref=s2]\n',   # 第二次变化
-        '- button "B" [ref=s2]\n',   # 第三次与上次一致
-        '- button "B" [ref=s2]\n',   # 稳定组 ≥3: B,B,B
-        '- button "B" [ref=s2]\n',
-    ]
     locator = MagicMock()
-    locator.aria_snapshot = AsyncMock(side_effect=raws)
+    locator.aria_snapshot = AsyncMock(return_value='- button "Login" [ref=s1e3]\n')
     page = MagicMock()
     page.locator.return_value = locator
-    page.evaluate = AsyncMock(return_value=1)  # epoch ms, 距现在远超窗口 → 立即静默
+    page.evaluate = AsyncMock(return_value=1)  # 恒定时间戳 = 零变异
+    nodes = await get_stable_tree(page, None, BrowserSettings())
+    assert nodes[0]["name"] == "Login"
+    assert locator.aria_snapshot.call_count == 1  # 闭环成立 → 免确认拍
+
+
+async def test_get_stable_tree_waits_until_consecutive_equal():
+    """拍摄期间发生变异 (时间戳前移) → 闭环不成立, 重拍至稳定组 B。"""
+    from nexus_browser.settings import BrowserSettings
+
+    state = {"v": 1, "shots": 0}
+
+    async def fake_eval(_expr):
+        return state["v"] * 1000  # 版本号即突变时间戳
+
+    async def fake_shot(**_kw):
+        state["shots"] += 1
+        if state["shots"] == 1:
+            state["v"] += 1        # 第一次拍摄期间发生变异
+            return '- button "A" [ref=s1]\n'
+        return '- button "B" [ref=s2]\n'
+
+    locator = MagicMock()
+    locator.aria_snapshot = AsyncMock(side_effect=fake_shot)
+    page = MagicMock()
+    page.locator.return_value = locator
+    page.evaluate = AsyncMock(side_effect=fake_eval)
     s = BrowserSettings(stable_required=3)
     nodes = await get_stable_tree(page, None, s)
     assert nodes[0]["name"] == "B"
 
 
 async def test_get_stable_tree_timeout_graceful():
-    """永不稳定的页面: 超时降级, 仍返回最后一次拍到的树。"""
+    """永不稳定的页面 (每拍必变): 超时降级, 仍返回最后一次拍到的树。"""
     from nexus_browser.settings import BrowserSettings
 
-    raws = ['- button "X" [ref=s1]\n', '- button "Y" [ref=s2]\n'] * 20
+    state = {"v": 0}
+
+    async def fake_eval(_expr):
+        return state["v"] * 1000
+
+    async def fake_shot(**_kw):
+        state["v"] += 1            # 每次拍摄期间都在变异
+        return f'- button "{"X" if state["v"] % 2 else "Y"}" [ref=s1]\n'
+
     locator = MagicMock()
-    locator.aria_snapshot = AsyncMock(side_effect=raws)
+    locator.aria_snapshot = AsyncMock(side_effect=fake_shot)
     page = MagicMock()
     page.locator.return_value = locator
-    page.evaluate = AsyncMock(return_value=1)  # epoch ms, 距现在远超窗口 → 立即静默
-    s = BrowserSettings(stable_required=3, stable_timeout_ms=500, stable_confirm_gap_ms=500)
+    page.evaluate = AsyncMock(side_effect=fake_eval)
+    s = BrowserSettings(stable_required=3, stable_timeout_ms=500, stable_confirm_gap_ms=50)
     nodes = await get_stable_tree(page, None, s)
     assert nodes[0]["name"] in ("X", "Y")
+
+
+async def test_get_stable_tree_legacy_fallback_without_watcher():
+    """watcher 缺失 (evaluate 抛错) → 退化连拍 REQUIRED 次一致的 legacy 路径。"""
+    from nexus_browser.settings import BrowserSettings
+
+    raw = '- button "Login" [ref=s1e3]\n'
+    locator = MagicMock()
+    locator.aria_snapshot = AsyncMock(return_value=raw)
+    page = MagicMock()
+    page.locator.return_value = locator
+    page.evaluate = AsyncMock(side_effect=Exception("no watcher"))
+    s = BrowserSettings(stable_required=2, stable_timeout_ms=800, stable_poll_ms=20,
+                        stable_confirm_gap_ms=10)
+    nodes = await get_stable_tree(page, None, s)
+    assert nodes[0]["name"] == "Login"
+    assert locator.aria_snapshot.call_count == 2  # legacy: 确认拍仍执行
 
 
 # ── scope 参数 (Issue F): CSS / ref 双格式 ──────────────────────────
@@ -343,6 +387,26 @@ async def test_snapshot_raw_scope_miss_clear_error():
     page = _scope_page(side_effect=Exception("Timeout 5000ms exceeded"))
     with pytest.raises(ValueError, match="scope 未匹配"):
         await _snapshot_raw(page, "e99")
+
+
+def test_reading_mode_keeps_text_bearing_containers():
+    """reading 保真契约: 带文本的 listitem/cell 保留 (bench 捕获: 纯文本 li 曾被整类丢弃),
+    无文本的壳容器仍剔除; 该规则不影响 interactive/full 模式。"""
+    from nexus_browser.snapshot import assemble_snapshot
+    mk = lambda role, text="", box=(8, 10, 100, 20): {  # noqa: E731
+        "role": role, "name": "", "text": text, "attrs": "", "depth": 1, "box": box}
+    nodes = [
+        mk("listitem", "动态追加项 121"),     # 文本 li → 保留
+        mk("listitem"),                      # 壳 li → 剔除
+        mk("cell", "¥199"),                  # 表格文本 → 保留
+        mk("cell"),                          # 空壳 cell → 剔除
+        mk("link", box=(8, 30, 100, 20)),    # 交互元素照常
+    ]
+    out = assemble_snapshot(nodes, (1280, 720), mode="reading")
+    texts = [n.get("text") for n in out["detail"]]
+    roles = [n["role"] for n in out["detail"]]
+    assert "动态追加项 121" in texts and "¥199" in texts and "link" in roles
+    assert roles.count("listitem") == 1 and roles.count("cell") == 1
 
 
 # ── Web Vitals 格式化 ─────────────────────────────────────────────
