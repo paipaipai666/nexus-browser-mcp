@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>dialog</title></head><body>
+<button id="del">删除(需确认)</button>
+<div id="done" style="display:none">CONFIRMED</div>
+<script>
+// 必须"接受" confirm 才生效 — Playwright 默认自动 dismiss 会返回 false
+document.getElementById("del").addEventListener("click", () => {
+  if (window.confirm("确认删除?")) document.getElementById("done").style.display = "block";
+});
+</script></body></html>

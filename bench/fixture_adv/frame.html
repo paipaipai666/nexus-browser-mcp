@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>frame</title></head><body>
+<button id="in">框内按钮</button>
+<script>
+document.getElementById("in").addEventListener("click", () => parent.postMessage("frame-clicked", "*"));
+</script></body></html>

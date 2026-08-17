@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>iframe-host</title></head><body>
+<h1>宿主页</h1>
+<iframe src="frame.html" style="width:600px;height:200px"></iframe>
+<div id="done" style="display:none">IFRAME-CLICKED</div>
+<script>
+window.addEventListener("message", (e) => {
+  if (e.data === "frame-clicked") document.getElementById("done").style.display = "block";
+});
+</script></body></html>

@@ -1,0 +1,12 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>form</title></head><body>
+<form id="reg" onsubmit="return false">
+<input id="a" placeholder="姓名"><input id="b" placeholder="邮箱">
+<input id="c" placeholder="电话"><input id="d" placeholder="城市"><input id="e" placeholder="备注">
+<button id="sub">提交</button></form>
+<div id="done" style="display:none">FORM-OK</div>
+<script>
+document.getElementById("sub").addEventListener("click", () => {
+  const v = ["a","b","c","d","e"].every(id => document.getElementById(id).value.trim());
+  if (v) document.getElementById("done").style.display = "block";
+});
+</script></body></html>

@@ -6,6 +6,7 @@
 
 1. **`browser_navigate(url)`** — 打开页面。返回标题/URL/readyState + 首次快照。
 2. **`browser_snapshot()`** — 拿当前可交互元素(含 `ref` 和 `[box=x,y,w,h]`)。基于确定性快照,自动等 DOM 静默。
+   - **diff 心智模型**: 页面与上次视图一致时返回约 120 字符的 `[快照无变化]`(不报全文)。此时 **ref/pos 仍有效**——navigate 的回复里就带了首屏快照和 ref,直接操作即可; 想看全文用 `browser_snapshot(diff=false)`。`browser_wait` 结束时的末帧也会刷新基线, 等完元素紧接着 snapshot 通常同样命中 diff。
 3. **定位并操作** — `browser_click` / `browser_type`,选以下定位参数(按优先级):
    - `pos='x,y,w,h'`(从 snapshot 的 box 复制,**最可靠**,无名称元素必须用它)
    - `ref='e12'`(snapshot 输出的句柄,导航/重拍后失效需重取)

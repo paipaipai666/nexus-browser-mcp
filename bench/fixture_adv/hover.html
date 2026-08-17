@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>hover</title></head><body>
+<nav><div id="menu">产品菜单</div>
+<ul id="sub" style="display:none"><li><a href="#pro" id="prolink">专业版</a></li></ul></nav>
+<div id="done" style="display:none">REACHED-PRO</div>
+<script>
+// 仅 mouseenter 展开(对抗设计: 无 click 路径, 无 CSS :hover 兜底)
+document.getElementById("menu").addEventListener("mouseenter", () => {
+  document.getElementById("sub").style.display = "block";
+});
+document.getElementById("prolink").addEventListener("click", (e) => {
+  e.preventDefault(); document.getElementById("done").style.display = "block";
+});
+</script></body></html>
