@@ -8,50 +8,50 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 3755,
+            "ms": 3735,
             "tokens": 1430
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 997,
-            "tokens": 77
+            "ms": 835,
+            "tokens": 80
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 183,
-            "tokens": 77
+            "ms": 18,
+            "tokens": 80
           },
           {
             "type": "type",
             "ok": true,
-            "ms": 24,
+            "ms": 19,
             "tokens": 24
           },
           {
             "type": "click",
             "ok": true,
-            "ms": 577,
+            "ms": 594,
             "tokens": 12
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 515,
+            "ms": 510,
             "tokens": 0
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 5,
+            "ms": 4,
             "tokens": 21
           }
         ],
         "passed": 7,
         "total": 7,
-        "tokens": 1641,
-        "ms": 6056
+        "tokens": 1647,
+        "ms": 5715
       },
       {
         "case": "baidu-search",
@@ -65,7 +65,7 @@
           {
             "type": "snap",
             "ok": true,
-            "ms": 3235,
+            "ms": 872,
             "tokens": 11
           },
           {
@@ -85,14 +85,14 @@
           {
             "type": "wait",
             "ok": true,
-            "ms": 2001,
+            "ms": 2012,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": false,
-            "ms": 3176,
-            "tokens": 76
+            "ms": 14,
+            "tokens": 79
           },
           {
             "type": "eval",
@@ -103,8 +103,8 @@
         ],
         "passed": 2,
         "total": 7,
-        "tokens": 183,
-        "ms": 18429
+        "tokens": 186,
+        "ms": 12915
       },
       {
         "case": "bing-search",
@@ -112,44 +112,44 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 9220,
-            "tokens": 4556
+            "ms": 9660,
+            "tokens": 4509
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3200,
-            "tokens": 4516
+            "ms": 24,
+            "tokens": 80
           },
           {
             "type": "type_enter",
             "ok": true,
-            "ms": 242,
+            "ms": 259,
             "tokens": 31
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 2506,
+            "ms": 2504,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3217,
-            "tokens": 1854
+            "ms": 548,
+            "tokens": 1875
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 2,
+            "ms": 3,
             "tokens": 27
           }
         ],
         "passed": 6,
         "total": 6,
-        "tokens": 10984,
-        "ms": 18387
+        "tokens": 6522,
+        "ms": 12998
       },
       {
         "case": "duckduckgo-search",
@@ -157,31 +157,31 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 10230,
+            "ms": 8207,
             "tokens": 1334
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3230,
-            "tokens": 77
+            "ms": 63,
+            "tokens": 80
           },
           {
             "type": "type_enter",
             "ok": true,
-            "ms": 301,
+            "ms": 317,
             "tokens": 30
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 2505,
+            "ms": 2503,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3216,
+            "ms": 51,
             "tokens": 797
           },
           {
@@ -193,8 +193,8 @@
         ],
         "passed": 6,
         "total": 6,
-        "tokens": 2286,
-        "ms": 19485
+        "tokens": 2289,
+        "ms": 11144
       },
       {
         "case": "wikipedia-read",
@@ -202,25 +202,25 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 16710,
-            "tokens": 5039
+            "ms": 14380,
+            "tokens": 5199
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3824,
-            "tokens": 78
+            "ms": 421,
+            "tokens": 81
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3838,
-            "tokens": 5146
+            "ms": 455,
+            "tokens": 81
           },
           {
             "type": "type_enter",
             "ok": true,
-            "ms": 1110,
+            "ms": 814,
             "tokens": 30
           },
           {
@@ -238,8 +238,8 @@
         ],
         "passed": 6,
         "total": 6,
-        "tokens": 10341,
-        "ms": 27491
+        "tokens": 5439,
+        "ms": 18079
       },
       {
         "case": "hackernews-browse",
@@ -247,38 +247,38 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 9526,
-            "tokens": 3392
+            "ms": 6766,
+            "tokens": 3394
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3223,
-            "tokens": 77
+            "ms": 39,
+            "tokens": 80
           },
           {
             "type": "click",
             "ok": true,
-            "ms": 576,
+            "ms": 570,
             "tokens": 14
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 1508,
+            "ms": 1506,
             "tokens": 0
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 7,
+            "ms": 6,
             "tokens": 30
           }
         ],
         "passed": 5,
         "total": 5,
-        "tokens": 3513,
-        "ms": 14840
+        "tokens": 3518,
+        "ms": 8887
       },
       {
         "case": "github-repo",
@@ -286,38 +286,38 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 15973,
+            "ms": 14552,
             "tokens": 3543
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 3259,
-            "tokens": 77
+            "ms": 49,
+            "tokens": 80
           },
           {
             "type": "click",
             "ok": true,
-            "ms": 597,
+            "ms": 588,
             "tokens": 14
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 2009,
+            "ms": 2001,
             "tokens": 0
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 5,
+            "ms": 4,
             "tokens": 27
           }
         ],
         "passed": 5,
         "total": 5,
-        "tokens": 3661,
-        "ms": 21843
+        "tokens": 3664,
+        "ms": 17194
       }
     ],
     "calls": [
@@ -325,34 +325,34 @@
         "step": "fixture:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3755,
+        "ms": 3735,
         "chars": 2993,
         "tokens": 1430,
-        "resp": "已导航至: http://127.0.0.1:56335/page1.html\n标题: Bench Fixture Page 1\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] banner ref=e2 [box=8,21,1264,84]\n[2] heading \"商品列表（基准页 1）\" ref=e3 [level=1] [box=8,21,1264,42] [visible]\n[3] navigation ref=e4 [box=8,85,1264,21]\n[4] main ref=e6 [box=8,106,1264,2582]\n\n## 可交互元素"
+        "resp": "已导航至: http://127.0.0.1:50205/page1.html\n标题: Bench Fixture Page 1\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] banner ref=e2 [box=8,21,1264,84]\n[2] heading \"商品列表（基准页 1）\" ref=e3 [level=1] [box=8,21,1264,42] [visible]\n[3] navigation ref=e4 [box=8,85,1264,21]\n[4] main ref=e6 [box=8,106,1264,2582]\n\n## 可交互元素"
       },
       {
         "step": "fixture:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 997,
-        "chars": 126,
-        "tokens": 77,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (372 个节点, 上次全文 2854 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 835,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (372 个节点, 上次全文 2854 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "fixture:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 183,
-        "chars": 126,
-        "tokens": 77,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (372 个节点, 上次全文 2854 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 18,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (372 个节点, 上次全文 2854 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "fixture:type",
         "tool": "browser_type",
         "ok": true,
-        "ms": 24,
+        "ms": 19,
         "chars": 35,
         "tokens": 24,
         "resp": "已输入文本。"
@@ -361,7 +361,7 @@
         "step": "fixture:click",
         "tool": "browser_click",
         "ok": true,
-        "ms": 577,
+        "ms": 594,
         "chars": 20,
         "tokens": 12,
         "resp": "已点击元素。"
@@ -370,7 +370,7 @@
         "step": "fixture:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 5,
+        "ms": 4,
         "chars": 89,
         "tokens": 21,
         "resp": "结果: 121"
@@ -388,7 +388,7 @@
         "step": "baidu-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3235,
+        "ms": 872,
         "chars": 13,
         "tokens": 11,
         "resp": "当前页面无可交互元素。"
@@ -397,10 +397,10 @@
         "step": "baidu-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3176,
-        "chars": 122,
-        "tokens": 76,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (0 个节点, 上次全文 11 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 14,
+        "chars": 127,
+        "tokens": 79,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (0 个节点, 上次全文 11 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "baidu-search:eval",
@@ -415,25 +415,25 @@
         "step": "bing-search:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 9220,
-        "chars": 7372,
-        "tokens": 4556,
-        "resp": "已导航至: https://www.bing.com/\n标题: 検索 - Microsoft Bing\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] main ref=f2e24 [box=128,0,1024,720]\n[2] heading ref=f2e27 [level=1] [box=24,50,24,24] [visible]\n[3] navigation ref=f2e34 [box=120,50,429,36]\n[4] complementary \"アカウント リワードと設定\" ref=f2e54 [box=982,52,274,44]\n["
+        "ms": 9660,
+        "chars": 7323,
+        "tokens": 4509,
+        "resp": "已导航至: https://www.bing.com/\n标题: 検索 - Microsoft Bing\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] main ref=f2e23 [box=128,0,1024,720]\n[2] heading ref=f2e26 [level=1] [box=24,54,24,24] [visible]\n[3] navigation ref=f2e33 [box=120,54,429,36]\n[4] complementary \"アカウント リワードと設定\" ref=f2e53 [box=982,56,274,44]\n["
       },
       {
         "step": "bing-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3200,
-        "chars": 7274,
-        "tokens": 4516,
-        "resp": "## 页面结构\n[1] main ref=f2e24 [box=128,0,1024,720]\n[2] heading ref=f2e27 [level=1] [box=24,50,24,24] [visible]\n[3] navigation ref=f2e34 [box=120,50,429,36]\n[4] complementary \"アカウント リワードと設定\" ref=f2e54 [box=982,52,274,44]\n[5] search ref=f2e70 [box=153,144,975,52]\n[6] heading \"イソギンチャクにすむ小魚たち\" ref=f2e120 ["
+        "ms": 24,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (230 个节点, 上次全文 7210 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "bing-search:type_enter",
         "tool": "browser_type",
         "ok": true,
-        "ms": 242,
+        "ms": 259,
         "chars": 79,
         "tokens": 31,
         "resp": "已输入文本。"
@@ -442,16 +442,16 @@
         "step": "bing-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3217,
-        "chars": 3918,
-        "tokens": 1854,
-        "resp": "## 页面结构\n[1] banner ref=f6e2 [box=0,0,1280,121]\n[2] heading \"Bing 検索に戻る\" ref=f6e11 [level=1] [box=38,37,18,18] [visible]\n[3] search ref=f6e12 [box=160,22,650,48]\n[4] complementary \"アカウント リワードと設定\" ref=f6e22 [box=1110,22,138,50]\n[5] navigation \"検索フィルター\" ref=f6e42 [box=160,81,1120,39]\n[6] main \"検索結果\" re"
+        "ms": 548,
+        "chars": 3963,
+        "tokens": 1875,
+        "resp": "## 页面结构\n[1] banner ref=f6e2 [box=0,0,1280,121]\n[2] heading \"Bing 検索に戻る\" ref=f6e11 [level=1] [box=71,37,18,18] [visible]\n[3] search ref=f6e12 [box=160,22,650,48]\n[4] complementary \"アカウント リワードと設定\" ref=f6e22 [box=1110,22,138,50]\n[5] navigation \"検索フィルター\" ref=f6e42 [box=160,81,1120,39]\n[6] main \"検索結果\" re"
       },
       {
         "step": "bing-search:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 2,
+        "ms": 3,
         "chars": 86,
         "tokens": 27,
         "resp": "结果: 'nexus browser mcp github - 検索'"
@@ -460,7 +460,7 @@
         "step": "duckduckgo-search:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 10230,
+        "ms": 8207,
         "chars": 3509,
         "tokens": 1334,
         "resp": "已导航至: https://duckduckgo.com/\n标题: DuckDuckGo - Protection. Privacy. Peace of mind.\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] main ref=f8e4 [box=0,0,1280,9546]\n[2] search \"Search the web with DuckDuckGo\" ref=f8e18 [box=318,35,643,48]\n[3] navigation \"navigation\" ref=f8e47 [box=1184,43,32,32]\n[4] headi"
@@ -469,16 +469,16 @@
         "step": "duckduckgo-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3230,
-        "chars": 126,
-        "tokens": 77,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (443 个节点, 上次全文 3363 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 63,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (443 个节点, 上次全文 3363 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "duckduckgo-search:type_enter",
         "tool": "browser_type",
         "ok": true,
-        "ms": 301,
+        "ms": 317,
         "chars": 72,
         "tokens": 30,
         "resp": "已输入文本。"
@@ -487,7 +487,7 @@
         "step": "duckduckgo-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3216,
+        "ms": 51,
         "chars": 1926,
         "tokens": 797,
         "resp": "## 页面结构\n[1] navigation ref=f9e31 [box=100,70,672,38]\n[2] navigation ref=f9e69 [box=100,106,1160,48]\n[3] heading \"Get Our Windows Browser\" ref=f9e232 [level=3] [box=207,777,398,21] [offscreen]\n[4] heading \"Learn More\" ref=f9e240 [level=3] [box=850,755,107,19] [offscreen]\n[5] heading \"Get More\" ref=f9"
@@ -505,34 +505,34 @@
         "step": "wikipedia-read:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 16710,
-        "chars": 10927,
-        "tokens": 5039,
+        "ms": 14380,
+        "chars": 11300,
+        "tokens": 5199,
         "resp": "已导航至: https://zh.wikipedia.org/wiki/Python\n标题: Python - 维基百科，自由的百科全书\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] banner ref=f11e4 [box=0,0,1280,66]\n[2] navigation \"站点\" ref=f11e6 [box=44,17,20,32]\n[3] search ref=f11e18 [box=265,17,779,32]\n[4] navigation \"个人工具\" ref=f11e27 [box=1044,24,192,19]\n[5] naviga"
       },
       {
         "step": "wikipedia-read:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3824,
-        "chars": 128,
-        "tokens": 78,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (9451 个节点, 上次全文 10781 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 421,
+        "chars": 133,
+        "tokens": 81,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (9461 个节点, 上次全文 11154 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "wikipedia-read:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3838,
-        "chars": 11165,
-        "tokens": 5146,
-        "resp": "## 页面结构\n[1] banner ref=f11e4 [box=0,0,1280,66]\n[2] navigation \"站点\" ref=f11e6 [box=44,17,20,32]\n[3] search ref=f11e18 [box=265,17,779,32]\n[4] navigation \"个人工具\" ref=f11e27 [box=1044,24,192,19]\n[5] navigation \"目录\" ref=f11e49 [box=32,190,208,533]\n[6] heading \"目录\" ref=f11e53 [level=2] [box=60,192,28,22] "
+        "ms": 455,
+        "chars": 133,
+        "tokens": 81,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (9461 个节点, 上次全文 11154 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "wikipedia-read:type_enter",
         "tool": "browser_type",
         "ok": true,
-        "ms": 1110,
+        "ms": 814,
         "chars": 73,
         "tokens": 30,
         "resp": "已输入文本。"
@@ -550,25 +550,25 @@
         "step": "hackernews-browse:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 9526,
-        "chars": 8582,
-        "tokens": 3392,
+        "ms": 6766,
+        "chars": 8584,
+        "tokens": 3394,
         "resp": "已导航至: https://news.ycombinator.com/\n标题: Hacker News\nreadyState: complete\n\n## 页面快照\n## 可交互元素 (mode=reading)\n[1] link ref=f13e11 [cursor=pointer] [box=105,10,20,20] [visible]\n[2] link \"Hacker News\" ref=f13e16 [cursor=pointer] [box=130,12,98,16] [visible]\n[3] link \"new\" ref=f13e17 [cursor=pointer] [box="
       },
       {
         "step": "hackernews-browse:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3223,
-        "chars": 126,
-        "tokens": 77,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (766 个节点, 上次全文 8461 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 39,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (765 个节点, 上次全文 8463 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "hackernews-browse:click",
         "tool": "browser_click",
         "ok": true,
-        "ms": 576,
+        "ms": 570,
         "chars": 23,
         "tokens": 14,
         "resp": "已点击元素。"
@@ -577,16 +577,16 @@
         "step": "hackernews-browse:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 7,
+        "ms": 6,
         "chars": 101,
         "tokens": 30,
-        "resp": "结果: 'https://news.ycombinator.com/item?id=49325185'"
+        "resp": "结果: 'https://news.ycombinator.com/item?id=49324985'"
       },
       {
         "step": "github-repo:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 15973,
+        "ms": 14552,
         "chars": 8944,
         "tokens": 3543,
         "resp": "已导航至: https://github.com/paipaipai666/nexus-browser-mcp\n标题: GitHub - paipaipai666/nexus-browser-mcp: Browser automation MCP server with event-driven deterministic snapshots (Playwright + a11y tree) / 事件驱动确定性快照的浏览器操控 MCP 服务器 · GitHub\nreadyState: complete\n\n## 页面快照\n## 页面结构\n[1] banner ref=f15e9 [box=0,0"
@@ -595,16 +595,16 @@
         "step": "github-repo:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 3259,
-        "chars": 126,
-        "tokens": 77,
-        "resp": "[快照无变化] 与上次 browser_snapshot 完全一致 (854 个节点, 上次全文 8621 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
+        "ms": 49,
+        "chars": 131,
+        "tokens": 80,
+        "resp": "[快照无变化] 与上次 browser_snapshot 的页面视图完全一致 (854 个节点, 上次全文 8621 字符已省略)。\n上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。"
       },
       {
         "step": "github-repo:click",
         "tool": "browser_click",
         "ok": true,
-        "ms": 597,
+        "ms": 588,
         "chars": 24,
         "tokens": 14,
         "resp": "已点击元素。"
@@ -613,7 +613,7 @@
         "step": "github-repo:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 5,
+        "ms": 4,
         "chars": 98,
         "tokens": 27,
         "resp": "结果: '/paipaipai666/nexus-browser-mcp/issues'"
@@ -629,8 +629,14 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 449,
+            "ms": 406,
             "tokens": 164
+          },
+          {
+            "type": "snap",
+            "ok": true,
+            "ms": 16,
+            "tokens": 6931
           },
           {
             "type": "snap",
@@ -639,15 +645,9 @@
             "tokens": 6931
           },
           {
-            "type": "snap",
-            "ok": true,
-            "ms": 13,
-            "tokens": 6931
-          },
-          {
             "type": "type",
             "ok": true,
-            "ms": 32,
+            "ms": 30,
             "tokens": 63
           },
           {
@@ -659,20 +659,20 @@
           {
             "type": "wait",
             "ok": true,
-            "ms": 513,
+            "ms": 512,
             "tokens": 0
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 517,
+            "ms": 515,
             "tokens": 44
           }
         ],
         "passed": 7,
         "total": 7,
         "tokens": 14287,
-        "ms": 2080
+        "ms": 2035
       },
       {
         "case": "baidu-search",
@@ -680,13 +680,13 @@
           {
             "type": "nav",
             "ok": false,
-            "ms": 10019,
+            "ms": 10020,
             "tokens": 60
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 11042,
+            "ms": 11052,
             "tokens": 328
           },
           {
@@ -706,26 +706,26 @@
           {
             "type": "wait",
             "ok": true,
-            "ms": 2001,
+            "ms": 2011,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": false,
-            "ms": 4,
+            "ms": 5,
             "tokens": 328
           },
           {
             "type": "eval",
             "ok": false,
-            "ms": 513,
+            "ms": 512,
             "tokens": 35
           }
         ],
         "passed": 2,
         "total": 7,
         "tokens": 751,
-        "ms": 23579
+        "ms": 23600
       },
       {
         "case": "bing-search",
@@ -733,13 +733,13 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 5876,
+            "ms": 5796,
             "tokens": 139
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 8,
+            "ms": 11,
             "tokens": 45
           },
           {
@@ -752,26 +752,26 @@
           {
             "type": "wait",
             "ok": true,
-            "ms": 2507,
+            "ms": 2502,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": false,
-            "ms": 23,
-            "tokens": 18030
+            "ms": 24,
+            "tokens": 17911
           },
           {
             "type": "eval",
             "ok": false,
-            "ms": 520,
+            "ms": 514,
             "tokens": 38
           }
         ],
         "passed": 3,
         "total": 6,
-        "tokens": 18252,
-        "ms": 8934
+        "tokens": 18133,
+        "ms": 8847
       },
       {
         "case": "duckduckgo-search",
@@ -779,44 +779,44 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 6313,
+            "ms": 6485,
             "tokens": 146
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 36,
+            "ms": 48,
             "tokens": 9668
           },
           {
             "type": "type_enter",
             "ok": true,
-            "ms": 1911,
+            "ms": 1163,
             "tokens": 236
           },
           {
             "type": "wait",
             "ok": true,
-            "ms": 2507,
+            "ms": 2506,
             "tokens": 0
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 15,
+            "ms": 21,
             "tokens": 3480
           },
           {
             "type": "eval",
             "ok": true,
-            "ms": 517,
+            "ms": 506,
             "tokens": 63
           }
         ],
         "passed": 6,
         "total": 6,
         "tokens": 13593,
-        "ms": 11299
+        "ms": 10729
       },
       {
         "case": "wikipedia-read",
@@ -824,104 +824,26 @@
           {
             "type": "nav",
             "ok": true,
-            "ms": 6778,
-            "tokens": 107
+            "ms": 7337,
+            "tokens": 153
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 508,
-            "tokens": 251859
+            "ms": 535,
+            "tokens": 252311
           },
           {
             "type": "snap",
             "ok": true,
-            "ms": 376,
-            "tokens": 251915
+            "ms": 402,
+            "tokens": 252311
           },
           {
             "type": "type_enter",
             "ok": true,
-            "ms": 1285,
+            "ms": 1392,
             "tokens": 246
-          },
-          {
-            "type": "wait",
-            "ok": true,
-            "ms": 2006,
-            "tokens": 0
-          },
-          {
-            "type": "eval",
-            "ok": true,
-            "ms": 515,
-            "tokens": 63
-          }
-        ],
-        "passed": 6,
-        "total": 6,
-        "tokens": 504190,
-        "ms": 11468
-      },
-      {
-        "case": "hackernews-browse",
-        "subtasks": [
-          {
-            "type": "nav",
-            "ok": true,
-            "ms": 6687,
-            "tokens": 92
-          },
-          {
-            "type": "snap",
-            "ok": true,
-            "ms": 29,
-            "tokens": 13687
-          },
-          {
-            "type": "click",
-            "ok": true,
-            "ms": 861,
-            "tokens": 119
-          },
-          {
-            "type": "wait",
-            "ok": true,
-            "ms": 1500,
-            "tokens": 0
-          },
-          {
-            "type": "eval",
-            "ok": true,
-            "ms": 516,
-            "tokens": 45
-          }
-        ],
-        "passed": 5,
-        "total": 5,
-        "tokens": 13943,
-        "ms": 9593
-      },
-      {
-        "case": "github-repo",
-        "subtasks": [
-          {
-            "type": "nav",
-            "ok": true,
-            "ms": 11580,
-            "tokens": 169
-          },
-          {
-            "type": "snap",
-            "ok": true,
-            "ms": 37,
-            "tokens": 15525
-          },
-          {
-            "type": "click",
-            "ok": true,
-            "ms": 6140,
-            "tokens": 118
           },
           {
             "type": "wait",
@@ -933,13 +855,91 @@
             "type": "eval",
             "ok": true,
             "ms": 514,
+            "tokens": 63
+          }
+        ],
+        "passed": 6,
+        "total": 6,
+        "tokens": 505084,
+        "ms": 12184
+      },
+      {
+        "case": "hackernews-browse",
+        "subtasks": [
+          {
+            "type": "nav",
+            "ok": true,
+            "ms": 6097,
+            "tokens": 92
+          },
+          {
+            "type": "snap",
+            "ok": true,
+            "ms": 33,
+            "tokens": 13658
+          },
+          {
+            "type": "click",
+            "ok": true,
+            "ms": 954,
+            "tokens": 126
+          },
+          {
+            "type": "wait",
+            "ok": true,
+            "ms": 1508,
+            "tokens": 0
+          },
+          {
+            "type": "eval",
+            "ok": true,
+            "ms": 515,
+            "tokens": 45
+          }
+        ],
+        "passed": 5,
+        "total": 5,
+        "tokens": 13921,
+        "ms": 9107
+      },
+      {
+        "case": "github-repo",
+        "subtasks": [
+          {
+            "type": "nav",
+            "ok": true,
+            "ms": 11810,
+            "tokens": 169
+          },
+          {
+            "type": "snap",
+            "ok": true,
+            "ms": 45,
+            "tokens": 15525
+          },
+          {
+            "type": "click",
+            "ok": true,
+            "ms": 6128,
+            "tokens": 118
+          },
+          {
+            "type": "wait",
+            "ok": true,
+            "ms": 2006,
+            "tokens": 0
+          },
+          {
+            "type": "eval",
+            "ok": true,
+            "ms": 517,
             "tokens": 43
           }
         ],
         "passed": 5,
         "total": 5,
         "tokens": 15855,
-        "ms": 20275
+        "ms": 20506
       }
     ],
     "calls": [
@@ -947,10 +947,19 @@
         "step": "fixture:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 449,
+        "ms": 406,
         "chars": 423,
         "tokens": 164,
-        "resp": "### Ran Playwright code\n```js\nawait page.goto('http://127.0.0.1:56335/page1.html');\n```\n### Page\n- Page URL: http://127.0.0.1:56335/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-15-44-788Z.yml)\n### Events\n- "
+        "resp": "### Ran Playwright code\n```js\nawait page.goto('http://127.0.0.1:50205/page1.html');\n```\n### Page\n- Page URL: http://127.0.0.1:50205/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-00-53-034Z.yml)\n### Events\n- "
+      },
+      {
+        "step": "fixture:snap",
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 16,
+        "chars": 17608,
+        "tokens": 6931,
+        "resp": "### Page\n- Page URL: http://127.0.0.1:50205/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=e1]:\n  - banner [ref=e2]:\n    - heading \"商品列表（基准页 1）\" [level=1] [ref=e3]\n    - navigation [ref=e4]:\n      - link \"下一页\" [ref=e5] [curs"
       },
       {
         "step": "fixture:snap",
@@ -959,22 +968,13 @@
         "ms": 14,
         "chars": 17608,
         "tokens": 6931,
-        "resp": "### Page\n- Page URL: http://127.0.0.1:56335/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=e1]:\n  - banner [ref=e2]:\n    - heading \"商品列表（基准页 1）\" [level=1] [ref=e3]\n    - navigation [ref=e4]:\n      - link \"下一页\" [ref=e5] [curs"
-      },
-      {
-        "step": "fixture:snap",
-        "tool": "browser_snapshot",
-        "ok": true,
-        "ms": 13,
-        "chars": 17608,
-        "tokens": 6931,
-        "resp": "### Page\n- Page URL: http://127.0.0.1:56335/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=e1]:\n  - banner [ref=e2]:\n    - heading \"商品列表（基准页 1）\" [level=1] [ref=e3]\n    - navigation [ref=e4]:\n      - link \"下一页\" [ref=e5] [curs"
+        "resp": "### Page\n- Page URL: http://127.0.0.1:50205/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 0 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=e1]:\n  - banner [ref=e2]:\n    - heading \"商品列表（基准页 1）\" [level=1] [ref=e3]\n    - navigation [ref=e4]:\n      - link \"下一页\" [ref=e5] [curs"
       },
       {
         "step": "fixture:type",
         "tool": "browser_type",
         "ok": true,
-        "ms": 32,
+        "ms": 30,
         "chars": 155,
         "tokens": 63,
         "resp": "### Ran Playwright code\n```js\nawait page.getByRole('textbox', { name: '关键词' }).fill('机械键盘');\n```"
@@ -986,13 +986,13 @@
         "ms": 542,
         "chars": 424,
         "tokens": 154,
-        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('button', { name: '加载更多' }).click();\n```\n### Page\n- Page URL: http://127.0.0.1:56335/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 1 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-15-45-718Z.yml)\n### Event"
+        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('button', { name: '加载更多' }).click();\n```\n### Page\n- Page URL: http://127.0.0.1:50205/page1.html\n- Page Title: Bench Fixture Page 1\n- Console: 1 errors, 1 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-00-53-956Z.yml)\n### Event"
       },
       {
         "step": "fixture:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 517,
+        "ms": 515,
         "chars": 193,
         "tokens": 44,
         "resp": "### Result\n121\n### Ran Playwright code\n```js\nawait page.evaluate('() => document.querySelectorAll(\\'#items li\\').length');\n```"
@@ -1001,7 +1001,7 @@
         "step": "baidu-search:nav",
         "tool": "browser_navigate",
         "ok": false,
-        "ms": 10019,
+        "ms": 10020,
         "chars": 223,
         "tokens": 60,
         "resp": "### Error\nError: browserBackend.callTool: net::ERR_CONNECTION_CLOSED at https://www.baidu.com/\nCall log:\n\u001b[2m  - navigating to \"https://www.baidu.com/\", waiting until \"domcontentloaded\"\u001b[22m\n"
@@ -1010,7 +1010,7 @@
         "step": "baidu-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 11042,
+        "ms": 11052,
         "chars": 859,
         "tokens": 328,
         "resp": "### Page\n- Page URL: chrome-error://chromewebdata/\n- Page Title: www.baidu.com\n### Snapshot\n```yaml\n- generic [ref=f1e3]:\n  - generic [ref=f1e6]:\n    - heading \"无法访问此网站\" [level=1] [ref=f1e7]\n    - paragraph [ref=f1e8]:\n      - strong [ref=f1e9]: www.baidu.com\n      - text: 意外终止了连接。\n    - generic [re"
@@ -1019,7 +1019,7 @@
         "step": "baidu-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 4,
+        "ms": 5,
         "chars": 859,
         "tokens": 328,
         "resp": "### Page\n- Page URL: chrome-error://chromewebdata/\n- Page Title: www.baidu.com\n### Snapshot\n```yaml\n- generic [ref=f1e3]:\n  - generic [ref=f1e6]:\n    - heading \"无法访问此网站\" [level=1] [ref=f1e7]\n    - paragraph [ref=f1e8]:\n      - strong [ref=f1e9]: www.baidu.com\n      - text: 意外终止了连接。\n    - generic [re"
@@ -1028,7 +1028,7 @@
         "step": "baidu-search:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 513,
+        "ms": 512,
         "chars": 141,
         "tokens": 35,
         "resp": "### Result\n\"www.baidu.com\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => document.title');\n```"
@@ -1037,16 +1037,16 @@
         "step": "bing-search:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 5876,
+        "ms": 5796,
         "chars": 383,
         "tokens": 139,
-        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://www.bing.com');\n```\n### Page\n- Page URL: https://www.bing.com/\n- Page Title: 搜索 - Microsoft 必应\n- Console: 3 errors, 0 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-16-20-540Z.yml)\n### Events\n- New console entries: .playwr"
+        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://www.bing.com');\n```\n### Page\n- Page URL: https://www.bing.com/\n- Page Title: 搜索 - Microsoft 必应\n- Console: 3 errors, 0 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-01-28-723Z.yml)\n### Events\n- New console entries: .playwr"
       },
       {
         "step": "bing-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 8,
+        "ms": 11,
         "chars": 134,
         "tokens": 45,
         "resp": "### Page\n- Page URL: https://www.bing.com/\n- Page Title: 搜索 - Microsoft 必应\n- Console: 3 errors, 0 warnings\n### Snapshot\n```yaml\n\n```"
@@ -1055,16 +1055,16 @@
         "step": "bing-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 23,
-        "chars": 31077,
-        "tokens": 18030,
+        "ms": 24,
+        "chars": 30902,
+        "tokens": 17911,
         "resp": "### Page\n- Page URL: https://www.bing.com/\n- Page Title: 搜索 - Microsoft 必应\n- Console: 3 errors, 0 warnings\n### Snapshot\n```yaml\n- generic [ref=f2e3]:\n  - main [ref=f2e16]:\n    - generic [ref=f2e17]:\n      - generic [ref=f2e18]:\n        - heading [level=1] [ref=f2e19]:\n          - img \"必应\" [ref=f2e20"
       },
       {
         "step": "bing-search:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 520,
+        "ms": 514,
         "chars": 145,
         "tokens": 38,
         "resp": "### Result\n\"搜索 - Microsoft 必应\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => document.title');\n```"
@@ -1073,16 +1073,16 @@
         "step": "duckduckgo-search:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 6313,
+        "ms": 6485,
         "chars": 390,
         "tokens": 146,
-        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://duckduckgo.com');\n```\n### Page\n- Page URL: https://duckduckgo.com/\n- Page Title: DuckDuckGo - 保护。隐私。安心。\n- Console: 0 errors, 1 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-16-31-932Z.yml)\n### Events\n- New console entries"
+        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://duckduckgo.com');\n```\n### Page\n- Page URL: https://duckduckgo.com/\n- Page Title: DuckDuckGo - 保护。隐私。安心。\n- Console: 0 errors, 1 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-01-40-233Z.yml)\n### Events\n- New console entries"
       },
       {
         "step": "duckduckgo-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 36,
+        "ms": 48,
         "chars": 31486,
         "tokens": 9668,
         "resp": "### Page\n- Page URL: https://duckduckgo.com/\n- Page Title: DuckDuckGo - 保护。隐私。安心。\n- Console: 0 errors, 1 warnings\n### Snapshot\n```yaml\n- generic [ref=f4e1]:\n  - main [ref=f4e4]:\n    - article [ref=f4e5]:\n      - generic [ref=f4e6]:\n        - generic [ref=f4e11]:\n          - link \"认识 DuckDuckGo\" [ref"
@@ -1091,7 +1091,7 @@
         "step": "duckduckgo-search:type_enter",
         "tool": "browser_type",
         "ok": true,
-        "ms": 1911,
+        "ms": 1163,
         "chars": 668,
         "tokens": 236,
         "resp": "### Ran Playwright code\n```js\nawait page.getByRole('combobox', { name: '利用 DuckDuckGo 进行搜索' }).fill('nexus browser mcp');\nawait page.getByRole('combobox', { name: '利用 DuckDuckGo 进行搜索' }).press('Enter');\n```\n### Page\n- Page URL: https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=nexus+b"
@@ -1100,7 +1100,7 @@
         "step": "duckduckgo-search:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 15,
+        "ms": 21,
         "chars": 10088,
         "tokens": 3480,
         "resp": "### Page\n- Page URL: https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=nexus+browser+mcp&chip-select=search\n- Page Title: nexus browser mcp at DuckDuckGo\n- Console: 0 errors, 3 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=f5e1]:\n  - generic [ref=f5e2]:\n    - generic [ref=f5e4"
@@ -1109,7 +1109,7 @@
         "step": "duckduckgo-search:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 517,
+        "ms": 506,
         "chars": 227,
         "tokens": 63,
         "resp": "### Result\n\"https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=nexus+browser+mcp&chip-select=search\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => location.href');\n```"
@@ -1118,34 +1118,34 @@
         "step": "wikipedia-read:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 6778,
-        "chars": 308,
-        "tokens": 107,
-        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://zh.wikipedia.org/wiki/Python');\n```\n### Page\n- Page URL: https://zh.wikipedia.org/wiki/Python\n- Page Title: Python - 维基百科，自由的百科全书\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-16-45-981Z.yml)"
+        "ms": 7337,
+        "chars": 430,
+        "tokens": 153,
+        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://zh.wikipedia.org/wiki/Python');\n```\n### Page\n- Page URL: https://zh.wikipedia.org/wiki/Python\n- Page Title: Python - 维基百科，自由的百科全书\n- Console: 0 errors, 1 warnings\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-01-54-170Z.yml)\n### Ev"
       },
       {
         "step": "wikipedia-read:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 508,
-        "chars": 720363,
-        "tokens": 251859,
+        "ms": 535,
+        "chars": 721469,
+        "tokens": 252311,
         "resp": "### Page\n- Page URL: https://zh.wikipedia.org/wiki/Python\n- Page Title: Python - 维基百科，自由的百科全书\n- Console: 0 errors, 1 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=f7e1]:\n  - link \"跳转到内容\" [ref=f7e2] [cursor=pointer]:\n    - /url: \"#bodyContent\"\n  - banner [ref=f7e4]:\n    - generic [ref=f7e5]:\n"
       },
       {
         "step": "wikipedia-read:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 376,
-        "chars": 720529,
-        "tokens": 251915,
+        "ms": 402,
+        "chars": 721469,
+        "tokens": 252311,
         "resp": "### Page\n- Page URL: https://zh.wikipedia.org/wiki/Python\n- Page Title: Python - 维基百科，自由的百科全书\n- Console: 0 errors, 1 warnings\n### Snapshot\n```yaml\n- generic [active] [ref=f7e1]:\n  - link \"跳转到内容\" [ref=f7e2] [cursor=pointer]:\n    - /url: \"#bodyContent\"\n  - banner [ref=f7e4]:\n    - generic [ref=f7e5]:\n"
       },
       {
         "step": "wikipedia-read:type_enter",
         "tool": "browser_type",
         "ok": true,
-        "ms": 1285,
+        "ms": 1392,
         "chars": 655,
         "tokens": 246,
         "resp": "### Ran Playwright code\n```js\nawait page.getByRole('searchbox', { name: '搜索维基百科' }).fill('nexus browser mcp');\nawait page.getByRole('searchbox', { name: '搜索维基百科' }).press('Enter');\n```\n### Page\n- Page URL: https://zh.wikipedia.org/w/index.php?search=nexus+browser+mcp&title=Special:Search&variant=zh-"
@@ -1154,7 +1154,7 @@
         "step": "wikipedia-read:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 515,
+        "ms": 514,
         "chars": 228,
         "tokens": 63,
         "resp": "### Result\n\"https://zh.wikipedia.org/w/index.php?search=nexus+browser+mcp&title=Special:Search&variant=zh-cn&ns0=1\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => location.href');\n```"
@@ -1163,43 +1163,43 @@
         "step": "hackernews-browse:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 6687,
+        "ms": 6097,
         "chars": 275,
         "tokens": 92,
-        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://news.ycombinator.com');\n```\n### Page\n- Page URL: https://news.ycombinator.com/\n- Page Title: Hacker News\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-16-59-924Z.yml)"
+        "resp": "### Ran Playwright code\n```js\nawait page.goto('https://news.ycombinator.com');\n```\n### Page\n- Page URL: https://news.ycombinator.com/\n- Page Title: Hacker News\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-02-07-699Z.yml)"
       },
       {
         "step": "hackernews-browse:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 29,
-        "chars": 49037,
-        "tokens": 13687,
+        "ms": 33,
+        "chars": 48939,
+        "tokens": 13658,
         "resp": "### Page\n- Page URL: https://news.ycombinator.com/\n- Page Title: Hacker News\n### Snapshot\n```yaml\n- table [ref=f9e3]:\n  - rowgroup [ref=f9e4]:\n    - row [ref=f9e5]:\n      - cell [ref=f9e6]:\n        - table [ref=f9e7]:\n          - rowgroup [ref=f9e8]:\n            - row [ref=f9e9]:\n              - cel"
       },
       {
         "step": "hackernews-browse:click",
         "tool": "browser_click",
         "ok": true,
-        "ms": 861,
-        "chars": 358,
-        "tokens": 119,
-        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('link', { name: 'comments' }).nth(1).click();\n```\n### Page\n- Page URL: https://news.ycombinator.com/item?id=49325185\n- Page Title: The Life and Death of Direct File [pdf] | Hacker News\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-17-"
+        "ms": 954,
+        "chars": 380,
+        "tokens": 126,
+        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('link', { name: '41 comments' }).click();\n```\n### Page\n- Page URL: https://news.ycombinator.com/item?id=49324985\n- Page Title: Qwen 3.8 27B is excellent, but it defaults to overthinking things | Hacker News\n### Snapshot\n- [Snapshot](.playwright-mcp\\"
       },
       {
         "step": "hackernews-browse:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 516,
+        "ms": 515,
         "chars": 171,
         "tokens": 45,
-        "resp": "### Result\n\"https://news.ycombinator.com/item?id=49325185\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => location.href');\n```"
+        "resp": "### Result\n\"https://news.ycombinator.com/item?id=49324985\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => location.href');\n```"
       },
       {
         "step": "github-repo:nav",
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 11580,
+        "ms": 11810,
         "chars": 498,
         "tokens": 169,
         "resp": "### Ran Playwright code\n```js\nawait page.goto('https://github.com/paipaipai666/nexus-browser-mcp');\n```\n### Page\n- Page URL: https://github.com/paipaipai666/nexus-browser-mcp\n- Page Title: GitHub - paipaipai666/nexus-browser-mcp: Browser automation MCP server with event-driven deterministic snapshot"
@@ -1208,8 +1208,8 @@
         "step": "github-repo:snap",
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 37,
-        "chars": 60503,
+        "ms": 45,
+        "chars": 60500,
         "tokens": 15525,
         "resp": "### Page\n- Page URL: https://github.com/paipaipai666/nexus-browser-mcp\n- Page Title: GitHub - paipaipai666/nexus-browser-mcp: Browser automation MCP server with event-driven deterministic snapshots (Playwright + a11y tree) / 事件驱动确定性快照的浏览器操控 MCP 服务器 · GitHub\n### Snapshot\n```yaml\n- generic [active] [r"
       },
@@ -1217,16 +1217,16 @@
         "step": "github-repo:click",
         "tool": "browser_click",
         "ok": true,
-        "ms": 6140,
+        "ms": 6128,
         "chars": 357,
         "tokens": 118,
-        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('link', { name: 'Issues' }).click();\n```\n### Page\n- Page URL: https://github.com/paipaipai666/nexus-browser-mcp/issues\n- Page Title: Issues · paipaipai666/nexus-browser-mcp · GitHub\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T02-17-22-"
+        "resp": "### Ran Playwright code\n```js\nawait page.getByRole('link', { name: 'Issues' }).click();\n```\n### Page\n- Page URL: https://github.com/paipaipai666/nexus-browser-mcp/issues\n- Page Title: Issues · paipaipai666/nexus-browser-mcp · GitHub\n### Snapshot\n- [Snapshot](.playwright-mcp\\page-2026-08-17T03-02-31-"
       },
       {
         "step": "github-repo:eval",
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 514,
+        "ms": 517,
         "chars": 172,
         "tokens": 43,
         "resp": "### Result\n\"/paipaipai666/nexus-browser-mcp/issues\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => location.pathname');\n```"

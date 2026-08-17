@@ -12,16 +12,16 @@
       {
         "step": "snapshot_1",
         "req_chars": 2,
-        "resp_chars": 124,
+        "resp_chars": 129,
         "req_tokens": 1,
-        "resp_tokens": 76
+        "resp_tokens": 79
       },
       {
         "step": "snapshot_2_repeat",
         "req_chars": 2,
-        "resp_chars": 124,
+        "resp_chars": 129,
         "req_tokens": 1,
-        "resp_tokens": 76
+        "resp_tokens": 79
       },
       {
         "step": "type",
@@ -68,16 +68,16 @@
       {
         "step": "snapshot_4_p2",
         "req_chars": 2,
-        "resp_chars": 123,
+        "resp_chars": 128,
         "req_tokens": 1,
-        "resp_tokens": 75
+        "resp_tokens": 78
       }
     ],
     "total": {
       "req_chars": 192,
-      "resp_chars": 7181,
+      "resp_chars": 7196,
       "req_tokens": 83,
-      "resp_tokens": 3498
+      "resp_tokens": 3507
     }
   },
   "playwright": {

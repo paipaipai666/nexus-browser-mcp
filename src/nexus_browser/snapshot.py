@@ -55,7 +55,6 @@ def build_watcher_js(window_ms: int) -> str:
 (() => {{
   try {{
     if (window.__nexusWatcherInstalled) return;
-    window.__nexusWatcherInstalled = true;
     let last = Date.now();
     let timer = null;
     const fire = () => {{
@@ -70,12 +69,16 @@ def build_watcher_js(window_ms: int) -> str:
       if (timer) clearTimeout(timer);
       timer = setTimeout(fire, {window_ms});
     }};
-    new MutationObserver(onMut).observe(document.documentElement, {{
+    // document-start 时 documentElement 可能为 null: 退化观察 document (恒存在)。
+    // 标志位置于安装成功之后 — 中途失败不设旗, 下次 ensure_watcher/导航自动重试,
+    // 杜绝"旗子已立、观察者已死"的永久静默 (bench 实测: 跨站导航后 wait 恒 3s 超时)。
+    new MutationObserver(onMut).observe(document.documentElement ?? document, {{
       childList: true, subtree: true,
       attributes: true, characterData: true,
     }});
     window.__nexusLastMutation = last;
     timer = setTimeout(fire, {window_ms});  // 初始静默 (静态页)
+    window.__nexusWatcherInstalled = true;
   }} catch (e) {{ /* 页面脚本环境受限时跳过, 走 REQUIRED 兜底 */ }}
 }})();
 """
