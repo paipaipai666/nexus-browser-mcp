@@ -15,13 +15,13 @@
 | select 下拉 | ✅原生 | ✅ | **154**/295 |
 | 文件上传 | ✅原生（HITL confirmed） | ✅ | **178**/411 |
 | 键盘 Esc | ✅原生（真实 CDP 键事件） | ✅ | **163**/314 |
-| confirm 对话框（需接受） | 🟡（留待第二波：对话框治理） | ✅ | 222/333 |
+| confirm 对话框（需接受） | ✅原生（挂起→HITL 决策→respond，第二波） | ✅ | **317**/333 |
 | HTML5 拖拽 | ✅原生（真实输入管线） | ✅ | **128**/313 |
 | 批量表单 | ✅ | ✅ | **365**/483 |
 | 后退导航 | ✅原生 | ✅ | **235**/332 |
 | iframe 深交互 | ✅原生 | ✅ | **350**/409 |
 
-**8/9 原生完成, 且全部案例 token 低于对手。** 唯一剩余缺口是 confirm 对话框——那不是工具问题, 是治理设计问题（接受对话框 = 用户决定, 应走 HITL 而不是 agent 自作主张）, 单独一波做。
+**9/9 原生完成, 且全部案例 token 低于对手。** 对话框案例走的是我们独有的治理闭环: 挂起 → 事件留痕 → agent/用户经 HITL 决策 → `browser_dialog_respond`——比对手的"接受/拒绝"工具多一层确认, 但确认对话框本来就该是用户的决定。
 
 ### 修复前（首轮, 留档对照）
 
@@ -45,7 +45,7 @@
 ### P1 — 逃生舱有硬伤 → 五个已修复, 对话框移交第二波
 2. **无 `press_key`** → `browser_press_key(key)`：真实 CDP 键事件（isTrusted=true），Escape/Tab/组合键全通。
 3. **无 `hover`** → `browser_hover(...)`：真实鼠标移动，CSS `:hover` 与 JS mouseenter 均触发。
-4. **confirm 对话框无法接受** → **第二波**：对话框出现入 EventStore（可观测）+ 挂起决策 + `browser_dialog_respond(accept, confirmed)`（accept 必须 confirmed=true）+ 超时自动 dismiss 兜底留痕。现在的 stub window.confirm 逃生舱是篡改页面行为, 不该是常态。
+4. **confirm 对话框无法接受** → **第二波已落地**: `page.on("dialog")` 入 EventStore（可观测）+ confirm/prompt 挂起等决策（alert 无决策直接 dismiss）+ 触发及后续工具回复前置 `[对话框等待决策]` + `browser_dialog_respond(accept, prompt_text, confirmed)`（accept 必须 confirmed=true，dismiss 自由）+ 超时自动 dismiss 兜底留痕（`BROWSER_DIALOG_TIMEOUT_MS` 默认 20s，防页面永久冻结）。
 5. **无 drag** → `browser_drag(from_*, to_*)`：真实输入管线。
 6. **select 不可见** → `browser_select_option(values, ...)`（`option` 角色本就在 INTERACTIVE_ROLES, 首轮快照不可见是 harness 用了 diff 短消息）。
 

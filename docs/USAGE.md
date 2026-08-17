@@ -22,6 +22,14 @@
 - **上传**:`browser_upload_file(paths=[...], ref/selector)` — 文件出站, **每次需 confirmed=true**(HITL)。
 - **拖拽**:`browser_drag(from_ref/from_selector, to_ref/to_selector)`;**后退**:`browser_navigate_back()`。
 
+## 对话框 (alert/confirm/prompt)
+
+页面弹出对话框时, 该 task 的后续工具回复会前置 `[对话框等待决策]`(页面 JS 被冻结, 须尽快处置):
+
+- **alert**: 纯通知, 自动 dismiss 并留痕 (browser_errors 可见)。
+- **confirm/prompt**: **挂起等决策**。`browser_dialog_respond(accept=false)` 直接拒绝; `accept=true` 是替用户点"确定"——**每次需 confirmed=true**(先向用户展示对话框内容征得同意)。prompt 用 `prompt_text` 填文本。
+- 超时(默认 20s, `BROWSER_DIALOG_TIMEOUT_MS`)无决策自动 dismiss 并留痕, 防页面永久冻结。
+
 ## 流式内容(AI 回复)
 
 - **一次读全**:`browser_read(selector=..., wait_stable=true, max_wait_ms=...)` — 等 DOM 静默(默认 800ms 无变异)后再读,免轮询。

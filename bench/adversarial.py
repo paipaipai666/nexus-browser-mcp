@@ -158,13 +158,11 @@ async def case_dialog(a: A, base: str) -> tuple[str, str]:
         await a.click_sel("#del")                      # 先点 → 对话框打开 (modal 态)
         await a.call("browser_handle_dialog", {"accept": True})  # 仅 modal 态可调
         return ("native" if await a.verify() else "fail"), "click → handle_dialog(accept)"
+    # nexus: 对话框治理 (第二波) — click 触发后挂起, respond(accept, confirmed) 处置
     await a.click_sel("#del")
-    if await a.verify():
-        return "native", "意外: auto-dismiss 被接受了?"
-    await a.eval("window.confirm = () => true; 'stubbed'")
-    await a.click_sel("#del")
-    return (("escape" if await a.verify() else "fail"),
-            "confirm 被 auto-dismiss 返回 false → 首次点击无效; 逃生舱 stub window.confirm 后重击")
+    await a.call("browser_dialog_respond", {"accept": True, "confirmed": True})
+    return (("native" if await a.verify() else "fail"),
+            "挂起 → dialog_respond(accept, confirmed=true) → confirm() 返回 true")
 
 
 async def case_drag(a: A, base: str) -> tuple[str, str]:

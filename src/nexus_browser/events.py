@@ -20,6 +20,7 @@ KIND_CONSOLE = "console"
 KIND_PAGEERROR = "pageerror"
 KIND_REQUEST = "request"
 KIND_NAV = "nav"
+KIND_DIALOG = "dialog"   # alert/confirm/prompt/beforeunload: 出现与处置全程留痕
 
 
 @dataclass

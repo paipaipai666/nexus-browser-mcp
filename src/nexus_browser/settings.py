@@ -21,6 +21,8 @@ class BrowserSettings(BaseSettings):
     default_timeout_ms: int = Field(default=30000, ge=1000, le=120000)
     tool_timeout_ms: int = Field(default=60000, ge=1000, le=600000, description="单次工具调用外层超时护栏")
     networkidle_timeout_ms: int = Field(default=5000, ge=1000, le=30000)
+    dialog_timeout_ms: int = Field(default=20000, ge=2000, le=120000,
+                                   description="挂起对话框无决策自动 dismiss 超时(ms)")
     context_ttl_sec: int = Field(default=600, ge=60, le=3600, description="空闲 task 自动回收(秒)")
     screenshot_dir: str = Field(default="", description="截图保存目录, 空则 ~/.nexus-browser/screenshots")
     allow_js_execution: bool = Field(default=False, description="browser_evaluate 开关")

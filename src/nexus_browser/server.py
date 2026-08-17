@@ -20,7 +20,7 @@ from mcp.server.mcpserver.context import Context as _MCPContext
 
 from nexus_browser import fmt
 from nexus_browser.core import BrowserManager
-from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST
+from nexus_browser.events import KIND_CONSOLE, KIND_DIALOG, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST
 from nexus_browser.gates import AuditLogger, hitl_required
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import (
@@ -75,6 +75,7 @@ def tool_names() -> list[str]:
         "browser_network_body",
         "browser_press_key", "browser_hover", "browser_select_option",
         "browser_upload_file", "browser_navigate_back", "browser_drag",
+        "browser_dialog_respond",
         "browser_tasks", "browser_close_task",
         "browser_list_sessions", "browser_close_session",
     ]
@@ -120,13 +121,23 @@ def _op_error(op: str, e: Exception, hint: str = "") -> str:
 
 def _attach_notice(result: str, task_id: str) -> str:
     """自愈/回收恢复发生过 → 状态变更前置到工具返回, agent 必须感知世界变了。"""
+    prefix = ""
     try:
         notice = _manager.pop_notice(_sid(), task_id)
+        if notice and not result.startswith(notice):
+            prefix = notice + "\n"
     except Exception:
-        notice = None
-    if notice and not result.startswith(notice):
-        return notice + "\n" + result
-    return result
+        pass
+    # 对话框挂起中: 每次回复都前置提醒, 直到 respond/超时清理 — 页面 JS 正被它冻结
+    try:
+        ts = _manager.peek_task(_sid(), task_id)
+        d = ts.pending_dialog if ts else None
+        if d is not None:
+            prefix += (f"[对话框等待决策] {d.type}: \"{(d.message or '')[:120]}\" → "
+                       "browser_dialog_respond(accept=true/false); accept 需 confirmed=true\n")
+    except Exception:
+        pass
+    return prefix + result if prefix else result
 
 
 def _hitl_block(action: str, role, name, task_id, confirmed: bool = False) -> str | None:
@@ -146,7 +157,7 @@ _RISK = {
     "browser_dismiss_popup": "medium", "browser_evaluate": "high",
     "browser_network_body": "high", "browser_upload_file": "high",
     "browser_press_key": "medium", "browser_select_option": "medium",
-    "browser_drag": "medium",
+    "browser_drag": "medium", "browser_dialog_respond": "high",
 }
 
 
@@ -574,6 +585,46 @@ async def _upload_file(task_id, paths, ref, selector) -> str:
 
 async def browser_navigate_back(wait_stable: bool = False, *, task_id: str = ""):
     return await _navigate_back(_default_task(task_id), wait_stable)
+
+
+async def browser_dialog_respond(accept: bool, prompt_text: str = "", confirmed: bool = False,
+                                 *, task_id: str = ""):
+    """处置挂起的对话框。dismiss 自由; accept=替用户点"确定" → 每次需 confirmed=true (HITL)。"""
+    if accept and not confirmed:
+        return "CONFIRMATION_REQUIRED\n" + fmt.warning(
+            "接受对话框需人工确认",
+            detail="accept=true 将替用户点'确定'。向用户展示对话框内容, 同意后以 confirmed=true 重调。")
+    return await _dialog_respond(_default_task(task_id), accept, prompt_text)
+
+
+async def _dialog_respond(task_id, accept, prompt_text) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    d = ts.pending_dialog
+    if d is None:
+        return fmt.error("当前无待处理对话框",
+                         hint="可能已超时自动 dismiss; browser_errors 可查看对话框事件记录")
+    ts.pending_dialog = None
+    if ts.dialog_waiter is not None:
+        ts.dialog_waiter.cancel()
+        ts.dialog_waiter = None
+    try:
+        if accept:
+            await d.accept(prompt_text or None)  # prompt 框可填文本; confirm/alert 忽略
+            action = "已接受(accept)"
+        else:
+            await d.dismiss()
+            action = "已拒绝(dismiss)"
+        try:
+            _manager.events.record(ts.page, KIND_DIALOG, level=d.type, text=f"→ {action}")
+        except Exception:
+            pass
+        await _settle_after_action(ts)  # 解除后页面 JS 继续执行
+        return f"对话框{action}。"
+    except Exception as e:
+        return _op_error("对话框处理", e)
 
 
 async def _navigate_back(task_id, wait_stable=False) -> str:
@@ -1092,6 +1143,8 @@ def _fmt_event(e) -> str:
         return f"  #{e.seq} [{e.level}] {e.text}{loc}"
     if e.kind == KIND_PAGEERROR:
         return f"  #{e.seq} [pageerror] {e.text}"
+    if e.kind == KIND_DIALOG:
+        return f"  #{e.seq} [dialog:{e.level}] {e.text}"
     # request
     status = str(e.status) if e.status is not None else f"FAILED: {e.failure}"
     rt = f" ({e.resource_type})" if e.resource_type else ""
@@ -1172,7 +1225,7 @@ async def _errors(task_id, since, limit) -> str:
     ts = await _manager.ensure_task(_sid(), task_id)
 
     def match(e) -> bool:
-        if e.kind in (KIND_NAV, KIND_PAGEERROR):
+        if e.kind in (KIND_NAV, KIND_PAGEERROR, KIND_DIALOG):
             return True
         if e.kind == KIND_CONSOLE:
             return e.level == "error"
@@ -1180,7 +1233,7 @@ async def _errors(task_id, since, limit) -> str:
 
     evs, buf, more = _manager.events.read(
         ts.page, "errors", since=since,
-        kinds={KIND_PAGEERROR, KIND_CONSOLE, KIND_REQUEST, KIND_NAV},
+        kinds={KIND_PAGEERROR, KIND_CONSOLE, KIND_REQUEST, KIND_NAV, KIND_DIALOG},
         match=match, limit=_clamp_limit(limit),
     )
     return _render_events("errors", evs, buf, more, "未发现异常或失败请求。")
@@ -1434,6 +1487,15 @@ def _register_all(register) -> None:
              "wait_stable": {"type": "boolean", "default": False},
              "task_id": {"type": "string"},
          }, "required": []}),
+        (browser_dialog_respond, "browser_dialog_respond",
+         "处置挂起的 confirm/prompt 对话框 (页面弹出时任何工具回复会前置[对话框等待决策])。"
+         "accept=true 替用户点'确定', 每次需 confirmed=true; accept=false 为 dismiss 可直接调。",
+         {"type": "object", "properties": {
+             "accept": {"type": "boolean"},
+             "prompt_text": {"type": "string", "description": "prompt 对话框要填的文本"},
+             "confirmed": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": ["accept"]}),
         (browser_drag, "browser_drag",
          "拖拽元素到目标 (真实输入管线, HTML5 dnd 及多数 pointer 系库可用)。",
          {"type": "object", "properties": {

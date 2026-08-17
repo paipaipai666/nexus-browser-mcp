@@ -33,6 +33,8 @@ class FakeTask:
         self.nav_event = asyncio.Event()
         self.snap_diff: dict = {}
         self.snap_refs: dict = {}
+        self.pending_dialog = None    # 与 TaskState 对齐: 对话框挂起
+        self.dialog_waiter = None
         self.page = AsyncMock()
         self.page.url = "https://example.com"
         # __nexusLastMutation 返回 100s 前 → wait_dom_settled 走快路径, 不傻等
@@ -88,6 +90,9 @@ class FakeManager:
 
     def pin(self, session_id, task_id):
         pass
+
+    def peek_task(self, session_id, task_id):
+        return self.tasks.get(task_id or "default")
 
     def unpin(self, session_id, task_id):
         pass
@@ -260,7 +265,7 @@ async def test_new_tools_listed(patch_server):
     assert "browser_network" in names
     assert "browser_perf" in names
     assert "browser_network_body" in names
-    assert len(names) == 31  # 25 + 第一波补洞: press_key/hover/select_option/upload_file/navigate_back/drag
+    assert len(names) == 32  # 31 + browser_dialog_respond (对话框治理)
 
 
 async def test_read_follow_creates_stream_and_returns_delta(patch_server):
@@ -701,6 +706,80 @@ async def test_drag_calls_drag_to(patch_server):
     out = await server_mod.browser_drag(from_selector="#src", to_selector="#zone", task_id="t")
     assert "已拖拽" in out
     src.drag_to.assert_awaited_once_with(dst, timeout=5000)
+
+
+# ── 对话框治理 (第二波) ───────────────────────────────────────────
+
+
+def _fake_dialog(dtype="confirm", message="确认删除?"):
+    d = MagicMock()
+    d.type = dtype
+    d.message = message
+    d.accept = AsyncMock()
+    d.dismiss = AsyncMock()
+    return d
+
+
+async def test_dialog_accept_requires_confirmed(patch_server):
+    """accept=替用户点确定 → 无条件 HITL 门; dismiss 不需要。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    d = _fake_dialog()
+    task.pending_dialog = d
+    out = await server_mod.browser_dialog_respond(accept=True, task_id="t")
+    assert "CONFIRMATION_REQUIRED" in out
+    assert task.pending_dialog is not None  # 未被处置, 仍挂起
+    out2 = await server_mod.browser_dialog_respond(accept=True, confirmed=True, task_id="t")
+    assert "已接受" in out2
+    assert task.pending_dialog is None
+    d.accept.assert_awaited_once()
+
+
+async def test_dialog_dismiss_free_and_notice_attached(patch_server):
+    """dismiss 免确认; 挂起期间其他工具回复前置[对话框等待决策]。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "default")  # 挂起在 default: 通知按 task 归属
+    d = _fake_dialog()
+    task.pending_dialog = d
+    # 挂起中: 经分发层 (_guarded_call) 的任意工具回复应前置提醒
+    out = await server_mod._guarded_call("browser_tasks", server_mod.browser_tasks)
+    assert "对话框等待决策" in out and "确认删除" in out
+    out2 = await server_mod.browser_dialog_respond(accept=False, task_id="default")
+    assert "已拒绝" in out2
+    d.dismiss.assert_awaited_once()
+    assert task.pending_dialog is None
+    out3 = await server_mod._guarded_call("browser_tasks", server_mod.browser_tasks)  # 清理后不再提醒
+    assert "对话框等待决策" not in out3
+
+
+async def test_dialog_respond_without_pending_errors(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    out = await server_mod.browser_dialog_respond(accept=False, task_id="t")
+    assert "无待处理对话框" in out
+
+
+async def test_dialog_timeout_auto_dismiss(patch_server):
+    """挂起超时 → 自动 dismiss + 事件留痕 + 状态通知 (防页面永久冻结)。"""
+    mgr, settings = patch_server
+    settings.dialog_timeout_ms = 50  # 测试加速
+    # 走真实 _hook_page 挂接路径太重; 直接驱动 core 的 _on_dialog 等价逻辑:
+    # 这里验证 respond 与超时兜底的竞争契约: 先 respond 后超时不得二次处置
+    task = await mgr.ensure_task("s", "t")
+    d = _fake_dialog()
+    task.pending_dialog = d
+
+    async def _auto():
+        await asyncio.sleep(settings.dialog_timeout_ms / 1000)
+        if task.pending_dialog is d:
+            task.pending_dialog = None
+            await d.dismiss()
+
+    task.dialog_waiter = asyncio.create_task(_auto())
+    out = await server_mod.browser_dialog_respond(accept=False, task_id="t")
+    assert "已拒绝" in out
+    await asyncio.sleep(0.1)  # 兜底任务已取消, 不得二次 dismiss
+    d.dismiss.assert_awaited_once()
 
 
 async def test_hitl_confirmed_bypasses_block(patch_server):

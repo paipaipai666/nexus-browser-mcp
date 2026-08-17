@@ -19,7 +19,7 @@ try:
 except ImportError:  # pragma: no cover
     async_playwright = None  # type: ignore[assignment]
 
-from nexus_browser.events import KIND_CONSOLE, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST, EventStore
+from nexus_browser.events import KIND_CONSOLE, KIND_DIALOG, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST, EventStore
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import INTERACTIVE_ROLES, REF_RE, _parse_aria_yaml
 from nexus_browser.streams import StreamStore
@@ -44,6 +44,9 @@ class TaskState:
     last_title: str = ""
     died_reason: str | None = None      # "closed" | "crashed" | "disconnected"
     pending_notice: str | None = None   # 自愈后待上报的状态变更, 一次性消费
+    # 对话框治理: confirm/prompt 挂起等决策 (accept=用户决定, 走 HITL); 超时自动 dismiss 留痕
+    pending_dialog: Any | None = None   # Playwright Dialog 句柄 (挂起中)
+    dialog_waiter: Any | None = None    # 超时兜底 asyncio.Task
     # 快照 diff 缓存: (id(page),scope,mode,off,generic)→(digest,chars,nodes)
     # ref 代际映射: (id(page),scope)→{"refs": 当前代 ref 列表, "map": 旧 ref→当前 ref}
     snap_diff: dict = field(default_factory=dict)
@@ -476,6 +479,48 @@ class BrowserManager:
             except Exception:
                 pass
 
+        def _on_dialog(dialog):
+            """对话框治理: alert 纯通知直接 dismiss (无决策); confirm/prompt/beforeunload
+            挂起等 agent/用户决策 (accept=替用户点确定 → HITL confirmed); 超时自动 dismiss 留痕。
+            不静默 auto-dismiss: 对话框出现本身就是 agent 必须感知的风险事件。"""
+            try:
+                self.events.record(page, KIND_DIALOG, level=dialog.type,
+                                   text=dialog.message or "")
+            except Exception:
+                pass
+            session = self._sessions.get(session_id)
+            ts = session.tasks.get(task_id) if session else None
+            if ts is None:
+                return  # 无归属 → Playwright 默认 auto-dismiss
+            dtype = dialog.type
+            if dtype == "alert":
+                try:
+                    asyncio.get_running_loop().create_task(dialog.dismiss())
+                except Exception:
+                    pass
+                return
+            ts.pending_dialog = dialog
+
+            async def _auto_dismiss() -> None:
+                await asyncio.sleep(self._settings.dialog_timeout_ms / 1000)
+                if ts.pending_dialog is dialog:
+                    ts.pending_dialog = None
+                    try:
+                        await dialog.dismiss()
+                    except Exception:
+                        pass
+                    try:
+                        self.events.record(page, KIND_DIALOG, level=dtype,
+                                           text="→ 超时无决策, 已自动 dismiss")
+                        ts.pending_notice = "[对话框] 超时无决策已自动拒绝(dismiss), 页面已继续"
+                    except Exception:
+                        pass
+
+            try:
+                ts.dialog_waiter = asyncio.get_running_loop().create_task(_auto_dismiss())
+            except Exception:
+                pass
+
         try:
             page.on("framenavigated", _notify_nav)
             page.on("load", _notify_nav)
@@ -485,6 +530,7 @@ class BrowserManager:
             page.on("pageerror", _on_pageerror)
             page.on("response", _on_response)
             page.on("requestfailed", _on_request_failed)
+            page.on("dialog", _on_dialog)
         except Exception:
             pass
 
@@ -496,6 +542,11 @@ class BrowserManager:
         task_id = task_id or "default"
         await self.get_page(session_id, task_id)
         return self._task(session_id, task_id)
+
+    def peek_task(self, session_id: str, task_id: str) -> TaskState | None:
+        """只读查 task, 不创建 (通知层用, 不得触发副作用)。"""
+        session = self._sessions.get(session_id)
+        return session.tasks.get(task_id or "default") if session else None
 
     def _on_new_page(self, session_id: str, task_id: str, page: Any) -> None:
         if id(page) in self._page_owners:
