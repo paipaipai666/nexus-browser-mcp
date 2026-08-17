@@ -389,12 +389,15 @@ async def test_snapshot_diff_hit_chains_refs(patch_server):
     assert entry["map"] == {}  # 树变了: 旧映射作废, 防误指别的元素
 
 
-async def test_navigate_snapshot_does_not_pollute_diff(patch_server):
-    """navigate 附加快照走 diff=False: 不建 diff 缓存, 且清旧 ref 映射。"""
+async def test_navigate_seeds_diff_baseline(patch_server):
+    """navigate 附加快照与 browser_snapshot 默认参数同源(reading+diff): 建立 digest/ref 基线,
+    导航后首次显式 snapshot 命中 diff (省一次全量输出)。"""
     mgr, _ = patch_server
     out = await server_mod.browser_navigate("https://example.com", task_id="t")
     assert "页面快照" in out
-    assert mgr.tasks["t"].snap_diff == {}
+    assert mgr.tasks["t"].snap_diff != {}  # 基线已建
+    snap = await server_mod.browser_snapshot(task_id="t")
+    assert "快照无变化" in snap  # 同一代际内容 → diff 命中
 
 
 async def test_wait_preserves_refs_via_tracking(patch_server):

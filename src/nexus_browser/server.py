@@ -331,7 +331,10 @@ async def _navigate(task_id: str, url: str, wait_until: str) -> str:
     if result.get("timed_out"):
         parts.insert(0, fmt.warning("networkidle 超时, 已 fallback 继续", detail="可能为 WebSocket 或长轮询"))
     try:
-        skeleton = await _snapshot_text(task_id, mode="interactive", wait_stable=False, diff=False)
+        # reading 模式 + diff=True: 与 browser_snapshot 默认参数同源, 记录 digest/ref 基线。
+        # 效果: 导航后首次显式 snapshot 命中 diff (~77 tok 而非全量), 且 reading 树
+        # 同时包含内容与可交互元素, 是 navigate 更合理的默认视图; 重复导航同页也命中 diff。
+        skeleton = await _snapshot_text(task_id, mode="reading", wait_stable=False, diff=True)
         parts.append(f"\n## 页面快照\n{skeleton}")
     except Exception:
         pass

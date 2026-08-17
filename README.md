@@ -161,10 +161,10 @@ Same 10-step task, both servers at default config, metered at the JSON-RPC paylo
 
 | | nexus-browser-mcp | playwright-mcp |
 |---|---:|---:|
-| 10-step task total | **4,957 tok** | 26,032 tok |
-| repeated snapshot of unchanged page | **77 tok** | 6,931 tok |
+| 10-step task total | **3,581 tok** | 26,032 tok |
+| snapshot right after navigate | **77 tok** | 6,931 tok |
 
-**5.3x fewer tokens overall; 90x on the repeated-snapshot step** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
+**7.3x fewer tokens overall; 90x on repeated snapshots** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
 
 HITL confirmation closes a loop: any gated call returns `CONFIRMATION_REQUIRED` once; after the user approves in chat, the agent re-calls with `confirmed=true` (applies to HITL rules, `browser_evaluate`, `browser_network_body`).
 
