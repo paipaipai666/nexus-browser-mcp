@@ -106,11 +106,11 @@ async def case_hover(a: A, base: str) -> tuple[str, str]:
         await a.call("browser_hover", {"target": "#menu", "element": "产品菜单"})
         await a.click_sel("#prolink")
         return ("native" if await a.verify() else "fail"), "browser_hover 直达"
-    # nexus: 无 hover 工具 → 逃生舱
-    await a.eval("document.getElementById('menu').dispatchEvent(new MouseEvent('mouseenter'))")
+    # nexus: browser_hover (第一波补洞后原生)
+    await a.call("browser_hover", {"selector": "#menu"})
     await a.click_sel("#prolink")
-    return (("escape" if await a.verify() else "fail"),
-            "无 hover 工具; evaluate 派发 synthetic mouseenter (isTrusted=false, 检查 isTrusted 的站点会拒)")
+    return (("native" if await a.verify() else "fail"),
+            "browser_hover 真实鼠标移动")
 
 
 async def case_select(a: A, base: str) -> tuple[str, str]:
@@ -119,15 +119,9 @@ async def case_select(a: A, base: str) -> tuple[str, str]:
     if a.kind == "pw":
         await a.call("browser_select_option", {"target": "#city", "element": "城市", "values": ["上海"]})
         return ("native" if await a.verify() else "fail"), "select_option 直达"
-    ref = await a.snap_ref(r"option|combobox")
-    note = "快照未暴露 option 角色 (不在 INTERACTIVE_ROLES)" if not ref else f"找到 ref={ref}, 尝试点击"
-    if ref:
-        await a.click_ref(ref)
-        if await a.verify():
-            return "native", note
-    await a.eval("const s=document.getElementById('city'); s.value='上海';"
-                 " s.dispatchEvent(new Event('change',{bubbles:true})); 'ok'")
-    return (("escape" if await a.verify() else "fail"), note + "; 逃生舱直接赋值+change 事件")
+    # nexus: browser_select_option (第一波补洞后原生)
+    await a.call("browser_select_option", {"values": ["上海"], "selector": "#city"})
+    return (("native" if await a.verify() else "fail"), "select_option 直达")
 
 
 async def case_upload(a: A, base: str) -> tuple[str, str]:
@@ -138,7 +132,10 @@ async def case_upload(a: A, base: str) -> tuple[str, str]:
         f = str(FIX / "frame.html")  # 任意现存文件
         await a.call("browser_file_upload", {"paths": [f]})
         return ("native" if await a.verify() else "fail"), "click 开 chooser → file_upload (Playwright set_input_files)"
-    return "fail", "无上传工具; evaluate 受浏览器安全模型限制无法设置 input.files → 完全不可行"
+    # nexus: browser_upload_file (第一波补洞后原生, HITL confirmed)
+    f = str((FIX / "frame.html").resolve())
+    await a.call("browser_upload_file", {"paths": [f], "selector": "#f", "confirmed": True})
+    return (("native" if await a.verify() else "fail"), "upload_file (confirmed=true, HITL 门)")
 
 
 async def case_keyboard(a: A, base: str) -> tuple[str, str]:
@@ -148,9 +145,9 @@ async def case_keyboard(a: A, base: str) -> tuple[str, str]:
     if a.kind == "pw":
         await a.call("browser_press_key", {"key": "Escape"})
         return ("native" if await a.verify() else "fail"), "press_key 直达 (可信 CDP 键事件)"
-    await a.eval("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'})); 'ok'")
-    return (("escape" if await a.verify() else "fail"),
-            "无 press_key; synthetic KeyboardEvent (isTrusted=false; 且快捷键/Tab 序等场景覆盖不了)")
+    # nexus: browser_press_key (第一波补洞后原生)
+    await a.call("browser_press_key", {"key": "Escape"})
+    return (("native" if await a.verify() else "fail"), "press_key 真实 CDP 键事件")
 
 
 async def case_dialog(a: A, base: str) -> tuple[str, str]:
@@ -177,13 +174,9 @@ async def case_drag(a: A, base: str) -> tuple[str, str]:
         await a.call("browser_drag", {"startTarget": "#src", "startElement": "拖我",
                                       "endTarget": "#zone", "endElement": "放到这"})
         return ("native" if await a.verify() else "fail"), "browser_drag 直达 (真实输入管线)"
-    await a.eval("""(() => { const dt = new DataTransfer();
-      const src = document.querySelector('#src'), zone = document.querySelector('#zone');
-      src.dispatchEvent(new DragEvent('dragstart', {dataTransfer: dt, bubbles: true}));
-      zone.dispatchEvent(new DragEvent('dragover', {dataTransfer: dt, bubbles: true}));
-      zone.dispatchEvent(new DragEvent('drop', {dataTransfer: dt, bubbles: true})); return 'ok'; })()""")
-    return (("escape" if await a.verify() else "fail"),
-            "无 drag 工具; synthetic DragEvent 序列 (依赖监听方不校验事件细节)")
+    # nexus: browser_drag (第一波补洞后原生)
+    await a.call("browser_drag", {"from_selector": "#src", "to_selector": "#zone"})
+    return (("native" if await a.verify() else "fail"), "browser_drag 真实输入管线")
 
 
 async def case_form(a: A, base: str) -> tuple[str, str]:
@@ -209,11 +202,10 @@ async def case_back(a: A, base: str) -> tuple[str, str]:
     if a.kind == "pw":
         await a.call("browser_navigate_back", {})
     else:
-        await a.eval("history.back(); 'ok'")
+        await a.call("browser_navigate_back", {})  # 第一波补洞后原生
     await asyncio.sleep(0.8)
     ok = await a.verify("location.href.endsWith('backa.html')")
-    return (("native" if (ok and a.kind == "pw") else "escape" if ok else "fail"),
-            "" if a.kind == "pw" else "无后退工具; evaluate history.back()")
+    return (("native" if ok else "fail"), "navigate_back 直达")
 
 
 async def case_iframe(a: A, base: str) -> tuple[str, str]:

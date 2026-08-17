@@ -1,0 +1,653 @@
+{
+  "nexus": {
+    "kind": "nexus",
+    "cases": {
+      "hover菜单": {
+        "tier": "native",
+        "note": "browser_hover 真实鼠标移动",
+        "calls": 4,
+        "tokens": 155,
+        "ms": 4416
+      },
+      "select下拉": {
+        "tier": "native",
+        "note": "select_option 直达",
+        "calls": 3,
+        "tokens": 154,
+        "ms": 3228
+      },
+      "文件上传": {
+        "tier": "native",
+        "note": "upload_file (confirmed=true, HITL 门)",
+        "calls": 3,
+        "tokens": 178,
+        "ms": 3256
+      },
+      "键盘Esc": {
+        "tier": "native",
+        "note": "press_key 真实 CDP 键事件",
+        "calls": 4,
+        "tokens": 163,
+        "ms": 3802
+      },
+      "confirm对话框": {
+        "tier": "escape",
+        "note": "confirm 被 auto-dismiss 返回 false → 首次点击无效; 逃生舱 stub window.confirm 后重击",
+        "calls": 6,
+        "tokens": 222,
+        "ms": 4372
+      },
+      "HTML5拖拽": {
+        "tier": "native",
+        "note": "browser_drag 真实输入管线",
+        "calls": 3,
+        "tokens": 128,
+        "ms": 3328
+      },
+      "批量表单": {
+        "tier": "native",
+        "note": "调用数对比: 对手 fill_form=1 次 vs 我方 type=5 次",
+        "calls": 8,
+        "tokens": 365,
+        "ms": 3895
+      },
+      "后退导航": {
+        "tier": "native",
+        "note": "navigate_back 直达",
+        "calls": 4,
+        "tokens": 235,
+        "ms": 5140
+      },
+      "iframe深交互": {
+        "tier": "native",
+        "note": "ref=f11e2",
+        "calls": 4,
+        "tokens": 350,
+        "ms": 4664
+      }
+    },
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3762,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "browser_hover",
+        "ok": true,
+        "ms": 47,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 595,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3204,
+        "tokens": 97,
+        "note": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "ok": true,
+        "ms": 19,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3220,
+        "tokens": 96,
+        "note": ""
+      },
+      {
+        "tool": "browser_upload_file",
+        "ok": true,
+        "ms": 31,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3199,
+        "tokens": 102,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 570,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 28,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3202,
+        "tokens": 98,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 589,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 569,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3208,
+        "tokens": 68,
+        "note": ""
+      },
+      {
+        "tool": "browser_drag",
+        "ok": true,
+        "ms": 116,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3221,
+        "tokens": 226,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 18,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 14,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 12,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 13,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 12,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 597,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3219,
+        "tokens": 175,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 585,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "ok": true,
+        "ms": 14,
+        "tokens": 28,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 6,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3237,
+        "tokens": 176,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 832,
+        "tokens": 122,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 589,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      }
+    ]
+  },
+  "playwright": {
+    "kind": "pw",
+    "cases": {
+      "hover菜单": {
+        "tier": "native",
+        "note": "browser_hover 直达",
+        "calls": 4,
+        "tokens": 454,
+        "ms": 1561
+      },
+      "select下拉": {
+        "tier": "native",
+        "note": "select_option 直达",
+        "calls": 3,
+        "tokens": 295,
+        "ms": 575
+      },
+      "文件上传": {
+        "tier": "native",
+        "note": "click 开 chooser → file_upload (Playwright set_input_files)",
+        "calls": 4,
+        "tokens": 411,
+        "ms": 1105
+      },
+      "键盘Esc": {
+        "tier": "native",
+        "note": "press_key 直达 (可信 CDP 键事件)",
+        "calls": 4,
+        "tokens": 314,
+        "ms": 1089
+      },
+      "confirm对话框": {
+        "tier": "native",
+        "note": "click → handle_dialog(accept)",
+        "calls": 4,
+        "tokens": 333,
+        "ms": 1098
+      },
+      "HTML5拖拽": {
+        "tier": "native",
+        "note": "browser_drag 直达 (真实输入管线)",
+        "calls": 3,
+        "tokens": 313,
+        "ms": 1104
+      },
+      "批量表单": {
+        "tier": "native",
+        "note": "调用数对比: 对手 fill_form=1 次 vs 我方 type=5 次",
+        "calls": 4,
+        "tokens": 483,
+        "ms": 1147
+      },
+      "后退导航": {
+        "tier": "native",
+        "note": "navigate_back 直达",
+        "calls": 4,
+        "tokens": 332,
+        "ms": 2487
+      },
+      "iframe深交互": {
+        "tier": "native",
+        "note": "ref=f11e2",
+        "calls": 4,
+        "tokens": 409,
+        "ms": 1143
+      }
+    },
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 426,
+        "tokens": 158,
+        "note": ""
+      },
+      {
+        "tool": "browser_hover",
+        "ok": true,
+        "ms": 67,
+        "tokens": 107,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 544,
+        "tokens": 107,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 521,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 37,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "ok": true,
+        "ms": 20,
+        "tokens": 104,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 517,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 37,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 40,
+        "tokens": 103,
+        "note": ""
+      },
+      {
+        "tool": "browser_file_upload",
+        "ok": true,
+        "ms": 516,
+        "tokens": 117,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 34,
+        "tokens": 112,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 542,
+        "tokens": 93,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 4,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 507,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 45,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 24,
+        "tokens": 110,
+        "note": ""
+      },
+      {
+        "tool": "browser_handle_dialog",
+        "ok": true,
+        "ms": 518,
+        "tokens": 32,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 510,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 34,
+        "tokens": 112,
+        "note": ""
+      },
+      {
+        "tool": "browser_drag",
+        "ok": true,
+        "ms": 558,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 510,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 48,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_fill_form",
+        "ok": true,
+        "ms": 45,
+        "tokens": 200,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 546,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 506,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 34,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 568,
+        "tokens": 94,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "ok": true,
+        "ms": 46,
+        "tokens": 80,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 517,
+        "tokens": 45,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 62,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 6,
+        "tokens": 97,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 567,
+        "tokens": 117,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 506,
+        "tokens": 82,
+        "note": ""
+      }
+    ]
+  }
+}

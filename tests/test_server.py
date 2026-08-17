@@ -260,7 +260,7 @@ async def test_new_tools_listed(patch_server):
     assert "browser_network" in names
     assert "browser_perf" in names
     assert "browser_network_body" in names
-    assert len(names) == 25
+    assert len(names) == 31  # 25 + 第一波补洞: press_key/hover/select_option/upload_file/navigate_back/drag
 
 
 async def test_read_follow_creates_stream_and_returns_delta(patch_server):
@@ -620,6 +620,87 @@ async def test_click_real_timeout_still_error(patch_server):
     mgr.find_element = AsyncMock(return_value=loc)
     out = await server_mod.browser_click(selector="a.x", task_id="t")
     assert "点击失败" in out
+
+
+# ── 第一波补洞工具 (adversarial 基准驱动) ─────────────────────────
+
+
+async def test_press_key_real_cdp_event(patch_server):
+    """press_key 走 page.keyboard.press (isTrusted=true 的真实键事件)。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    task.page.keyboard.press = AsyncMock()
+    out = await server_mod.browser_press_key("Escape", task_id="t")
+    assert "Escape" in out
+    task.page.keyboard.press.assert_awaited_once_with("Escape")
+
+
+async def test_hover_uses_locator_hover(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    loc = MagicMock()
+    loc.hover = AsyncMock()
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_hover(selector="#menu", task_id="t")
+    assert "已悬停元素" in out
+    loc.hover.assert_awaited_once()
+
+
+async def test_select_option_passes_values(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    loc = MagicMock()
+    loc.select_option = AsyncMock(return_value=["上海"])
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_select_option(values=["上海"], selector="#city", task_id="t")
+    assert "上海" in out
+    loc.select_option.assert_awaited_once_with(["上海"], timeout=5000)
+
+
+async def test_upload_file_requires_confirmation(patch_server):
+    """文件出站 = 无条件 confirmed 门 (与 evaluate 同级); 文件不存在 → 明确错误。"""
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    out = await server_mod.browser_upload_file(paths=["/tmp/x.txt"], selector="#f", task_id="t")
+    assert "CONFIRMATION_REQUIRED" in out and "/tmp/x.txt" in out
+    out2 = await server_mod.browser_upload_file(paths=["/不存在的文件.txt"], selector="#f",
+                                                confirmed=True, task_id="t")
+    assert "文件不存在" in out2
+
+
+async def test_upload_file_calls_set_input_files(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    loc = MagicMock()
+    loc.set_input_files = AsyncMock()
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_upload_file(paths=["bench/fixture_adv/frame.html"],
+                                               selector="#f", confirmed=True, task_id="t")
+    assert "已上传 1 个文件" in out and "frame.html" in out
+
+
+async def test_navigate_back_and_empty_history(patch_server):
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    task.page.go_back = AsyncMock(return_value=object())
+    task.page.title = AsyncMock(return_value="页面A")
+    task.page.url = "https://a/"
+    out = await server_mod.browser_navigate_back(task_id="t")
+    assert "已后退" in out and "页面A" in out
+    task.page.go_back = AsyncMock(return_value=None)  # 历史起点
+    out2 = await server_mod.browser_navigate_back(task_id="t")
+    assert "历史起点" in out2
+
+
+async def test_drag_calls_drag_to(patch_server):
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    src, dst = MagicMock(), MagicMock()
+    src.drag_to = AsyncMock()
+    mgr.find_element = AsyncMock(side_effect=[src, dst])
+    out = await server_mod.browser_drag(from_selector="#src", to_selector="#zone", task_id="t")
+    assert "已拖拽" in out
+    src.drag_to.assert_awaited_once_with(dst, timeout=5000)
 
 
 async def test_hitl_confirmed_bypasses_block(patch_server):

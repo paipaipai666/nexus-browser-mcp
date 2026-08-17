@@ -14,6 +14,14 @@
    - `role=... name=...`(语义定位;输入框族不中时自动回退 placeholder/label/常见输入框 CSS,错误消息会附当前可用元素清单及 ref)
 4. **`browser_wait` 或 `browser_wait_navigation`** — 点击/提交后等 DOM 更新或跳转。等"停止变化"(流式回复生成完毕)用 **`browser_wait_stable`**;确需固定时长等待用 `browser_wait_ms(ms)`(上限=工具超时-5s)。
 
+## 进阶交互
+
+- **键盘**:`browser_press_key(key)` — 真实键事件(isTrusted=true), Escape 关模态框/Tab 序/组合键(Control+a)。
+- **悬停**:`browser_hover(ref/selector/pos)` — 真实鼠标移动, CSS :hover 菜单可用。
+- **下拉**:`browser_select_option(values=[...], ref/selector)` — <select> 按 value/label 选。
+- **上传**:`browser_upload_file(paths=[...], ref/selector)` — 文件出站, **每次需 confirmed=true**(HITL)。
+- **拖拽**:`browser_drag(from_ref/from_selector, to_ref/to_selector)`;**后退**:`browser_navigate_back()`。
+
 ## 流式内容(AI 回复)
 
 - **一次读全**:`browser_read(selector=..., wait_stable=true, max_wait_ms=...)` — 等 DOM 静默(默认 800ms 无变异)后再读,免轮询。

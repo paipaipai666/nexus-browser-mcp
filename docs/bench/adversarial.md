@@ -7,43 +7,55 @@
 
 ## 结果矩阵
 
-| 案例 | nexus | pw-mcp | 调用数 (nx/pw) |
+### 修复后复测（第一波补洞落地, commit 本轮）
+
+| 案例 | nexus | pw-mcp | token (nx/pw) |
 |---|---|---|---|
-| hover 菜单（仅 mouseenter） | 🟡 | ✅ | 4/4 |
-| select 下拉 | 🟡 | ✅ | 6/3 |
-| 文件上传 | ❌ | ✅ | 1/4 |
-| 键盘 Esc | 🟡 | ✅ | 4/4 |
-| confirm 对话框（需接受） | 🟡 | ✅ | 6/4 |
-| HTML5 拖拽 | 🟡 | ✅ | 3/3 |
-| 批量表单（5 字段） | ✅ 365tok | ✅ 483tok | 8/4 |
-| 后退导航 | 🟡 | ✅ | 4/4 |
-| iframe 深交互 | ✅ | ✅ | 4/4 |
+| hover 菜单 | ✅原生 | ✅ | **155**/454 |
+| select 下拉 | ✅原生 | ✅ | **154**/295 |
+| 文件上传 | ✅原生（HITL confirmed） | ✅ | **178**/411 |
+| 键盘 Esc | ✅原生（真实 CDP 键事件） | ✅ | **163**/314 |
+| confirm 对话框（需接受） | 🟡（留待第二波：对话框治理） | ✅ | 222/333 |
+| HTML5 拖拽 | ✅原生（真实输入管线） | ✅ | **128**/313 |
+| 批量表单 | ✅ | ✅ | **365**/483 |
+| 后退导航 | ✅原生 | ✅ | **235**/332 |
+| iframe 深交互 | ✅原生 | ✅ | **350**/409 |
 
-## 问题清单（按严重度）
+**8/9 原生完成, 且全部案例 token 低于对手。** 唯一剩余缺口是 confirm 对话框——那不是工具问题, 是治理设计问题（接受对话框 = 用户决定, 应走 HITL 而不是 agent 自作主张）, 单独一波做。
 
-### P0 — 完全做不了
-1. **文件上传**：无工具；浏览器安全模型禁止 JS 设 `input.files`，逃生舱不存在。表单自动化硬缺口。修复方向：`browser_upload_file(selector, paths)` 包 `set_input_files`，HITL 中风险门。
+### 修复前（首轮, 留档对照）
 
-### P1 — 逃生舱可行但有硬伤
-2. **无 `press_key`**：synthetic `KeyboardEvent` 的 `isTrusted=false`——检查可信事件的站点直接拒绝；Tab 序/快捷键/组合键完全覆盖不了。日频最高，优先补。
-3. **无 `hover`**：本 fixture 用 JS 监听所以逃生舱能过；**CSS `:hover` 纯样式菜单 JS 无法触发**（无真实鼠标移动）——此类页面我们完全不可达。
-4. **confirm 对话框无法接受**：Playwright 默认 auto-dismiss → `confirm()` 返回 false → 首次点击无效；逃生舱 stub `window.confirm` 是篡改页面行为。且符合我们治理哲学的正确解法存在：**对话框出现 = 风险决策点，应入事件流 + HITL 询问**，现在 agent 连"弹过对话框"都无法观测。
-5. **无 drag**：synthetic DragEvent 序列能骗过本 fixture；pointer-events 系拖拽库（react-dnd 等多数实现）骗不过。
-6. **select 不可见**：`option` 角色不在 `INTERACTIVE_ROLES`，快照里看不到选项，只能逃生舱赋值。补 `browser_select_option` 是平凡封装。
+| 案例 | nexus | pw-mcp |
+|---|---|---|
+| hover 菜单（仅 mouseenter） | 🟡 | ✅ |
+| select 下拉 | 🟡 | ✅ |
+| 文件上传 | ❌ | ✅ |
+| 键盘 Esc | 🟡 | ✅ |
+| confirm 对话框（需接受） | 🟡 | ✅ |
+| HTML5 拖拽 | 🟡 | ✅ |
+| 批量表单（5 字段） | ✅ | ✅ |
+| 后退导航 | 🟡 | ✅ |
+| iframe 深交互 | ✅ | ✅ |
 
-### P2 — 能做但低效
-7. **批量表单**：8 调用 vs 4（对手 `fill_form` 一次填完）。token 反而我们更省（365 vs 483，回复更紧凑），但往返翻倍。低优先级。
-8. **后退导航**：`history.back()` 逃生舱可用，平凡封装可补。
+## 首轮发现的问题清单与处置（按严重度）
 
-### 已验证的优势（不是问题的）
-- **iframe 深交互**：f-前缀 ref 原生点击通过——之前声称的优势这次有了实测背书。
-- 批量表单 token 更低、全场景 token 均低于对手（167-365 vs 295-483/案例）。
+### P0 — 完全做不了 → 已修复
+1. **文件上传**：无工具；浏览器安全模型禁止 JS 设 `input.files`，逃生舱不存在。→ `browser_upload_file(selector/ref, paths, confirmed)`（set_input_files + 无条件 HITL 确认门 + 路径入审计）。
 
-## 结构性结论
+### P1 — 逃生舱有硬伤 → 五个已修复, 对话框移交第二波
+2. **无 `press_key`** → `browser_press_key(key)`：真实 CDP 键事件（isTrusted=true），Escape/Tab/组合键全通。
+3. **无 `hover`** → `browser_hover(...)`：真实鼠标移动，CSS `:hover` 与 JS mouseenter 均触发。
+4. **confirm 对话框无法接受** → **第二波**：对话框出现入 EventStore（可观测）+ 挂起决策 + `browser_dialog_respond(accept, confirmed)`（accept 必须 confirmed=true）+ 超时自动 dismiss 兜底留痕。现在的 stub window.confirm 逃生舱是篡改页面行为, 不该是常态。
+5. **无 drag** → `browser_drag(from_*, to_*)`：真实输入管线。
+6. **select 不可见** → `browser_select_option(values, ...)`（`option` 角色本就在 INTERACTIVE_ROLES, 首轮快照不可见是 harness 用了 diff 短消息）。
 
-**默认配置下这份清单更难看**：`BROWSER_ALLOW_JS_EXECUTION` 默认关 → 所有 🟡 在默认部署里全是 ❌，即 9 个案例只有 2 个原生可做。这是治理优先的代价，诚实地说：**我们用操作覆盖面换了 token 效率（7-25x）+ 治理（HITL/审计/多任务）+ 观测性**。对手（含 `browser_run_code_unsafe` 任意代码）走的是"能力全集"路线。
+### P2 — 低效 → 后退已修复, fill_form 不做
+7. **批量表单** 8 调用 vs 4：token 反而我们更省；往返数差异不值得加 `fill_form` 维护面。**不做**。
+8. **后退导航** → `browser_navigate_back()`（go_back + 空历史明确提示）。
 
-补洞建议顺序（日频 × 可行性）：`press_key` > `upload_file` > `hover` > 对话框事件+HITL > `select_option` > `navigate_back` > drag > fill_form。
+### 已验证的优势（复测仍成立）
+- **iframe 深交互**：f-前缀 ref 原生点击通过。
+- **token 效率**：对抗场景全案例低于对手（128-365 vs 295-483）。
 
 ## 附：harness 侧修正记录（对方失败必须是真失败）
 - `browser_handle_dialog` 须在对话框打开后调用（modal 态语义），修正顺序后对方通过

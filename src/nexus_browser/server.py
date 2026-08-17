@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import re
 import uuid
 from contextvars import ContextVar
@@ -72,6 +73,8 @@ def tool_names() -> list[str]:
         "browser_dismiss_popup", "browser_list_pages", "browser_switch_page",
         "browser_console", "browser_errors", "browser_network", "browser_perf",
         "browser_network_body",
+        "browser_press_key", "browser_hover", "browser_select_option",
+        "browser_upload_file", "browser_navigate_back", "browser_drag",
         "browser_tasks", "browser_close_task",
         "browser_list_sessions", "browser_close_session",
     ]
@@ -137,11 +140,13 @@ def _hitl_block(action: str, role, name, task_id, confirmed: bool = False) -> st
     return None
 
 
-# 工具风险分级: 默认 low(只读/导航); 改变页面状态 medium; JS 执行 high。
+# 工具风险分级: 默认 low(只读/导航); 改变页面状态 medium; JS 执行/文件出站 high。
 _RISK = {
     "browser_click": "medium", "browser_type": "medium",
     "browser_dismiss_popup": "medium", "browser_evaluate": "high",
-    "browser_network_body": "high",
+    "browser_network_body": "high", "browser_upload_file": "high",
+    "browser_press_key": "medium", "browser_select_option": "medium",
+    "browser_drag": "medium",
 }
 
 
@@ -464,6 +469,153 @@ async def _type(task_id, text, ref, role, name, selector, clear, press_enter, po
         return fmt.error(str(e))
     except Exception as e:
         return _op_error("输入", e)
+
+
+async def browser_press_key(key: str, wait_stable: bool = False, *, task_id: str = ""):
+    return await _press_key(_default_task(task_id), key, wait_stable)
+
+
+async def _press_key(task_id, key, wait_stable=False) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        await ts.page.keyboard.press(key)  # 真实 CDP 键事件 (isTrusted=true), 非 synthetic dispatch
+        if wait_stable:
+            await _settle_after_action(ts)
+        return f"已按键: {key}。"
+    except Exception as e:
+        return _op_error("按键", e, hint="key 用 Playwright 键名: Escape/Tab/Enter/ArrowDown/Control+a ...")
+
+
+async def browser_hover(ref=None, role=None, name=None, selector=None, pos=None,
+                        wait_stable: bool = False, *, task_id: str = ""):
+    return await _hover(_default_task(task_id), ref, role, name, selector, pos, wait_stable)
+
+
+async def _hover(task_id, ref, role, name, selector, pos, wait_stable=False) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        locator = await _manager.find_element(_sid(), task_id, ref=ref, role=role,
+                                              name=name, selector=selector, pos=pos)
+        if isinstance(locator, str):  # pos 坐标: 真实鼠标移动
+            x, y, w, h = (int(p) for p in locator.split(","))
+            await ts.page.mouse.move(x + w // 2, y + h // 2)
+            if wait_stable:
+                await _settle_after_action(ts)
+            return f"已悬停坐标 ({x + w // 2}, {y + h // 2})。"
+        await locator.hover(timeout=5000)  # 真实鼠标移动: CSS :hover 与 JS mouseenter 均触发
+        if wait_stable:
+            await _settle_after_action(ts)
+        return "已悬停元素。"
+    except ValueError as e:
+        return fmt.error(str(e))
+    except Exception as e:
+        return _op_error("悬停", e)
+
+
+async def browser_select_option(values: list[str], ref=None, selector=None,
+                                wait_stable: bool = False, *, task_id: str = ""):
+    return await _select_option(_default_task(task_id), values, ref, selector, wait_stable)
+
+
+async def _select_option(task_id, values, ref, selector, wait_stable=False) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        locator = await _manager.find_element(_sid(), task_id, ref=ref, selector=selector)
+        if isinstance(locator, str):
+            return fmt.error("select_option 不支持 pos 坐标定位", hint="用 ref 或 selector 指向 <select> 元素")
+        selected = await locator.select_option(values, timeout=5000)
+        if wait_stable:
+            await _settle_after_action(ts)
+        return f"已选择: {', '.join(selected) or values[0]}。"
+    except ValueError as e:
+        return fmt.error(str(e))
+    except Exception as e:
+        return _op_error("选择", e, hint="values 传 option 的 value/label; 目标必须是 <select>")
+
+
+async def browser_upload_file(paths: list[str], ref=None, selector=None, confirmed: bool = False,
+                              *, task_id: str = ""):
+    """文件上传 = 本地文件出站, 与 evaluate 同级: 每次需 confirmed=true (用户在对话中同意后重调)。"""
+    if not confirmed:
+        return "CONFIRMATION_REQUIRED\n" + fmt.warning(
+            "browser_upload_file 需人工确认",
+            detail=f"将上传本地文件: {paths}。向用户展示路径清单, 同意后以 confirmed=true 重调。")
+    return await _upload_file(_default_task(task_id), paths, ref, selector)
+
+
+async def _upload_file(task_id, paths, ref, selector) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    missing = [p for p in paths if not os.path.exists(p)]
+    if missing:
+        return fmt.error("文件不存在", detail=", ".join(missing))
+    await _manager.ensure_task(_sid(), task_id)
+    try:
+        locator = await _manager.find_element(_sid(), task_id, ref=ref, selector=selector)
+        if isinstance(locator, str):
+            return fmt.error("上传不支持 pos 坐标定位", hint="用 ref 或 selector 指向 <input type=file>")
+        await locator.set_input_files(paths, timeout=5000)
+        return f"已上传 {len(paths)} 个文件: {', '.join(os.path.basename(p) for p in paths)}。"
+    except ValueError as e:
+        return fmt.error(str(e))
+    except Exception as e:
+        return _op_error("上传", e, hint="目标必须是 <input type='file'>")
+
+
+async def browser_navigate_back(wait_stable: bool = False, *, task_id: str = ""):
+    return await _navigate_back(_default_task(task_id), wait_stable)
+
+
+async def _navigate_back(task_id, wait_stable=False) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        resp = await ts.page.go_back(wait_until="load", timeout=_settings.default_timeout_ms)
+        if resp is None:
+            return "已在历史起点, 无可后退页面。"
+        if wait_stable:
+            await _settle_after_action(ts)
+        title = await ts.page.title()
+        return f"已后退至: {ts.page.url}\n标题: {title}"
+    except Exception as e:
+        return _op_error("后退", e)
+
+
+async def browser_drag(from_ref=None, from_selector=None, to_ref=None, to_selector=None,
+                       wait_stable: bool = False, *, task_id: str = ""):
+    return await _drag(_default_task(task_id), from_ref, from_selector, to_ref, to_selector, wait_stable)
+
+
+async def _drag(task_id, from_ref, from_selector, to_ref, to_selector, wait_stable=False) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        src = await _manager.find_element(_sid(), task_id, ref=from_ref, selector=from_selector)
+        dst = await _manager.find_element(_sid(), task_id, ref=to_ref, selector=to_selector)
+        if isinstance(src, str) or isinstance(dst, str):
+            return fmt.error("拖拽不支持 pos 坐标定位", hint="用 ref 或 selector 指向源与目标元素")
+        await src.drag_to(dst, timeout=5000)  # 真实输入管线, HTML5 dnd + 多数 pointer 系库可用
+        if wait_stable:
+            await _settle_after_action(ts)
+        return "已拖拽元素。"
+    except ValueError as e:
+        return fmt.error(str(e))
+    except Exception as e:
+        return _op_error("拖拽", e)
 
 
 async def browser_read(selector=None, ref=None, max_chars: int = 5000,
@@ -1243,6 +1395,51 @@ def _register_all(register) -> None:
              "wait_stable": {"type": "boolean", "default": True},
              "include_generic": {"type": "boolean", "default": False, "description": "抖音/B站等SPA页面非语义div时用"},
              "diff": {"type": "boolean", "default": True, "description": "与上次快照逐节点一致时只回'无变化'(旧ref仍有效); false=总是全量"},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_press_key, "browser_press_key",
+         "按下键盘键 (真实 CDP 事件, isTrusted=true)。Escape/Tab/Enter/方向键/组合键(如 Control+a)。用于无按钮可点的键盘流: 关闭模态框、快捷键、Tab 序导航。",
+         {"type": "object", "properties": {
+             "key": {"type": "string", "description": "Playwright 键名, 如 Escape / Tab / Control+a"},
+             "wait_stable": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": ["key"]}),
+        (browser_hover, "browser_hover",
+         "悬停元素 (真实鼠标移动): 触发 CSS :hover 与 JS mouseenter。用于 hover 才展开的菜单/工具提示。",
+         {"type": "object", "properties": {
+             "ref": {"type": "string"}, "role": {"type": "string"}, "name": {"type": "string"},
+             "selector": {"type": "string"}, "pos": {"type": "string"},
+             "wait_stable": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_select_option, "browser_select_option",
+         "在 <select> 下拉中选择 option (按 value 或 label)。",
+         {"type": "object", "properties": {
+             "values": {"type": "array", "items": {"type": "string"}, "description": "option 的 value 或 label 列表"},
+             "ref": {"type": "string"}, "selector": {"type": "string"},
+             "wait_stable": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": ["values"]}),
+        (browser_upload_file, "browser_upload_file",
+         "上传本地文件到 <input type=file>。文件出站操作, 每次需人工确认: 首次返回 CONFIRMATION_REQUIRED, 用户同意后以 confirmed=true 重调。",
+         {"type": "object", "properties": {
+             "paths": {"type": "array", "items": {"type": "string"}, "description": "本地文件绝对路径列表"},
+             "ref": {"type": "string"}, "selector": {"type": "string"},
+             "confirmed": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": ["paths"]}),
+        (browser_navigate_back, "browser_navigate_back",
+         "浏览器历史后退一页, 返回标题/URL。",
+         {"type": "object", "properties": {
+             "wait_stable": {"type": "boolean", "default": False},
+             "task_id": {"type": "string"},
+         }, "required": []}),
+        (browser_drag, "browser_drag",
+         "拖拽元素到目标 (真实输入管线, HTML5 dnd 及多数 pointer 系库可用)。",
+         {"type": "object", "properties": {
+             "from_ref": {"type": "string"}, "from_selector": {"type": "string"},
+             "to_ref": {"type": "string"}, "to_selector": {"type": "string"},
+             "wait_stable": {"type": "boolean", "default": False},
              "task_id": {"type": "string"},
          }, "required": []}),
         (browser_click, "browser_click",
