@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>Bench Fixture Page 2</title></head>
+<body>
+<header><h1>搜索结果（基准页 2）</h1><nav><a href="page1.html">返回</a></nav></header>
+<main>
+  <table id="t">
+    <thead><tr><th>名称</th><th>价格</th><th>评分</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    console.log("fixture page2 loaded");
+    const tb = document.querySelector("#t tbody");
+    for (let i = 1; i <= 80; i++) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>结果 ${i}</td><td>¥${(i * 13 % 199) + 9}.90</td><td>${(3 + (i % 20) / 10).toFixed(1)}</td>`;
+      tb.appendChild(tr);
+    }
+  </script>
+</main>
+</body>
+</html>

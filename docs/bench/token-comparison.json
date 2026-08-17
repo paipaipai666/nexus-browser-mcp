@@ -1,0 +1,164 @@
+{
+  "nexus": {
+    "label": "nexus-browser",
+    "calls": [
+      {
+        "step": "navigate_p1",
+        "req_chars": 44,
+        "resp_chars": 2870,
+        "req_tokens": 20,
+        "resp_tokens": 1368
+      },
+      {
+        "step": "snapshot_1",
+        "req_chars": 2,
+        "resp_chars": 2854,
+        "req_tokens": 1,
+        "resp_tokens": 1368
+      },
+      {
+        "step": "snapshot_2_repeat",
+        "req_chars": 2,
+        "resp_chars": 124,
+        "req_tokens": 1,
+        "resp_tokens": 76
+      },
+      {
+        "step": "type",
+        "req_chars": 29,
+        "resp_chars": 6,
+        "req_tokens": 19,
+        "resp_tokens": 5
+      },
+      {
+        "step": "click",
+        "req_chars": 14,
+        "resp_chars": 6,
+        "req_tokens": 7,
+        "resp_tokens": 5
+      },
+      {
+        "step": "snapshot_3_after_mutation",
+        "req_chars": 2,
+        "resp_chars": 2863,
+        "req_tokens": 1,
+        "resp_tokens": 1371
+      },
+      {
+        "step": "console_read",
+        "req_chars": 2,
+        "resp_chars": 221,
+        "req_tokens": 1,
+        "resp_tokens": 103
+      },
+      {
+        "step": "evaluate",
+        "req_chars": 51,
+        "resp_chars": 185,
+        "req_tokens": 12,
+        "resp_tokens": 90
+      },
+      {
+        "step": "navigate_p2",
+        "req_chars": 44,
+        "resp_chars": 500,
+        "req_tokens": 20,
+        "resp_tokens": 243
+      },
+      {
+        "step": "snapshot_4_p2",
+        "req_chars": 2,
+        "resp_chars": 485,
+        "req_tokens": 1,
+        "resp_tokens": 245
+      }
+    ],
+    "total": {
+      "req_chars": 192,
+      "resp_chars": 10114,
+      "req_tokens": 83,
+      "resp_tokens": 4874
+    }
+  },
+  "playwright": {
+    "label": "playwright-mcp",
+    "calls": [
+      {
+        "step": "navigate_p1",
+        "req_chars": 44,
+        "resp_chars": 379,
+        "req_tokens": 20,
+        "resp_tokens": 144
+      },
+      {
+        "step": "snapshot_1",
+        "req_chars": 2,
+        "resp_chars": 17606,
+        "req_tokens": 1,
+        "resp_tokens": 6930
+      },
+      {
+        "step": "snapshot_2_repeat",
+        "req_chars": 2,
+        "resp_chars": 17606,
+        "req_tokens": 1,
+        "resp_tokens": 6930
+      },
+      {
+        "step": "type",
+        "req_chars": 50,
+        "resp_chars": 119,
+        "req_tokens": 31,
+        "resp_tokens": 26
+      },
+      {
+        "step": "click",
+        "req_chars": 35,
+        "resp_chars": 120,
+        "req_tokens": 16,
+        "resp_tokens": 26
+      },
+      {
+        "step": "snapshot_3_after_mutation",
+        "req_chars": 2,
+        "resp_chars": 17606,
+        "req_tokens": 1,
+        "resp_tokens": 6930
+      },
+      {
+        "step": "console_read",
+        "req_chars": 2,
+        "resp_chars": 251,
+        "req_tokens": 1,
+        "resp_tokens": 85
+      },
+      {
+        "step": "evaluate",
+        "req_chars": 36,
+        "resp_chars": 112,
+        "req_tokens": 8,
+        "resp_tokens": 29
+      },
+      {
+        "step": "navigate_p2",
+        "req_chars": 44,
+        "resp_chars": 344,
+        "req_tokens": 20,
+        "resp_tokens": 131
+      },
+      {
+        "step": "snapshot_4_p2",
+        "req_chars": 2,
+        "resp_chars": 11803,
+        "req_tokens": 1,
+        "resp_tokens": 4701
+      }
+    ],
+    "total": {
+      "req_chars": 219,
+      "resp_chars": 65946,
+      "req_tokens": 100,
+      "resp_tokens": 25932
+    }
+  }
+}

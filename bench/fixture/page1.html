@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>Bench Fixture Page 1</title></head>
+<body>
+<header><h1>商品列表（基准页 1）</h1><nav id="nav"><a href="page2.html">下一页</a></nav></header>
+<main>
+  <form id="search" action="page2.html" method="get">
+    <label for="kw">关键词</label>
+    <input id="kw" name="kw" type="text" placeholder="输入关键词">
+    <button id="go" type="submit">搜索</button>
+  </form>
+  <button id="add" type="button">加载更多</button>
+  <ul id="items"></ul>
+  <script>
+    console.log("fixture page1 loaded");
+    const ul = document.getElementById("items");
+    for (let i = 1; i <= 120; i++) {
+      const li = document.createElement("li");
+      li.innerHTML = `<a href="item/${i}">商品 ${i} 号 — 包邮 ¥${(i * 7 % 99) + 1}.00</a> <span>库存 ${i * 3 % 50}</span>`;
+      ul.appendChild(li);
+    }
+    document.getElementById("add").addEventListener("click", () => {
+      const li = document.createElement("li");
+      li.textContent = `动态追加项 ${ul.children.length + 1}`;
+      ul.appendChild(li);
+      console.warn("item appended", ul.children.length);
+    });
+  </script>
+</main>
+</body>
+</html>

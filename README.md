@@ -155,6 +155,17 @@ Observability (debugging): console output, uncaught exceptions and request metad
 
 Performance: `browser_perf()` returns FCP/LCP/CLS/INP, navigation timings and the 5 slowest resources. Response bodies can be fetched on demand with `browser_network_body(seq)` — off by default (`BROWSER_ALLOW_NETWORK_BODY`), every call gated by `confirmed=true`, hard char cap, and the body never enters the audit log.
 
+## Token cost: measured, not claimed
+
+Same 10-step task, both servers at default config, metered at the JSON-RPC payload layer (cl100k tokens; harness + raw data in [docs/bench/token-comparison.md](docs/bench/token-comparison.md), reproduce with `bench/compare.py`):
+
+| | nexus-browser-mcp | playwright-mcp |
+|---|---:|---:|
+| 10-step task total | **4,957 tok** | 26,032 tok |
+| repeated snapshot of unchanged page | **77 tok** | 6,931 tok |
+
+**5.3x fewer tokens overall; 90x on the repeated-snapshot step** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
+
 HITL confirmation closes a loop: any gated call returns `CONFIRMATION_REQUIRED` once; after the user approves in chat, the agent re-calls with `confirmed=true` (applies to HITL rules, `browser_evaluate`, `browser_network_body`).
 
 ## HTTP transport (remote / multi-client)
