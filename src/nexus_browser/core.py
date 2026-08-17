@@ -123,6 +123,10 @@ class BrowserManager:
             launch_kwargs: dict = {"headless": s.headless}
             if s.channel:
                 launch_kwargs["channel"] = s.channel
+            if s.proxy == "none":
+                launch_kwargs["args"] = ["--no-proxy-server"]  # 绕过系统代理 (陈旧代理 = 全站 ERR_TIMED_OUT)
+            elif s.proxy:
+                launch_kwargs["proxy"] = {"server": s.proxy}
             if s.user_data_dir:
                 # 共享登录态: 整个浏览器一个 persistent context。
                 # 重建时旧进程可能未退净(profile 锁) → 失败重试一次再报明确错误。

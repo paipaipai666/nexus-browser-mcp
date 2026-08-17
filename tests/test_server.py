@@ -698,14 +698,19 @@ async def test_navigate_back_and_empty_history(patch_server):
 
 
 async def test_drag_calls_drag_to(patch_server):
+    """分段拖拽: bounding_box 定位两端 → mouse move/down/分段 move/up (替代 drag_to,
+    pointer 系库静默无效的实测定案)。"""
     mgr, _ = patch_server
-    await mgr.ensure_task("s", "t")
+    task = await mgr.ensure_task("s", "t")
     src, dst = MagicMock(), MagicMock()
-    src.drag_to = AsyncMock()
+    src.bounding_box = AsyncMock(return_value={"x": 0, "y": 0, "width": 50, "height": 20})
+    dst.bounding_box = AsyncMock(return_value={"x": 0, "y": 100, "width": 50, "height": 20})
     mgr.find_element = AsyncMock(side_effect=[src, dst])
     out = await server_mod.browser_drag(from_selector="#src", to_selector="#zone", task_id="t")
     assert "已拖拽" in out
-    src.drag_to.assert_awaited_once_with(dst, timeout=5000)
+    task.page.mouse.down.assert_awaited_once()
+    task.page.mouse.up.assert_awaited_once()
+    assert task.page.mouse.move.await_count >= 11  # 入位 + 10 步分段
 
 
 # ── 对话框治理 (第二波) ───────────────────────────────────────────

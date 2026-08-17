@@ -16,6 +16,7 @@ class BrowserSettings(BaseSettings):
     channel: str = Field(default="", description="浏览器通道: chrome/msedge/chromium 等(空=Playwright 内置)")
     user_data_dir: str = Field(default="", description="用户数据目录(带 cookie/登录态), 空=全新 profile")
     headless: bool = Field(default=False, description="无头模式(仅 isolated)")
+    proxy: str = Field(default="", description="显式代理 server (http://host:port); 'none' = --no-proxy-server 绕过系统代理 (陈旧系统代理会让全站超时)")
     viewport_width: int = Field(default=1280, ge=320, le=3840)
     viewport_height: int = Field(default=720, ge=240, le=2160)
     default_timeout_ms: int = Field(default=30000, ge=1000, le=120000)

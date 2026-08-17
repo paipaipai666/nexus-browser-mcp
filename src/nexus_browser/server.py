@@ -659,7 +659,25 @@ async def _drag(task_id, from_ref, from_selector, to_ref, to_selector, wait_stab
         dst = await _manager.find_element(_sid(), task_id, ref=to_ref, selector=to_selector)
         if isinstance(src, str) or isinstance(dst, str):
             return fmt.error("拖拽不支持 pos 坐标定位", hint="用 ref 或 selector 指向源与目标元素")
-        await src.drag_to(dst, timeout=5000)  # 真实输入管线, HTML5 dnd + 多数 pointer 系库可用
+        # 不用 locator.drag_to: 它对 pointer 系库 (jQuery UI sortable 等) 经常静默无效
+        # (实测定案)。分段路径 = hover 激活 → down → 10 步过中间点 → 落点偏目标下半部 → up,
+        # HTML5 原生 dnd 与 pointer 系库通吃 (同一真实输入管线, 事件更多更拟人)。
+        sb = await src.bounding_box(timeout=5000)
+        db = await dst.bounding_box(timeout=5000)
+        if not sb or not db:
+            return fmt.error("拖拽元素不可见或无几何信息", hint="先滚动到可见位置 (browser_scroll_to)")
+        x0, y0 = sb["x"] + sb["width"] / 2, sb["y"] + sb["height"] / 2
+        x1, y1 = db["x"] + db["width"] / 2, db["y"] + db["height"] * 0.75
+        mouse = ts.page.mouse
+        await mouse.move(x0, y0)
+        await asyncio.sleep(0.15)
+        await mouse.down()
+        await asyncio.sleep(0.1)
+        for i in range(1, 11):
+            await mouse.move(x0 + (x1 - x0) * i / 10, y0 + (y1 - y0) * i / 10)
+            await asyncio.sleep(0.03)
+        await asyncio.sleep(0.15)
+        await mouse.up()
         if wait_stable:
             await _settle_after_action(ts)
         return "已拖拽元素。"
