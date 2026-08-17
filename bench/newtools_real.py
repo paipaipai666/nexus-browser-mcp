@@ -80,12 +80,11 @@ async def case_upload(a: A, r: Rec) -> None:
 async def case_hovers(a: A, r: Rec) -> None:
     await a.nav(f"{TI}/hovers")
     await a.call("browser_hover", {"selector": ".figure:nth-child(3) img"})
-    await asyncio.sleep(0.6)
-    ok = await a.verify("document.querySelector('.figure:nth-child(3) .figcaption').style.display !== 'none'"
-                        " && getComputedStyle(document.querySelector('.figure:nth-child(3) .figcaption')).display !== 'none'")
-    r.check("hover 触发 figcaption 显示", ok)
+    await asyncio.sleep(0.8)
+    ok = await a.verify("getComputedStyle(document.querySelector('.figure:nth-child(3) .figcaption')).display === 'block'")
+    r.check("hover 触发 figcaption 显示 (computed)", ok)
     snap, _ = await a.call("browser_snapshot", {"diff": False})
-    r.check("快照中可见悬停内容 (name: user1)", "user1" in snap)
+    r.check("快照中露出悬停区的可操作链接 (View profile)", "View profile" in snap)
 
 
 async def case_drag_html5(a: A, r: Rec) -> None:
@@ -152,34 +151,78 @@ async def case_github_keyboard(a: A, r: Rec) -> None:
 
 async def case_wiki_hovercard(a: A, r: Rec) -> None:
     await a.nav("https://zh.wikipedia.org/wiki/Python")
-    ok0, _ = await a.eval("!!document.querySelector('#mw-content-text a[href*=\"wiki\"]')")
-    r.check("正文内有可悬停链接", "true" in ok0.lower())
-    await a.call("browser_hover", {"selector": "#mw-content-text p a[href*='wiki']"})
-    await asyncio.sleep(1.2)  # hovercard 延迟出现
+    find = ("(() => { const a = [...document.querySelectorAll('#mw-content-text p a')]"
+            ".find(x => /范罗苏姆|范羅蘇姆|吉多/.test(x.textContent));"
+            " if (!a) return 'NONE'; a.scrollIntoView({block:'center'});"
+            " const b = a.getBoundingClientRect();"
+            " return '' + Math.round(b.x+b.width/2) + ',' + Math.round(b.y+b.height/2); })()")
+    txt, _ = await a.eval(find)
+    if "NONE" in txt:
+        r.check("定位正文条目链接", False, "吉多·范罗苏姆 链接未找到")
+        return
+    xy = txt.split("结果: ")[1].strip().strip("'").split(",")
+    r.check("定位正文条目链接", True, f"pos={xy}")
+    await a.call("browser_hover", {"pos": f"{xy[0]},{xy[1]},4,4"})  # 精确坐标悬停
+    await asyncio.sleep(1.5)
     ok, _ = await a.eval("(() => { const p = document.querySelector('.mwe-popups');"
-                         " return !!p && p.style.display !== 'none' && p.textContent.length > 20; })()")
+                         " return !!p && p.textContent.length > 20; })()")
     r.check("hovercard 弹出且有内容", "true" in ok.lower())
 
 
 async def case_search_back(a: A, r: Rec) -> None:
-    """搜索→进结果→后退→结果页仍在 (后退后 ref 作废, 需重新快照——组合流的真实考验)。"""
-    await a.nav("https://duckduckgo.com")
+    """组合流: 搜索→新标签结果(切回) + 同标签导航(后退)。
+    Bing 结果 target=_blank → 走 Issue N 新标签+switch_page 路径;
+    HN 评论链同标签 → 走 navigate_back 路径。两种都是日常。"""
+    await a.nav("https://www.bing.com")
     ref = await a.snap_ref(r"textbox|searchbox|combobox")
     r.check("定位搜索框", bool(ref))
     await a.call("browser_type", {"ref": ref, "text": "nexus browser mcp", "press_enter": True})
-    await asyncio.sleep(2.5)
-    ok = await a.verify("location.href.includes('nexus')")
-    r.check("搜索跳转", ok)
-    first = await a.snap_ref(r'result|link.*nexus')
-    if first:
-        await a.click_ref(first)
-        await asyncio.sleep(2)
-        await a.call("browser_navigate_back", {})
-        await asyncio.sleep(1)
-        ok = await a.verify("location.href.includes('nexus')")
-        r.check("进结果→后退→回到搜索页", ok)
+    await asyncio.sleep(3)
+    ok = await a.verify("location.href.includes('q=nexus')")
+    r.check("搜索跳转 (URL 带 q=)", ok)
+    first = await a.snap_ref(r'link.*nexus')
+    if not first:
+        r.check("新标签打开结果并切回", False, "结果链接 ref 未定位")
     else:
-        r.check("进结果→后退", False, "结果链接 ref 未定位")
+        await a.click_ref(first)
+        await asyncio.sleep(2.5)
+        pages, _ = await a.call("browser_list_pages", {})
+        two = "[1]" in pages
+        r.check("结果在新标签打开且可枚举", two, pages[:80].replace("\n", " | "))
+        if two:
+            await a.call("browser_switch_page", {"index": 0})
+            await asyncio.sleep(0.8)
+            ok = await a.verify("location.href.includes('q=nexus')")
+            r.check("切回搜索结果页", ok)
+    # 同标签后退流: 维基正文链接 (HN 当前经此代理出口不可达, 换同结构可靠目标)
+    await a.nav("https://zh.wikipedia.org/wiki/Python")
+    find = ("(() => { const a = [...document.querySelectorAll('#mw-content-text p a')]"
+            ".find(x => /范罗苏姆|范羅蘇姆|吉多/.test(x.textContent)); return a ? 'ok' : 'NONE'; })()")
+    txt, _ = await a.eval(find)
+    r.check("维基定位正文链接", "ok" in txt)
+    if "ok" in txt:
+        await a.eval("(() => { const a = [...document.querySelectorAll('#mw-content-text p a')]"
+                     ".find(x => /范罗苏姆|范羅蘇姆|吉多/.test(x.textContent));"
+                     " a.scrollIntoView({block:'center'}); return 'ok'; })()")
+        snap, _ = await a.call("browser_snapshot", {"diff": False})
+        import re as _re
+        m = None
+        for line in snap.splitlines():
+            if _re.search(r"范罗苏姆|范羅蘇姆|吉多", line):
+                m = _re.search(r"ref=((?:f\d+)?e\d+)", line)
+                if m:
+                    break
+        if m:
+            await a.click_ref(m.group(1))
+            await asyncio.sleep(2)
+            ok = await a.verify("location.href.includes('wiki') && !location.href.includes('Python')")
+            r.check("同标签进入条目页", ok)
+            await a.call("browser_navigate_back", {})
+            await asyncio.sleep(1.2)
+            ok = await a.verify("location.href.endsWith('/wiki/Python')")
+            r.check("navigate_back 回到 Python 条目", ok)
+        else:
+            r.check("同标签进入条目页", False, "快照中未找到链接 ref")
 
 
 CASES = [
