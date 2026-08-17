@@ -77,18 +77,16 @@ async def main() -> None:
             text = _text(r)
             assert "无新增" in text or "未发现异常" in text, text
 
-            # 快照 diff: 静态页二次快照 → 只回"无变化", 审计 out_chars 骤降
+            # 快照 diff: navigate 已播种基线 → 首次显式快照即命中 diff;
+            # diff=false 强制全量 (两者的回复里都带可操作的 ref)
             r1 = await session.call_tool("browser_snapshot", {})
             t1 = _text(r1)
-            assert "可交互元素" in t1 or "页面结构" in t1, t1
-            r2 = await session.call_tool("browser_snapshot", {})
-            t2 = _text(r2)
-            print(f"[smoke] snapshot#1: {len(t1)} chars, snapshot#2: {len(t2)} chars")
-            assert "快照无变化" in t2, t2
-            assert len(t2) < len(t1) // 2, f"diff 未省 token: {len(t2)} vs {len(t1)}"
-            # diff=false 强制全量
+            assert "快照无变化" in t1, t1  # 与 navigate 基线一致 → 短消息 (ref 在 navigate 回复里)
             r3 = await session.call_tool("browser_snapshot", {"diff": False})
-            assert "快照无变化" not in _text(r3), _text(r3)
+            t3 = _text(r3)
+            assert "可交互元素" in t3 or "页面结构" in t3, t3
+            print(f"[smoke] snapshot(diff命中): {len(t1)} chars, diff=false: {len(t3)} chars")
+            assert len(t1) < len(t3) // 2, f"diff 未省 token: {len(t1)} vs {len(t3)}"
 
             # 性能指标: 真实站点有计时数据; data: 页优雅降级
             r = await session.call_tool("browser_navigate", {"url": "https://example.com"})
