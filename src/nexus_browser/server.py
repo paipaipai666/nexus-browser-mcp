@@ -84,9 +84,10 @@ def _default_task(task_id: str) -> str:
 async def _require_task(task_id: str) -> str | None:
     """读/操作类工具的 task 门卫: 未知 task_id 显式报错, 不静默建空 task 再谎报"页面为空"。
 
-    例外放行: default(隐式工作区)、TTL 回收过的 task(get_page 自愈重建, Issue G 契约)。
+    例外放行: default(隐式工作区, task_id='' 也在此归一化)、TTL 回收过的 task(get_page 自愈重建, Issue G 契约)。
     browser_navigate 不设此门卫 —— 它本就负责创建新 task。
     """
+    task_id = _default_task(task_id)  # '' 与 'default' 同义; 否则 evaluate 等直传裸参数会误拒默认 task
     if task_id == "default" or _manager.known_task(_sid(), task_id):
         return None
     sessions = _manager.list_sessions()
@@ -582,6 +583,7 @@ async def _screenshot(task_id, path, full_page) -> str:
 
 
 async def browser_evaluate(expression: str, confirmed: bool = False, *, task_id: str = ""):
+    task_id = _default_task(task_id)  # 唯一漏归一化的入口: bench 实测 evaluate('') 曾建出幻影 task '' 对着 about:blank 求值
     if not _settings.allow_js_execution:
         return fmt.error("JS 执行未启用 (管理员级开关)",
                          detail="BROWSER_ALLOW_JS_EXECUTION=false: 能力被部署方禁用。"

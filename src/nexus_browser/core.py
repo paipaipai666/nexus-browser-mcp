@@ -489,7 +489,11 @@ class BrowserManager:
             pass
 
     async def ensure_task(self, session_id: str, task_id: str) -> TaskState:
-        """确保 task 存在并返回其状态 (自动建 page)。"""
+        """确保 task 存在并返回其状态 (自动建 page)。
+
+        task_id='' 归一化为 'default': 公共工具的 '' 缺省与 'default' 同义,
+        任何遗漏归一化的调用方都不应因此建出幻影 task (bench 实测捕获)。"""
+        task_id = task_id or "default"
         await self.get_page(session_id, task_id)
         return self._task(session_id, task_id)
 

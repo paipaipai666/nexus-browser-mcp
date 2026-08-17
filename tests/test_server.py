@@ -627,6 +627,16 @@ async def test_evaluate_confirmed_executes(patch_server):
     assert "CONFIRMATION_REQUIRED" not in out and "结果:" in out
 
 
+async def test_evaluate_default_task_empty_id(patch_server):
+    """task_id='' 与 'default' 同义: bench 实测捕获 — 裸传 '' 曾建出幻影 task '' 对着 about:blank 求值。"""
+    mgr, settings = patch_server
+    settings.allow_js_execution = True
+    await mgr.ensure_task("s", "default")
+    out = await server_mod.browser_evaluate("1+1", confirmed=True, task_id="")
+    assert "不存在" not in out and "结果:" in out
+    assert "" not in mgr.tasks  # 不得创建幻影 task
+
+
 # ── HTTP transport: session 解析 + token 门 ───────────────────────
 
 

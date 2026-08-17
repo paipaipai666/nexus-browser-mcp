@@ -82,7 +82,7 @@ async def _nexus_steps(s: ClientSession, m: Meter) -> None:
         return m.rec(step, args, await s.call_tool(name, args))
 
     nav1 = await call("browser_navigate", {"url": P1}, "navigate_p1")
-    snap1 = await call("browser_snapshot", {}, "snapshot_1")
+    await call("browser_snapshot", {}, "snapshot_1")
     await call("browser_snapshot", {}, "snapshot_2_repeat")
     kw = _find_ref(nav1, r"textbox|输入|关键词", r"ref=((?:f\d+)?e\d+)")
     add = _find_ref(nav1, r"加载更多", r"ref=((?:f\d+)?e\d+)")
