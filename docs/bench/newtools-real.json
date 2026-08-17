@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "case": "pointer系拖拽(sortable)",
+      "passed": 1,
+      "total": 1,
+      "subs": [
+        {
+          "sub": "sortable 顺序变化",
+          "ok": true,
+          "note": "before=\"结果: 'Item 1,Item 2,Item 3,Item\" after=\"结果: 'Item 2,Item 3,Item 1,Item\""
+        }
+      ],
+      "ms": 23746
+    }
+  ],
+  "calls": [
+    {
+      "tool": "browser_navigate",
+      "ok": true,
+      "ms": 22150,
+      "tokens": 261,
+      "note": ""
+    },
+    {
+      "tool": "browser_evaluate",
+      "ok": true,
+      "ms": 4,
+      "tokens": 57,
+      "note": ""
+    },
+    {
+      "tool": "browser_drag",
+      "ok": true,
+      "ms": 966,
+      "tokens": 33,
+      "note": ""
+    },
+    {
+      "tool": "browser_evaluate",
+      "ok": true,
+      "ms": 12,
+      "tokens": 57,
+      "note": ""
+    }
+  ]
+}
