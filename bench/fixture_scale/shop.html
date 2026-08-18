@@ -1,0 +1,49 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>优选商城</title></head><body>
+<h1>优选商城</h1>
+<ul id="plist"></ul>
+<div id="detail" style="display:none">
+  <h2 id="pname"></h2><div id="pprice"></div>
+  <label>数量 <input id="qty" type="text"></label>
+  <label>收货人 <input id="rcpt" type="text"></label>
+  <label>地址 <input id="addr" type="text"></label>
+  <button id="buy">提交订单</button>
+</div>
+<div id="confirm" style="display:none"></div>
+<script>
+const seed = parseInt(new URLSearchParams(location.search).get("seed") || "1");
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(seed);
+const NAMES = ["机械键盘","降噪耳机","升降桌","人体工学椅","护眼台灯","保温杯","无线鼠标","扩展坞","显示器支架","充电宝","数据线","蓝牙音箱"];
+let prods = NAMES.map(n => ({n, p: Math.floor(rnd()*490)+10}));
+window.__truth = prods;
+const cheapest = prods.reduce((a,b) => a.p <= b.p ? a : b);
+const priciest = prods.reduce((a,b) => a.p >= b.p ? a : b);
+let current = null;
+const ul = document.getElementById("plist");
+prods.forEach(pd => {
+  const li = document.createElement("li");
+  const a = document.createElement("a");
+  a.href = "#"; a.textContent = `${pd.n} ¥${pd.p}`;
+  a.addEventListener("click", (e) => { e.preventDefault(); current = pd;
+    document.getElementById("plist").style.display = "none";
+    document.getElementById("detail").style.display = "block";
+    document.getElementById("pname").textContent = pd.n;
+    document.getElementById("pprice").textContent = "¥" + pd.p;
+  });
+  li.appendChild(a); ul.appendChild(li);
+});
+document.getElementById("buy").addEventListener("click", () => {
+  const q = document.getElementById("qty").value.trim();
+  const r = document.getElementById("rcpt").value.trim();
+  const ad = document.getElementById("addr").value.trim();
+  if (!q || !r || !ad) { document.getElementById("confirm").style.display = "block";
+    document.getElementById("confirm").textContent = "请填全数量/收货人/地址"; return; }
+  const oid = "NXP" + String(Date.now()).slice(-8);
+  document.getElementById("detail").style.display = "none";
+  const c = document.getElementById("confirm");
+  c.style.display = "block";
+  c.dataset.ok = (current === cheapest) ? "cheap" : (current === priciest) ? "pricey" : "mid";
+  c.dataset.oid = oid;
+  c.textContent = `订单已提交: ${oid} (${current.n} x${q})`;
+});
+</script></body></html>
