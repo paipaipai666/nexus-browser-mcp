@@ -30,11 +30,13 @@ async def main() -> None:
             text = r.content[0].text if hasattr(r.content[0], "text") else str(r)
             print(f"[smoke] navigate: {text[:120]!r}")
             assert "已导航至" in text or "example.com" in text
+            # 新契约: nav 附 interactive 视图 (可操作元素+box), 内容需求走显式 snapshot/read
+            assert "可交互元素" in text, text
 
             r = await session.call_tool("browser_snapshot", {"mode": "interactive"})
             text = r.content[0].text if hasattr(r.content[0], "text") else str(r)
             print(f"[smoke] snapshot: {text[:200]!r}")
-            assert "可交互元素" in text or "页面结构" in text
+            assert "快照无变化" in text  # nav 已播种 interactive 基线 → diff 命中
 
             r = await session.call_tool("browser_tasks", {})
             print(f"[smoke] tasks: {r.content[0].text if hasattr(r.content[0],'text') else r}")

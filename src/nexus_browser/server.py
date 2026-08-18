@@ -214,7 +214,8 @@ def _record_view(ts, scope, mode, include_offscreen, include_generic, nodes,
 
 
 async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offscreen=False,
-                         include_generic=False, wait_stable=True, diff=True) -> str:
+                         include_generic=False, wait_stable=True, diff=True,
+                         extra_seed_modes: tuple = ()) -> str:
     err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
     if err:
         return err
@@ -271,6 +272,10 @@ async def _snapshot_text(task_id: str, scope=None, mode="reading", include_offsc
                 "上次快照的 ref/pos 仍然有效, 可直接操作; 重看全文: browser_snapshot(diff=false)。")
     _record_view(ts, scope, mode, include_offscreen, include_generic, nodes,
                  len(text), "browser_snapshot" if diff else "browser_snapshot(diff=false)")
+    for extra in extra_seed_modes:
+        if extra != mode:
+            # 同一提取为另一模式播种基线 (navigate: interactive 返回 + reading 基线)
+            _record_view(ts, scope, extra, False, False, nodes, 0, "navigate")
     return text
 
 
@@ -361,10 +366,11 @@ async def _navigate(task_id: str, url: str, wait_until: str) -> str:
     if result.get("timed_out"):
         parts.insert(0, fmt.warning("networkidle 超时, 已 fallback 继续", detail="可能为 WebSocket 或长轮询"))
     try:
-        # reading 模式 + diff=True: 与 browser_snapshot 默认参数同源, 记录 digest/ref 基线。
-        # 效果: 导航后首次显式 snapshot 命中 diff (~77 tok 而非全量), 且 reading 树
-        # 同时包含内容与可交互元素, 是 navigate 更合理的默认视图; 重复导航同页也命中 diff。
-        skeleton = await _snapshot_text(task_id, mode="reading", wait_stable=False, diff=True)
+        # 附加快照用 interactive 视图 (可操作元素+box, 行动导向; 企业基准实测: reading 全量
+        # 在小页面纯负担 — 内容需求方走显式 snapshot/read)。同一提取为 reading 模式播种
+        # diff 基线: 随后首个 reading 快照命中 diff, ref 经代际链续命。
+        skeleton = await _snapshot_text(task_id, mode="interactive", wait_stable=False,
+                                        diff=True, extra_seed_modes=("reading",))
         parts.append(f"\n## 页面快照\n{skeleton}")
     except Exception:
         pass

@@ -5,23 +5,23 @@
       {
         "step": "navigate_p1",
         "req_chars": 44,
-        "resp_chars": 2949,
+        "resp_chars": 2870,
         "req_tokens": 20,
-        "resp_tokens": 1410
+        "resp_tokens": 1368
       },
       {
         "step": "snapshot_1",
         "req_chars": 2,
-        "resp_chars": 129,
+        "resp_chars": 104,
         "req_tokens": 1,
-        "resp_tokens": 79
+        "resp_tokens": 64
       },
       {
         "step": "snapshot_2_repeat",
         "req_chars": 2,
-        "resp_chars": 129,
+        "resp_chars": 104,
         "req_tokens": 1,
-        "resp_tokens": 79
+        "resp_tokens": 64
       },
       {
         "step": "type",
@@ -61,23 +61,23 @@
       {
         "step": "navigate_p2",
         "req_chars": 44,
-        "resp_chars": 580,
+        "resp_chars": 500,
         "req_tokens": 20,
-        "resp_tokens": 287
+        "resp_tokens": 243
       },
       {
         "step": "snapshot_4_p2",
         "req_chars": 2,
-        "resp_chars": 128,
+        "resp_chars": 104,
         "req_tokens": 1,
-        "resp_tokens": 78
+        "resp_tokens": 64
       }
     ],
     "total": {
       "req_chars": 192,
-      "resp_chars": 7196,
+      "resp_chars": 6963,
       "req_tokens": 83,
-      "resp_tokens": 3507
+      "resp_tokens": 3377
     }
   },
   "playwright": {

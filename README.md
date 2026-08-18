@@ -163,12 +163,12 @@ Same 10-step task, both servers at default config, metered at the JSON-RPC paylo
 
 | | nexus-browser-mcp | playwright-mcp |
 |---|---:|---:|
-| 10-step task total | **3,581 tok** | 26,032 tok |
-| snapshot right after navigate | **77 tok** | 6,931 tok |
+| 10-step task total | **3,460 tok** | 26,032 tok |
+| snapshot right after navigate | **65 tok** | 6,931 tok |
 
-**7.3x fewer tokens overall; 90x on repeated snapshots** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
+**7.5x fewer tokens overall; 100x on repeated snapshots** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
 
-Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 34/42** (Baidu unreachable for both in this environment; pw-mcp's Bing flow failed on first-snapshot-not-ready in 3 consecutive runs), **23.3k vs 581.6k tokens (25x)** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Wall-clock time is now on par (86.9s vs 87.0s).
+Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 31/42**, **18.2k vs 566.4k tokens (31x)**, wall-clock **107s vs 179s** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Enterprise task suite (filter/sort, dashboard reading, KB answers, multi-step ordering, price comparison — [docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)): **21/21 both, tokens 3.6k vs 5.1k**.
 
 HITL confirmation closes a loop: any gated call returns `CONFIRMATION_REQUIRED` once; after the user approves in chat, the agent re-calls with `confirmed=true` (applies to HITL rules, `browser_evaluate`, `browser_network_body`).
 
