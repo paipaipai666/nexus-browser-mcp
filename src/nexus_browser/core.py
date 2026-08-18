@@ -10,7 +10,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from time import monotonic
 from typing import Any
 
@@ -19,7 +22,15 @@ try:
 except ImportError:  # pragma: no cover
     async_playwright = None  # type: ignore[assignment]
 
-from nexus_browser.events import KIND_CONSOLE, KIND_DIALOG, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST, EventStore
+from nexus_browser.events import (
+    KIND_CONSOLE,
+    KIND_DIALOG,
+    KIND_DOWNLOAD,
+    KIND_NAV,
+    KIND_PAGEERROR,
+    KIND_REQUEST,
+    EventStore,
+)
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import INTERACTIVE_ROLES, REF_RE, _parse_aria_yaml
 from nexus_browser.streams import StreamStore
@@ -47,6 +58,8 @@ class TaskState:
     # 对话框治理: confirm/prompt 挂起等决策 (accept=用户决定, 走 HITL); 超时自动 dismiss 留痕
     pending_dialog: Any | None = None   # Playwright Dialog 句柄 (挂起中)
     dialog_waiter: Any | None = None    # 超时兜底 asyncio.Task
+    # 下载观测: 最近一次完成的下载 {filename, path, url} — 由触发它的 click 消费上报
+    pending_download: dict | None = None
     # 快照 diff 缓存: (id(page),scope,mode,off,generic)→(digest,chars,nodes)
     # ref 代际映射: (id(page),scope)→{"refs": 当前代 ref 列表, "map": 旧 ref→当前 ref}
     snap_diff: dict = field(default_factory=dict)
@@ -129,6 +142,9 @@ class BrowserManager:
                 launch_kwargs["proxy"] = {"server": s.proxy}
             if s.user_data_dir:
                 # 共享登录态: 整个浏览器一个 persistent context。
+                # accept_downloads 是 context 级参数: 只能给 persistent/new_context, 不能给裸 launch。
+                launch_kwargs["accept_downloads"] = True
+                # 共享登录态: 整个浏览器一个 persistent context。
                 # 重建时旧进程可能未退净(profile 锁) → 失败重试一次再报明确错误。
                 try:
                     self._persistent_context = await self._playwright.chromium.launch_persistent_context(
@@ -210,12 +226,13 @@ class BrowserManager:
                 elif browser.contexts:
                     session.shared_context = browser.contexts[0]
                 else:
-                    session.shared_context = await browser.new_context()
+                    session.shared_context = await browser.new_context(accept_downloads=True)
             ctx = session.shared_context
             task_ctx = None
         else:
             task_ctx = await browser.new_context(
                 viewport={"width": s.viewport_width, "height": s.viewport_height},
+                accept_downloads=True,
             )
             ctx = task_ctx
 
@@ -265,6 +282,7 @@ class BrowserManager:
             else:
                 task_ctx = await browser.new_context(
                     viewport={"width": self._settings.viewport_width, "height": self._settings.viewport_height},
+                    accept_downloads=True,
                 )
                 ctx = task_ctx
             self._hook_context_page(session_id, ctx, owner_task_id=task_id if task_ctx is not None else None)
@@ -483,6 +501,36 @@ class BrowserManager:
             except Exception:
                 pass
 
+        def _on_download(download):
+            """下载观测: 事件入流 + 落盘 + pending_download 供触发它的 click 上报。"""
+            fn = download.suggested_filename or "download.bin"
+            try:
+                self.events.record(page, KIND_DOWNLOAD, text=fn, url=download.url or "")
+            except Exception:
+                pass
+            session = self._sessions.get(session_id)
+            ts = session.tasks.get(task_id) if session else None
+
+            async def _save() -> None:
+                try:
+                    d = self._settings.download_dir or str(Path.home() / ".nexus-browser" / "downloads")
+                    os.makedirs(d, exist_ok=True)
+                    dest = os.path.join(d, f"{int(time.time())}_{fn}")
+                    await download.save_as(dest)
+                    if ts is not None:
+                        ts.pending_download = {"filename": fn, "path": dest, "url": download.url or ""}
+                    try:
+                        self.events.record(page, KIND_DOWNLOAD, text=f"→ 已保存: {dest}")
+                    except Exception:
+                        pass
+                except Exception as e:
+                    logger.info("下载保存失败: %s", e)
+
+            try:
+                asyncio.get_running_loop().create_task(_save())
+            except Exception:
+                pass
+
         def _on_dialog(dialog):
             """对话框治理: alert 纯通知直接 dismiss (无决策); confirm/prompt/beforeunload
             挂起等 agent/用户决策 (accept=替用户点确定 → HITL confirmed); 超时自动 dismiss 留痕。
@@ -534,6 +582,7 @@ class BrowserManager:
             page.on("pageerror", _on_pageerror)
             page.on("response", _on_response)
             page.on("requestfailed", _on_request_failed)
+            page.on("download", _on_download)
             page.on("dialog", _on_dialog)
         except Exception:
             pass

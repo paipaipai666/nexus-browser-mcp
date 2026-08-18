@@ -21,6 +21,7 @@ KIND_PAGEERROR = "pageerror"
 KIND_REQUEST = "request"
 KIND_NAV = "nav"
 KIND_DIALOG = "dialog"   # alert/confirm/prompt/beforeunload: 出现与处置全程留痕
+KIND_DOWNLOAD = "download"  # 文件下载: 文件名/来源 URL/落盘路径
 
 
 @dataclass

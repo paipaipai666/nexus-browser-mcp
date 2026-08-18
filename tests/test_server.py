@@ -35,6 +35,8 @@ class FakeTask:
         self.snap_refs: dict = {}
         self.pending_dialog = None    # 与 TaskState 对齐: 对话框挂起
         self.dialog_waiter = None
+        self.pending_new_page = None  # 新标签裁决
+        self.pending_download = None  # 下载观测
         self.page = AsyncMock()
         self.page.url = "https://example.com"
         # __nexusLastMutation 返回 100s 前 → wait_dom_settled 走快路径, 不傻等
@@ -731,6 +733,38 @@ async def test_type_fallback_rich_editor(patch_server):
     assert "已输入文本" in out
     host.click.assert_awaited_once()
     host.press_sequentially.assert_awaited_once_with("hello", timeout=5000)
+
+
+async def test_click_button_param_passthrough(patch_server):
+    """button=right 直达 locator.click (上下文菜单); 非法值明确报错。"""
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    loc = MagicMock()
+    loc.click = AsyncMock()
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_click(selector="#hot", button="right", task_id="t")
+    assert "已点击" in out
+    loc.click.assert_awaited_once_with(timeout=5000, no_wait_after=True, button="right")
+    bad = await server_mod.browser_click(selector="#hot", button="hyper", task_id="t")
+    assert "不支持的 button" in bad
+
+
+async def test_click_reports_download(patch_server):
+    """点击触发下载 (pending_download 落位) → 回复带文件名与保存路径。"""
+    mgr, _ = patch_server
+    task = await mgr.ensure_task("s", "t")
+    task.pages = [task.page]
+    task.pending_new_page = None
+    loc = AsyncMock()
+
+    async def _click_side_effect(**_kw):
+        task.pending_download = {"filename": "report.pdf", "path": "/tmp/x/report.pdf", "url": "https://a/r.pdf"}
+
+    loc.click = AsyncMock(side_effect=_click_side_effect)
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_click(selector="a.dl", task_id="t")
+    assert "开始下载" in out and "report.pdf" in out and "/tmp/x/report.pdf" in out
+    assert task.pending_download is None  # 已消费
 
 
 # ── 对话框治理 (第二波) ───────────────────────────────────────────

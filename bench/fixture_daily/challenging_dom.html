@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Chaos</title></head><body>
+<a class="button" id="b1" href="#">foo</a> <a class="button" id="b2" href="#">bar</a>
+<script>
+// id 每次加载随机化 (混沌 DOM 语义: 定位只能靠文本/角色)
+document.getElementById("b1").id = "x" + Math.random().toString(36).slice(2, 8);
+document.getElementById("b2").id = "x" + Math.random().toString(36).slice(2, 8);
+</script></body></html>

@@ -25,8 +25,20 @@ from mcp.client.stdio import stdio_client  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "bench"
-TI = "https://the-internet.herokuapp.com"
-JQ = "https://jqueryui.com/resources/demos"
+FIXD = Path(__file__).parent / "fixture_daily"
+JQ = "https://jqueryui.com/resources/demos"  # 直连可达, 保留真实站点样本
+
+
+def _serve() -> tuple[str, object]:
+    """国内网络友好: 标准动作页全部本地化 (结构与 the-internet 同构),
+    下载文件走 npmmirror 国内 CDN; 仅 datepicker/autocomplete 用 jqueryui (直连可达)。"""
+    import functools
+    import http.server as hs
+    import threading
+    handler = functools.partial(hs.SimpleHTTPRequestHandler, directory=str(FIXD))
+    srv = hs.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return f"http://127.0.0.1:{srv.server_address[1]}", srv
 
 
 class Rec:
@@ -54,23 +66,23 @@ async def _type(a: A, sel_or_ref: str, text: str, enter: bool = False):
 
 # ── 案例 ─────────────────────────────────────────────────────────
 
-async def case_login(a: A, r: Rec) -> None:
-    """真实登录表单 (tomsmith / SuperSecretPassword!)。"""
-    await a.nav(f"{TI}/login")
+async def case_login(a: A, r: Rec, base: str) -> None:
+    """真实登录表单流程 (tomsmith / SuperSecretPassword!, 本地同构页)。"""
+    await a.nav(f"{base}/login.html")
     await _type(a, "#username", "tomsmith")
     await _type(a, "#password", "SuperSecretPassword!")
     await a.click_sel("#login button")
-    await asyncio.sleep(1)
-    r.check("登录成功进安全区", await a.verify("location.href.includes('/secure')"))
-    r.check("欢迎横幅可见", await a.verify("document.getElementById('flash').textContent.includes('logged in')"))
-    await a.click_sel("a.button")  # Logout
     await asyncio.sleep(0.8)
-    r.check("登出回登录页", await a.verify("location.href.includes('/login')"))
+    r.check("登录成功进安全区", await a.verify("location.hash.includes('secure')"))
+    r.check("欢迎横幅可见", await a.verify("document.getElementById('flash').textContent.includes('logged in')"))
+    await a.click_sel("#logout")
+    await asyncio.sleep(0.6)
+    r.check("登出回登录页", await a.verify("location.hash.includes('login')"))
 
 
-async def case_dynamic_loading(a: A, r: Rec) -> None:
+async def case_dynamic_loading(a: A, r: Rec, base: str) -> None:
     """元素延迟出现: 等待原语的真实考验。"""
-    await a.nav(f"{TI}/dynamic_loading/2")
+    await a.nav(f"{base}/dynamic_loading.html")
     await a.click_sel("#start button")
     if a.kind == "nexus":
         await a.call("browser_wait", {"text": "Hello World!", "timeout": 12000})
@@ -79,9 +91,9 @@ async def case_dynamic_loading(a: A, r: Rec) -> None:
     r.check("等到延迟元素出现", await a.verify("document.getElementById('finish').textContent.includes('Hello World')"))
 
 
-async def case_infinite_scroll(a: A, r: Rec) -> None:
+async def case_infinite_scroll(a: A, r: Rec, base: str) -> None:
     """无限滚动触发懒加载。pw 无 scroll 工具 → 用 PageDown 键 (公平: 各用各的)。"""
-    await a.nav(f"{TI}/infinite_scroll")
+    await a.nav(f"{base}/infinite_scroll.html")
     c0, _ = await a.eval("document.querySelectorAll('.jscroll-added').length")
     for _ in range(3):
         if a.kind == "nexus":
@@ -96,27 +108,27 @@ async def case_infinite_scroll(a: A, r: Rec) -> None:
     r.check("至少追加 2 屏", n1 >= n0 + 2, f"{n0}→{n1}")
 
 
-async def case_context_menu(a: A, r: Rec) -> None:
-    """右键菜单: pw 有 button=right; 我方无右键参数 (已知缺口, 如实记录)。"""
-    await a.nav(f"{TI}/context_menu")
+async def case_context_menu(a: A, r: Rec, base: str) -> None:
+    """右键菜单: 双方 button=right。the-internet 热区右键触发 alert;
+    我方对话框治理自动 dismiss alert 并留痕 → 以事件记录验证。"""
+    await a.nav(f"{base}/contextmenu.html")
     if a.kind == "pw":
         await a.call("browser_click", {"target": "#hot-spot", "element": "热区", "button": "right"})
         await asyncio.sleep(0.5)
-        # 右键触发 alert: pw 的 modal 态处理
         t, _ = await a.call("browser_handle_dialog", {"accept": True})
-        r.check("右键触发 alert 并处理", "You selected a context menu" in t or True, "以 dialog 事件为准")
+        r.check("右键触发 alert 并处理", "context menu" in t, t[:60])
         return
-    # nexus: 无右键 → 逃生舱 dispatch contextmenu
-    await a.eval("document.getElementById('hot-spot').dispatchEvent(new MouseEvent('contextmenu', {bubbles:true})); 'ok'")
+    # nexus: button=right 原生 (缺口清零后)
+    t, _ = await a.call("browser_click", {"selector": "#hot-spot", "button": "right"})
+    r.check("右键点击执行", "已点击" in t, t[:60])
     await asyncio.sleep(0.5)
-    t, _ = await a.call("browser_dialog_respond", {"accept": False})  # alert 已被自动 dismiss
-    r.check("右键 contextmenu (逃生舱)", True, "无 button=right 参数; synthetic contextmenu 事件")
-    r.check("browser_click 无右键参数 = 能力缺口", False, "待补: click 加 button 参数")
+    errs, _ = await a.call("browser_errors", {"since": 0})
+    r.check("alert 事件留痕 (context menu 文案)", "context menu" in errs, errs[:80])
 
 
-async def case_challenging_dom(a: A, r: Rec) -> None:
+async def case_challenging_dom(a: A, r: Rec, base: str) -> None:
     """id 随页面重载变化的按钮: 定位稳定性。注意: 那些"按钮"是 <a class=button> → a11y 角色是 link。"""
-    await a.nav(f"{TI}/challenging_dom")
+    await a.nav(f"{base}/challenging_dom.html")
     if a.kind == "nexus":
         t, _ = await a.call("browser_click", {"role": "link", "name": "foo"})
     else:
@@ -128,9 +140,9 @@ async def case_challenging_dom(a: A, r: Rec) -> None:
     r.check("点击后页面仍正常", ok)
 
 
-async def case_large_table(a: A, r: Rec) -> None:
+async def case_large_table(a: A, r: Rec, base: str) -> None:
     """大 DOM 表格: 快照上限行为 + 定点读取。"""
-    await a.nav(f"{TI}/large")
+    await a.nav(f"{base}/large.html")
     text, ok = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
     r.check("大表快照返回", ok and len(text) > 100, f"{len(text)} chars")
     if a.kind == "nexus":
@@ -141,51 +153,28 @@ async def case_large_table(a: A, r: Rec) -> None:
         r.check("定点读 25行3列 (eval)", len(t) > 10)
 
 
-async def case_key_presses(a: A, r: Rec) -> None:
+async def case_key_presses(a: A, r: Rec, base: str) -> None:
     """按键投递验证: 结果区回显。"""
-    await a.nav(f"{TI}/key_presses")
+    await a.nav(f"{base}/key_presses.html")
     await a.call("browser_press_key", {"key": "G"})
     await asyncio.sleep(1)
     r.check("按 G 回显", await a.verify("document.getElementById('result').textContent.includes('G')"))
     await a.call("browser_press_key", {"key": "Backspace"})
     await asyncio.sleep(1)
-    r.check("按 Backspace 回显", await a.verify("document.getElementById('result').textContent.includes('BACK_SPACE')"))
+    r.check("按 Backspace 回显", await a.verify("document.getElementById('result').textContent.includes('BACKSPACE')"))
 
 
-async def case_checkboxes(a: A, r: Rec) -> None:
-    await a.nav(f"{TI}/checkboxes")
+async def case_checkboxes(a: A, r: Rec, base: str) -> None:
+    await a.nav(f"{base}/checkboxes.html")
     await a.click_sel("#checkboxes input:nth-child(1)")
     await asyncio.sleep(0.6)
     r.check("checkbox 1 勾选", await a.verify("document.querySelector('#checkboxes input:nth-child(1)').checked === true"))
-    await a.click_sel("#checkboxes input:nth-child(3)")
+    await a.click_sel("#checkboxes input:nth-child(2)")
     await asyncio.sleep(0.6)
-    r.check("checkbox 2 取消", await a.verify("document.querySelector('#checkboxes input:nth-child(3)').checked === false"))
+    r.check("checkbox 2 取消", await a.verify("document.querySelector('#checkboxes input:nth-child(2)').checked === false"))
 
 
-async def case_richtext_iframe(a: A, r: Rec) -> None:
-    """TinyMCE 真实站点: CDN (cachefly) 经代理出口间歇不可达 → 环境项, 不计产品失败。
-    能力测定已迁移到本地确定性 fixture (adversarial 套件 iframe富文本案例)。"""
-    await a.nav(f"{TI}/iframe")
-    ready, _ = await a.eval("document.readyState + '|' + document.querySelectorAll('iframe').length")
-    if "complete" not in ready or "|0" in ready:
-        r.check("TinyMCE CDN 可达性", True, f"环境项跳过 ({ready.strip()}) — 能力见本地 fixture 案例")
-        return
-    snap, _ = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
-    # 编辑器正文在快照中是带占位文本的 paragraph (f-前缀 ref)
-    m = re.search(r'paragraph[^\n]*content goes here[^\n]*?ref=((?:f\d+)?e\d+)', snap)
-    if not m:
-        m = re.search(r'paragraph[^\n]*?ref=(f\d+e\d+)', snap)
-    if not m:
-        r.check("iframe 编辑器 ref 定位", False, f"快照无 f-ref (len={len(snap)})")
-        return
-    ref = m.group(1)
-    await _type(a, ref, "富文本写入测试")
-    txt, _ = await a.eval("(() => { const f = document.querySelector('iframe');"
-                          " return f.contentDocument.getElementById('tinymce').textContent.includes('富文本写入测试'); })()")
-    r.check("contenteditable 写入成功", "true" in txt.lower())
-
-
-async def case_datepicker(a: A, r: Rec) -> None:
+async def case_datepicker(a: A, r: Rec, base: str) -> None:
     """jQuery UI 日期选择器: 点输入框开日历→选 15 号。"""
     await a.nav(f"{JQ}/datepicker/default.html")
     await a.click_sel("#datepicker")
@@ -195,7 +184,7 @@ async def case_datepicker(a: A, r: Rec) -> None:
     r.check("日历选 15 号写入输入框", "true" in txt.lower())
 
 
-async def case_autocomplete(a: A, r: Rec) -> None:
+async def case_autocomplete(a: A, r: Rec, base: str) -> None:
     """jQuery UI 自动补全: 输入→ArrowDown→Enter 选中。"""
     await a.nav(f"{JQ}/autocomplete/default.html")
     await _type(a, "#tags", "ja")
@@ -206,28 +195,35 @@ async def case_autocomplete(a: A, r: Rec) -> None:
     r.check("自动补全选中 Java", "Java" in v, v[:40])
 
 
-async def case_download(a: A, r: Rec) -> None:
-    """文件下载: 双方都无专用工具, 如实记录现状。"""
-    await a.nav(f"{TI}/download")
+async def case_download(a: A, r: Rec, base: str) -> None:
+    """文件下载: 我方已补观测 (事件+落盘+点击回报); pw 侧无 download 工具。"""
+    await a.nav(f"{base}/download.html")
     snap, _ = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
-    m = re.search(r'link "([^"]+\.(?:txt|png|json))".*?ref=((?:f\d+)?e\d+)', snap)
+    m = re.search(r'link "([^"]+\.(?:txt|png|json|zip|pdf|tgz))"[^\n]*?ref=((?:f\d+)?e\d+)', snap)
     if not m:
         r.check("下载链接定位", False, "快照无下载链接")
         return
     if a.kind == "nexus":
-        await a.click_ref(m.group(2))
-    else:
-        await a.call("browser_click", {"target": m.group(2), "element": m.group(1)})
+        t, _ = await a.click_ref(m.group(2))
+        await asyncio.sleep(1.5)
+        if "开始下载" in t:
+            r.check("点击即回报下载 (文件名+路径)", True, t[:80])
+            return
+        # 大文件可能未在窗口内落盘 → 查事件流
+        errs, _ = await a.call("browser_errors", {"since": 0})
+        r.check("下载事件入流 (browser_errors 可见)", "下载" in errs, errs[:80])
+        return
+    await a.call("browser_click", {"target": m.group(2), "element": m.group(1)})
     await asyncio.sleep(1.5)
-    r.check("点击下载链接不崩", True, "双方均无 download 工具/事件 —— 共享缺口, 记录在案")
-    r.check("下载可观测性 = 缺口", False, "无 download 事件/路径回报, 双方同缺")
+    r.check("点击下载链接不崩", True, "")
+    r.check("下载可观测性 = 缺口", False, "pw 无 download 事件/路径回报")
 
 
-async def case_redirect(a: A, r: Rec) -> None:
-    await a.nav(f"{TI}/redirector")
+async def case_redirect(a: A, r: Rec, base: str) -> None:
+    await a.nav(f"{base}/redirector.html")
     await a.click_sel("#redirect")
     await asyncio.sleep(1.2)
-    r.check("重定向到 status_codes", await a.verify("location.href.includes('status_codes')"))
+    r.check("重定向到 status_codes", await a.verify("location.href.includes('redirect_target')"))
 
 
 CASES = [
@@ -239,7 +235,6 @@ CASES = [
     ("大DOM表格", case_large_table),
     ("按键验证", case_key_presses),
     ("复选框", case_checkboxes),
-    ("iframe富文本", case_richtext_iframe),
     ("日期选择器", case_datepicker),
     ("自动补全", case_autocomplete),
     ("文件下载", case_download),
@@ -251,7 +246,7 @@ if _filters:
     CASES = [(n, f) for n, f in CASES if any(x.lower() in n.lower() for x in _filters)]
 
 
-async def run_side(kind: str, params: StdioServerParameters) -> dict:
+async def run_side(kind: str, params: StdioServerParameters, base: str) -> dict:
     async with stdio_client(params) as (rd, wr):
         async with ClientSession(rd, wr) as s:
             await s.initialize()
@@ -263,7 +258,7 @@ async def run_side(kind: str, params: StdioServerParameters) -> dict:
                 r = Rec(name)
                 t0 = time.perf_counter()
                 try:
-                    await fn(a, r)
+                    await fn(a, r, base)
                 except Exception as e:
                     r.check("案例异常中断", False, f"{type(e).__name__}: {e}")
                 calls = a.calls[mark:]
@@ -279,10 +274,14 @@ async def run_side(kind: str, params: StdioServerParameters) -> dict:
 async def main() -> None:
     py = str(ROOT / ".venv" / "Scripts" / "python.exe")
     env = {**os.environ, "BROWSER_HEADLESS": "true", "BROWSER_ALLOW_JS_EXECUTION": "true"}
-    ours = await run_side("nexus", StdioServerParameters(
-        command=py, args=["-m", "nexus_browser.server"], env=env))
-    theirs = await run_side("pw", StdioServerParameters(
-        command="npx", args=["-y", "@playwright/mcp@latest", "--headless"]))
+    base, srv = _serve()
+    try:
+        ours = await run_side("nexus", StdioServerParameters(
+            command=py, args=["-m", "nexus_browser.server"], env=env), base)
+        theirs = await run_side("pw", StdioServerParameters(
+            command="npx", args=["-y", "@playwright/mcp@latest", "--headless"]), base)
+    finally:
+        srv.shutdown()
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "daily-ops.json").write_text(

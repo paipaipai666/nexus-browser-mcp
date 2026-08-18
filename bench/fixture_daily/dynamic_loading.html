@@ -1,0 +1,8 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dynamic</title></head><body>
+<div id="start"><button>Start</button></div>
+<div id="finish" style="display:none">Hello World!</div>
+<script>
+document.querySelector("#start button").addEventListener("click", () => {
+  setTimeout(() => { document.getElementById("finish").style.display = "block"; }, 2000);
+});
+</script></body></html>

@@ -398,15 +398,19 @@ def test_reading_mode_keeps_text_bearing_containers():
     nodes = [
         mk("listitem", "动态追加项 121"),     # 文本 li → 保留
         mk("listitem"),                      # 壳 li → 剔除
-        mk("cell", "¥199"),                  # 表格文本 → 保留
+        mk("cell", "¥199"),                  # 表格文本 (冒号内联位) → 保留
         mk("cell"),                          # 空壳 cell → 剔除
+        {"role": "cell", "name": "R25C3", "text": "", "attrs": "", "depth": 1,
+         "box": (8, 50, 100, 20)},           # 内容在 name 位 (真实 aria 形态) → 保留
         mk("link", box=(8, 30, 100, 20)),    # 交互元素照常
     ]
     out = assemble_snapshot(nodes, (1280, 720), mode="reading")
     texts = [n.get("text") for n in out["detail"]]
+    names = [n.get("name") for n in out["detail"]]
     roles = [n["role"] for n in out["detail"]]
     assert "动态追加项 121" in texts and "¥199" in texts and "link" in roles
-    assert roles.count("listitem") == 1 and roles.count("cell") == 1
+    assert "R25C3" in names  # name 位内容
+    assert roles.count("listitem") == 1 and roles.count("cell") == 2
 
 
 # ── Web Vitals 格式化 ─────────────────────────────────────────────

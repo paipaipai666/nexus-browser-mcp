@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Large</title></head><body>
+<table id="t"><tbody></tbody></table>
+<script>
+const tb = document.querySelector("#t tbody");
+for (let r = 1; r <= 60; r++) {
+  const tr = document.createElement("tr");
+  for (let c = 1; c <= 8; c++) { const td = document.createElement("td");
+    td.textContent = `R${r}C${c}`; tr.appendChild(td); }
+  tb.appendChild(tr);
+}
+</script></body></html>

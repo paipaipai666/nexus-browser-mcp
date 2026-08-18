@@ -26,6 +26,7 @@ class BrowserSettings(BaseSettings):
                                    description="挂起对话框无决策自动 dismiss 超时(ms)")
     context_ttl_sec: int = Field(default=600, ge=60, le=3600, description="空闲 task 自动回收(秒)")
     screenshot_dir: str = Field(default="", description="截图保存目录, 空则 ~/.nexus-browser/screenshots")
+    download_dir: str = Field(default="", description="下载保存目录, 空则 ~/.nexus-browser/downloads")
     allow_js_execution: bool = Field(default=False, description="browser_evaluate 开关")
     allow_network_body: bool = Field(default=False, description="browser_network_body 开关(响应体含敏感数据, 默认关)")
     network_body_cap: int = Field(default=4000, ge=200, le=200000, description="单条响应体返回字符上限")

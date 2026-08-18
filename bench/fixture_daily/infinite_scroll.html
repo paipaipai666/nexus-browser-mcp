@@ -1,0 +1,16 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Infinite</title></head><body>
+<div id="feed"></div>
+<script>
+let n = 0;
+function add(k) { for (let i = 0; i < k; i++) { const d = document.createElement("div");
+  d.className = "jscroll-added"; d.style.height = "600px"; d.textContent = "段落 " + (++n);
+  document.getElementById("feed").appendChild(d); } }
+add(2);  // 初始 1200px > 720 视口, 保证可滚动 (add(1) 只有 600px 无滚动空间 → 滚动事件永不触发)
+let busy = false;
+window.addEventListener("scroll", () => {
+  if (busy) return;
+  if (window.scrollY + innerHeight > document.body.scrollHeight - 400) {
+    busy = true; setTimeout(() => { add(1); busy = false; }, 200);
+  }
+});
+</script></body></html>

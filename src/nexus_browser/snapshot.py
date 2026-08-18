@@ -452,7 +452,8 @@ def assemble_snapshot(
     elif mode == "reading":
         detail = [n for n in all_nodes
                   if n.get("role") in READING_ROLES
-                  or (n.get("role") in TEXT_BEARING_ROLES and n.get("text"))]
+                  or (n.get("role") in TEXT_BEARING_ROLES and (n.get("text") or n.get("name")))]
+                  # 文本可能在 text(冒号内联) 也可能在 name(引号位, cell/heading 实测定案)
     else:  # full
         detail = [n for n in all_nodes if n.get("role") in NON_GENERIC_ROLES]
 

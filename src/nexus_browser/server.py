@@ -20,7 +20,7 @@ from mcp.server.mcpserver.context import Context as _MCPContext
 
 from nexus_browser import fmt
 from nexus_browser.core import BrowserManager
-from nexus_browser.events import KIND_CONSOLE, KIND_DIALOG, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST
+from nexus_browser.events import KIND_CONSOLE, KIND_DIALOG, KIND_DOWNLOAD, KIND_NAV, KIND_PAGEERROR, KIND_REQUEST
 from nexus_browser.gates import AuditLogger, hitl_required
 from nexus_browser.settings import BrowserSettings
 from nexus_browser.snapshot import (
@@ -379,15 +379,19 @@ async def browser_snapshot(scope: str | None = None, mode: str = "reading",
 
 
 async def browser_click(ref=None, role=None, name=None, selector=None, double_click=False,
-                   pos=None, wait_stable: bool = False, confirmed: bool = False, *, task_id: str = ""):
+                   pos=None, wait_stable: bool = False, button: str = "left",
+                   confirmed: bool = False, *, task_id: str = ""):
     tid = _default_task(task_id)
     block = _hitl_block("click", role, name, tid, confirmed)
     if block:
         return block
-    return await _click(tid, ref, role, name, selector, double_click, pos, wait_stable)
+    return await _click(tid, ref, role, name, selector, double_click, pos, wait_stable, button)
 
 
-async def _click(task_id, ref, role, name, selector, double_click, pos, wait_stable=False) -> str:
+async def _click(task_id, ref, role, name, selector, double_click, pos, wait_stable=False,
+                 button: str = "left") -> str:
+    if button not in ("left", "right", "middle"):
+        return fmt.error(f"不支持的 button: {button}", hint="left / right(上下文菜单) / middle(新标签后台打开)")
     err = await _require_task(task_id)  # Issue K: 未知 task 显式报错, 不静默建空 task
     if err:
         return err
@@ -398,7 +402,10 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
         if isinstance(locator, str):  # pos: 坐标点击
             x, y, w, h = (int(p) for p in locator.split(","))
             cx, cy = x + w // 2, y + h // 2
-            await ts.page.mouse.dblclick(cx, cy) if double_click else await ts.page.mouse.click(cx, cy)
+            if double_click:
+                await ts.page.mouse.dblclick(cx, cy)
+            else:
+                await ts.page.mouse.click(cx, cy, button=button)
             if wait_stable:
                 await _settle_after_action(ts)
             return f"已点击坐标 ({cx}, {cy})。"
@@ -409,10 +416,11 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
         if double_click:
             await locator.dblclick(timeout=5000, no_wait_after=True)
         else:
-            await locator.click(timeout=5000, no_wait_after=True)
-        # 新标签裁决: context "page" 事件异步到达, 短窗口内出现 → 明确告知并切换
+            await locator.click(timeout=5000, no_wait_after=True, button=button)
+        # 新标签/下载裁决: context "page" 事件与 download 事件异步到达, 短窗口内出现 → 明确告知
         t0 = monotonic()
-        while monotonic() - t0 < 0.5 and ts.pending_new_page is None:
+        while (monotonic() - t0 < 0.8
+               and ts.pending_new_page is None and ts.pending_download is None):
             await asyncio.sleep(0.05)
         if ts.pending_new_page is not None:
             _manager.consume_pending_new_page(_sid(), task_id)
@@ -420,6 +428,12 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
                 await _settle_after_action(ts)
             idx = len(ts.pages) - 1
             return f"已点击元素; 链接在新标签打开 (index={idx}), 已自动切换为当前页。"
+        if ts.pending_download is not None:
+            dl = ts.pending_download
+            ts.pending_download = None
+            if wait_stable:
+                await _settle_after_action(ts)
+            return f"已点击元素; 开始下载: {dl['filename']} → 已保存 {dl['path']}"
         if wait_stable:
             await _settle_after_action(ts)
         return "已点击元素。"
@@ -1186,6 +1200,9 @@ def _fmt_event(e) -> str:
         return f"  #{e.seq} [pageerror] {e.text}"
     if e.kind == KIND_DIALOG:
         return f"  #{e.seq} [dialog:{e.level}] {e.text}"
+    if e.kind == KIND_DOWNLOAD:
+        url = f"  ← {e.url}" if e.url else ""
+        return f"  #{e.seq} ⤓ 下载: {e.text}{url}"
     # request
     status = str(e.status) if e.status is not None else f"FAILED: {e.failure}"
     rt = f" ({e.resource_type})" if e.resource_type else ""
@@ -1266,7 +1283,7 @@ async def _errors(task_id, since, limit) -> str:
     ts = await _manager.ensure_task(_sid(), task_id)
 
     def match(e) -> bool:
-        if e.kind in (KIND_NAV, KIND_PAGEERROR, KIND_DIALOG):
+        if e.kind in (KIND_NAV, KIND_PAGEERROR, KIND_DIALOG, KIND_DOWNLOAD):
             return True
         if e.kind == KIND_CONSOLE:
             return e.level == "error"
@@ -1274,7 +1291,7 @@ async def _errors(task_id, since, limit) -> str:
 
     evs, buf, more = _manager.events.read(
         ts.page, "errors", since=since,
-        kinds={KIND_PAGEERROR, KIND_CONSOLE, KIND_REQUEST, KIND_NAV, KIND_DIALOG},
+        kinds={KIND_PAGEERROR, KIND_CONSOLE, KIND_REQUEST, KIND_NAV, KIND_DIALOG, KIND_DOWNLOAD},
         match=match, limit=_clamp_limit(limit),
     )
     return _render_events("errors", evs, buf, more, "未发现异常或失败请求。")
@@ -1546,11 +1563,13 @@ def _register_all(register) -> None:
              "task_id": {"type": "string"},
          }, "required": []}),
         (browser_click, "browser_click",
-         "点击页面元素。定位优先级: pos坐标 → ref(快照句柄) → selector → role+name → name。wait_stable=true 点击后等 DOM 静默。",
+         "点击页面元素。定位优先级: pos坐标 → ref(快照句柄) → selector → role+name → name。wait_stable=true 点击后等 DOM 静默。"
+         "button=right 右键(上下文菜单), middle 中键。点击触发下载时自动回报文件名与保存路径。",
          {"type": "object", "properties": {
              "pos": {"type": "string"}, "ref": {"type": "string", "description": "快照输出的 ref, 如 e12"},
              "role": {"type": "string"}, "name": {"type": "string"},
              "selector": {"type": "string"}, "double_click": {"type": "boolean", "default": False},
+             "button": {"type": "string", "enum": ["left", "right", "middle"], "default": "left"},
              "wait_stable": {"type": "boolean", "default": False},
              "confirmed": {"type": "boolean", "default": False, "description": "命中 HITL 且用户已同意时置 true 重调"},
              "task_id": {"type": "string"},

@@ -1,0 +1,8 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ctx</title></head><body>
+<div id="hot-spot" style="width:300px;height:150px;border:2px dashed #666">右键热区</div>
+<script>
+document.getElementById("hot-spot").addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  alert("You selected a context menu");
+});
+</script></body></html>
