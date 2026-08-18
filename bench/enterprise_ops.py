@@ -64,9 +64,12 @@ async def _eval_num(a: A, expr: str) -> float | None:
 
 
 async def _read_page_text(a: A) -> str:
-    """用工具读页面正文 (答案的合法来源): nexus=browser_read, pw=全量 snapshot。"""
+    """用工具读页面正文 (答案的合法来源): nexus=read, pw/cdt=snapshot。"""
     if a.kind == "nexus":
         t, _ = await a.call("browser_read", {"max_chars": 4000})
+        return t
+    if a.kind == "cdt":
+        t, _ = await a.call("take_snapshot", {})
         return t
     t, _ = await a.call("browser_snapshot", {})
     return t
@@ -86,17 +89,11 @@ async def case_list_filter(a: A, r: Rec, base: str) -> None:
     name = all_rows[0][1]  # 必存在的客户名
     exp_name = sum(1 for row in all_rows if name in row[1])
     exp_combo = sum(1 for row in all_rows if name in row[1] and row[2] == "已发货")
-    if a.kind == "nexus":
-        await a.call("browser_type", {"selector": "#q", "text": name})
-    else:
-        await a.call("browser_type", {"target": "#q", "element": "过滤框", "text": name})
+    await a.type_into("#q", name)
     await asyncio.sleep(0.5)
     visible = await _eval_num(a, "document.querySelectorAll('#t tbody tr').length")
     r.check("名称过滤: 行数=真值", visible == exp_name, f"visible={visible} truth={exp_name}")
-    if a.kind == "nexus":
-        await a.call("browser_select_option", {"values": ["已发货"], "selector": "#st"})
-    else:
-        await a.call("browser_select_option", {"target": "#st", "element": "状态", "values": ["已发货"]})
+    await a.select_native("#st", ["已发货"])
     await asyncio.sleep(0.5)
     visible2 = await _eval_num(a, "document.querySelectorAll('#t tbody tr').length")
     r.check("名称+状态组合过滤", visible2 == exp_combo, f"visible={visible2} truth={exp_combo}")
@@ -137,10 +134,7 @@ async def case_dashboard(a: A, r: Rec, base: str) -> None:
 async def case_kb_answer(a: A, r: Rec, base: str) -> None:
     """知识库答题: 搜索退款政策 → 打开 → 回答"退款期限几天", 答案须来自工具输出。"""
     await a.nav(f"{base}/kb.html")
-    if a.kind == "nexus":
-        await a.call("browser_type", {"selector": "#q", "text": "退款"})
-    else:
-        await a.call("browser_type", {"target": "#q", "element": "搜索框", "text": "退款"})
+    await a.type_into("#q", "退款")
     await asyncio.sleep(0.5)
     count = await _eval_num(a, "document.querySelectorAll('#list li').length")
     r.check("搜索过滤命中 1 篇", count == 1, f"count={count}")
@@ -157,9 +151,14 @@ async def case_kb_answer(a: A, r: Rec, base: str) -> None:
 async def case_shop_order(a: A, r: Rec, base: str, tag: str = "") -> None:
     """多步下单: 读列表找最低价 → 点开 → 填单 → 提交 → 确认页。元素命中=data-ok 旗标。"""
     await a.nav(f"{base}/shop.html")
-    text, _ = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
-    # 从工具输出解析商品与价格 (agent 视角的信息来源)
-    items = re.findall(r'link "([^"]+?) ¥(\d+)"[^\n]*?ref=((?:f\d+)?e\d+)', text)
+    if a.kind == "cdt":
+        text, _ = await a.call("take_snapshot", {})
+        items = [(m.group(2), m.group(3), m.group(1)) for m in
+                 re.finditer(r'uid=(\d+_\d+) link "([^"]+?) ¥(\d+)"', text)]
+    else:
+        text, _ = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
+        items = [(m.group(1), m.group(2), m.group(3)) for m in
+                 re.finditer(r'link "([^"]+?) ¥(\d+)"[^\n]*?ref=((?:f\d+)?e\d+)', text)]
     if not items:
         r.check("解析商品列表", False, f"快照中无商品行 (len={len(text)})")
         return
@@ -169,20 +168,17 @@ async def case_shop_order(a: A, r: Rec, base: str, tag: str = "") -> None:
                                      ".map(x => +x.textContent.match(/¥(\\d+)/)[1]))")
     r.check("工具输出最低价=真值", truth_price is not None and int(price) == truth_price,
             f"tool={price} truth={truth_price}")
-    if a.kind == "nexus":
-        await a.click_ref(ref)
-    else:
-        await a.call("browser_click", {"target": ref, "element": name})
+    await a.click_ref(ref)
     await asyncio.sleep(0.5)
-    if a.kind == "nexus":
-        await a.call("browser_type", {"selector": "#qty", "text": "2"})
-        await a.call("browser_type", {"selector": "#rcpt", "text": "张三"})
-        await a.call("browser_type", {"selector": "#addr", "text": "上海市浦东新区"})
-    else:
+    if a.kind == "pw":
         await a.call("browser_fill_form", {"fields": [
             {"name": "数量", "target": "#qty", "type": "textbox", "value": "2"},
             {"name": "收货人", "target": "#rcpt", "type": "textbox", "value": "张三"},
             {"name": "地址", "target": "#addr", "type": "textbox", "value": "上海市浦东新区"}]})
+    else:
+        await a.type_into("#qty", "2")
+        await a.type_into("#rcpt", "张三")
+        await a.type_into("#addr", "上海市浦东新区")
     await a.click_sel("#buy")
     await asyncio.sleep(0.6)
     confirm_ok = await a.verify("document.getElementById('confirm').textContent.includes('订单已提交')")
@@ -205,8 +201,11 @@ async def case_price_compare(a: A, r: Rec, base: str) -> None:
         await a.click_sel("#toB")
         await asyncio.sleep(1)
         text_b = await _read_page_text(a)
+    elif a.kind == "cdt":
+        # cdt: 同标签导航 (无 navigate_back; 回退用 evaluate history.back)
+        await a.nav(f"{base}/shop_b.html")
+        text_b = await _read_page_text(a)
     else:
-        # pw: 同标签导航 (其 tab 处理不作为本案例考点)
         await a.nav(f"{base}/shop_b.html")
         text_b = await _read_page_text(a)
     m2 = re.search(r"¥(\d+)", text_b)
@@ -219,6 +218,8 @@ async def case_price_compare(a: A, r: Rec, base: str) -> None:
     else:
         if a.kind == "nexus":
             await a.call("browser_switch_page", {"index": 0})
+        elif a.kind == "cdt":
+            await a.eval("history.back()")
         else:
             await a.call("browser_navigate_back", {})
         await asyncio.sleep(0.8)
@@ -279,25 +280,32 @@ async def main() -> None:
             command=py, args=["-m", "nexus_browser.server"], env=env), base)
         theirs = await run_side("pw", StdioServerParameters(
             command="npx", args=["-y", "@playwright/mcp@latest", "--headless"]), base)
+        cdt = await run_side("cdt", StdioServerParameters(
+            command="npx", args=["-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"]), base)
     finally:
         srv.shutdown()
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "enterprise-ops.json").write_text(
-        json.dumps({"nexus": ours, "playwright": theirs}, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps({"nexus": ours, "playwright": theirs, "chrome_devtools": cdt},
+                   ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(f"\n{'case':16s} │ {'nexus':>7s} {'tok':>5s} {'calls':>5s} │ {'pw':>7s} {'tok':>5s} {'calls':>5s}")
-    for ca, cb in zip(ours["cases"], theirs["cases"]):
-        print(f"{ca['case']:16s} │ {ca['passed']:>3d}/{ca['total']:<3d} {ca['tokens']:5d} {ca['calls_n']:5d} │ "
-              f"{cb['passed']:>3d}/{cb['total']:<3d} {cb['tokens']:5d} {cb['calls_n']:5d}")
-    for label, res in (("TOTAL", (ours, theirs)),):
-        a, b = res
-        ta = (sum(c['passed'] for c in a['cases']), sum(c['total'] for c in a['cases']),
-              sum(c['tokens'] for c in a['cases']), sum(c['calls_n'] for c in a['cases']))
-        tb = (sum(c['passed'] for c in b['cases']), sum(c['total'] for c in b['cases']),
-              sum(c['tokens'] for c in b['cases']), sum(c['calls_n'] for c in b['cases']))
-        print("-" * 62)
-        print(f"{label:16s} │ {ta[0]:>3d}/{ta[1]:<3d} {ta[2]:5d} {ta[3]:5d} │ {tb[0]:>3d}/{tb[1]:<3d} {tb[2]:5d} {tb[3]:5d}")
+    sides = [ours, theirs, cdt]
+    print(f"\n{'case':16s} │ {'nx 子任务':>7s} {'tok':>5s} │ {'pw 子任务':>7s} {'tok':>5s} │ {'cdt 子任务':>7s} {'tok':>5s}")
+    for i, name in enumerate([n for n, _ in CASES]):
+        row = f"{name:16s} │"
+        for sd in sides:
+            c = sd["cases"][i]
+            row += f" {c['passed']:>3d}/{c['total']:<3d} {c['tokens']:5d} │"
+        print(row)
+    row = f"{'TOTAL':16s} │"
+    for sd in sides:
+        p = sum(c['passed'] for c in sd['cases'])
+        t_ = sum(c['total'] for c in sd['cases'])
+        tk = sum(c['tokens'] for c in sd['cases'])
+        row += f" {p:>3d}/{t_:<3d} {tk:5d} │"
+    print("-" * 62)
+    print(row)
 
 
 if __name__ == "__main__":

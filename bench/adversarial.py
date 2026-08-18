@@ -41,7 +41,7 @@ DONE_CHECK = ("(() => { const d = document.getElementById('done');"
 
 
 class A:
-    """适配器: 两侧工具名/参数差异 + 计量。"""
+    """适配器: 三侧工具名/参数差异 + 计量。nexus / pw(playwright-mcp) / cdt(chrome-devtools-mcp)。"""
 
     def __init__(self, s: ClientSession, kind: str) -> None:
         self.s, self.kind = s, kind
@@ -63,22 +63,103 @@ class A:
         return text, ok
 
     def nav(self, url: str):
+        if self.kind == "cdt":
+            return self.call("navigate_page", {"type": "url", "url": url})
         return self.call("browser_navigate", {"url": url})
 
     def click_sel(self, sel: str):
         if self.kind == "nexus":
             return self.call("browser_click", {"selector": sel})
-        return self.call("browser_click", {"target": sel, "element": sel})
+        if self.kind == "pw":
+            return self.call("browser_click", {"target": sel, "element": sel})
+        return self._cdt_act_on(sel, "click")          # cdt: 先解析 uid
 
     def click_ref(self, ref: str):
         if self.kind == "nexus":
             return self.call("browser_click", {"ref": ref})
-        return self.call("browser_click", {"target": ref, "element": "iframe button"})
+        if self.kind == "pw":
+            return self.call("browser_click", {"target": ref, "element": "bench target"})
+        return self.call("click", {"uid": ref})
 
-    def eval(self, expr: str):
+    async def eval(self, expr: str):
         if self.kind == "nexus":
-            return self.call("browser_evaluate", {"expression": expr, "confirmed": True})
-        return self.call("browser_evaluate", {"function": f"() => {expr}"})
+            return await self.call("browser_evaluate", {"expression": expr, "confirmed": True})
+        if self.kind == "pw":
+            return await self.call("browser_evaluate", {"function": f"() => {expr}"})
+        text, ok = await self.call("evaluate_script", {"function": f"() => {expr}"})
+        # CDT 格式 "Script ran on page and returned:\n```json\n<value>\n```" → 归一化为裸值
+        m = re.search(r"```json\s*\n(.+?)\n?\s*```", text, re.S)
+        return ((m.group(1).strip()) if m else text, ok)
+
+    async def _cdt_uid_for(self, sel: str, allow_static: bool = False) -> str | None:
+        """cdt 无 selector 定位: eval 取可访问名 → take_snapshot 文本反查 uid。
+        角色约束防误配 StaticText/容器; click 允许 StaticText 兜底 (表头排序等: 可点容器
+        在 CDT dump 里就是 StaticText)。"""
+        name_txt, _ = await self.eval(
+            f"(() => {{ const e = document.querySelector({json.dumps(sel)});"
+            f" if (!e) return ''; let n = e.getAttribute('aria-label') || e.getAttribute('placeholder') || '';"
+            f" if (!n) {{ const l = e.closest('label'); if (l) n = l.textContent; }}"   # 包裹 label
+            f" if (!n && e.id) {{ const l2 = document.querySelector('label[for=' + JSON.stringify(e.id) + ']');"
+            f"   if (l2) n = l2.textContent; }}"                                          # for= 关联 label
+            f" if (!n) n = (e.tagName === 'SELECT' ? e.options[e.selectedIndex].text : e.textContent);"
+            f" if (!n) n = e.id || '';"
+            f" return n.trim().slice(0, 40); }})()")
+        m = re.search(r'"?([^"\n]+?)"?\s*(?:###|$)', name_txt)
+        name = (m.group(1) if m else "").strip()
+        if not name:
+            return None
+        snap, _ = await self.call("take_snapshot", {})
+        role_re = re.compile(r"uid=(\d+_\d+)\s+(textbox|combobox|button|link|option|checkbox|"
+                             r"radio|switch|tab|searchbox|slider|spinbutton|menuitem)\b")
+        fallback = None
+        for line in snap.splitlines():
+            if name[:20] in line:
+                m2 = role_re.search(line)
+                if m2:
+                    return m2.group(1)
+                if allow_static and fallback is None:
+                    m3 = re.search(r"uid=(\d+_\d+)", line)
+                    if m3:
+                        fallback = m3.group(1)
+        return fallback
+
+    async def _cdt_act_on(self, sel: str, action: str, value: str = "") -> tuple[str, bool]:
+        uid = await self._cdt_uid_for(sel, allow_static=(action == "click"))
+        if not uid:
+            return f"cdt: uid 未定位 ({sel})", False
+        if action == "click":
+            return await self.call("click", {"uid": uid})
+        if action == "fill":
+            return await self.call("fill", {"uid": uid, "value": value})
+        return "unknown action", False
+
+    async def type_into(self, sel: str, text: str, enter: bool = False):
+        """三侧统一的"往选择器指向的输入框填文本"。"""
+        if self.kind == "nexus":
+            return await self.call("browser_type", {"selector": sel, "text": text, "press_enter": enter})
+        if self.kind == "pw":
+            return await self.call("browser_type", {"target": sel, "element": sel, "text": text, "submit": enter})
+        out = await self._cdt_act_on(sel, "fill", text)
+        if enter and out[1]:
+            await self.call("press_key", {"key": "Enter"})
+        return out
+
+    async def select_native(self, sel: str, values: list[str]):
+        if self.kind == "nexus":
+            return await self.call("browser_select_option", {"values": values, "selector": sel})
+        if self.kind == "pw":
+            return await self.call("browser_select_option", {"target": sel, "element": sel, "values": values})
+        # cdt: 无 select 工具 — 点开 combobox 再点 option
+        out = await self._cdt_act_on(sel, "click")
+        if not out[1]:
+            return out
+        snap, _ = await self.call("take_snapshot", {})
+        for line in snap.splitlines():
+            if f'option "{values[0]}"' in line:
+                m = re.search(r"uid=(\d+_\d+)", line)
+                if m:
+                    return await self.call("click", {"uid": m.group(1)})
+        return "cdt: option 未定位", False
 
     async def snap_ref(self, name_pat: str) -> str | None:
         # diff=false: navigate 已播种基线, 默认快照会命中 diff 返回短消息(无 ref 行) —— 取 ref 必须显式全量

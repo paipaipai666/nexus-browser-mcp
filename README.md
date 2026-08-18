@@ -168,7 +168,7 @@ Same 10-step task, both servers at default config, metered at the JSON-RPC paylo
 
 **7.5x fewer tokens overall; 100x on repeated snapshots** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
 
-Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 31/42**, **18.2k vs 566.4k tokens (31x)**, wall-clock **107s vs 179s** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Enterprise task suite (filter/sort, dashboard reading, KB answers, multi-step ordering, price comparison — [docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)): **21/21 both, tokens 3.6k vs 5.1k**.
+Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 31/42**, **18.2k vs 566.4k tokens (31x)**, wall-clock **107s vs 179s** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Enterprise task suite (filter/sort, dashboard reading, KB answers, multi-step ordering, price comparison — [docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)): **21/21 on all three servers (vs playwright-mcp and chrome-devtools-mcp); tokens 3.6k vs 5.1k vs 10.9k**.
 
 HITL confirmation closes a loop: any gated call returns `CONFIRMATION_REQUIRED` once; after the user approves in chat, the agent re-calls with `confirmed=true` (applies to HITL rules, `browser_evaluate`, `browser_network_body`).
 
