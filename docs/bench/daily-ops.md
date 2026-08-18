@@ -43,4 +43,4 @@
 
 ## 仪式化建议
 
-`daily_ops`（能力日常面）+ `realworld`（真实站点）+ `adversarial`（能力边界）三套并列, 发版前手动跑; 全部国内网络友好。
+`compare`（协议层）/ `realworld`（真实站点）/ `adversarial`（能力边界）/ `daily_ops`（日常面）/ `enterprise_ops`（企业知识工作, 三方）/ `scale_ops`（106 案例规模化, 三方）/ `newtools_real`（新工具真站点）七套并列, 发版前手动跑; 全部国内网络友好。

@@ -148,6 +148,9 @@ Every option can be overridden via `BROWSER_`-prefixed env vars:
 | `BROWSER_ALLOW_JS_EXECUTION` | `false` | Allow `browser_evaluate` (unconditional HITL when enabled) |
 | `BROWSER_HITL_RULES` | `[]` | JSON array of HITL rules, e.g. `[{"action":"click","name_pattern":"pay|confirm"}]` |
 | `BROWSER_AUDIT_PATH` | `~/.nexus-browser/audit.jsonl` | Audit log path |
+| `BROWSER_DIALOG_TIMEOUT_MS` | `20000` | Parked confirm/prompt auto-dismiss timeout (trail kept in event log) |
+| `BROWSER_DOWNLOAD_DIR` | `~/.nexus-browser/downloads` | Where accepted downloads are saved (click reports filename + path) |
+| `BROWSER_PROXY` | `""` | `none` = launch browser with `--no-proxy-server` (bypass system proxy) |
 
 ## Tools
 
@@ -168,7 +171,7 @@ Same 10-step task, both servers at default config, metered at the JSON-RPC paylo
 
 **7.5x fewer tokens overall; 100x on repeated snapshots** — the dominant cost in real agent loops (polling, multi-step forms, state confirmation).
 
-Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 31/42**, **18.2k vs 566.4k tokens (31x)**, wall-clock **107s vs 179s** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Enterprise task suite (filter/sort, dashboard reading, KB answers, multi-step ordering, price comparison — [docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)): **21/21 on all three servers (vs playwright-mcp and chrome-devtools-mcp); tokens 3.6k vs 5.1k vs 10.9k**.
+Real-site benchmark (7 scenarios × 5-7 verifiable sub-tasks each: Baidu/Bing/DuckDuckGo search, Wikipedia reading, Hacker News, GitHub browsing — [docs/bench/realworld.md](docs/bench/realworld.md)): **sub-task completion 37/42 vs 31/42**, **18.2k vs 566.4k tokens (31x)**, wall-clock **107s vs 179s** — one Wikipedia article snapshot alone costs pw-mcp ~252k tokens where nexus caps + diffs. Enterprise task suite (filter/sort, dashboard reading, KB answers, multi-step ordering, price comparison — [docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)): **21/21 on all three servers (vs playwright-mcp and chrome-devtools-mcp); tokens 3.6k vs 5.1k vs 10.9k**. At scale (**106 cases / 184 sub-tasks, three servers, seeded deterministic fixtures** — [docs/bench/scale-ops.md](docs/bench/scale-ops.md)): **completion 184/184 vs 180/184 vs 178/184; tokens 153.5k vs 180.5k vs 231.1k (1.00 : 1.18 : 1.51)** — the competitor gaps are stable zeros (richtext-iframe writes, download observability, right-click), not noise.
 
 HITL confirmation closes a loop: any gated call returns `CONFIRMATION_REQUIRED` once; after the user approves in chat, the agent re-calls with `confirmed=true` (applies to HITL rules, `browser_evaluate`, `browser_network_body`).
 
