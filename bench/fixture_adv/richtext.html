@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>richtext-host</title></head><body>
+<h1>富文本宿主</h1>
+<iframe src="richtext_frame.html" style="width:600px;height:200px"></iframe>
+<div id="done" style="display:none">RICH-OK</div>
+<script>
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.startsWith("rich:")) document.getElementById("done").style.display = "block";
+});
+</script></body></html>

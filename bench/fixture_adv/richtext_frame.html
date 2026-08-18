@@ -1,0 +1,8 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>rt-frame</title></head><body>
+<div id="ed" contenteditable="true" style="border:1px solid #999;min-height:80px"><p>在此输入…</p></div>
+<script>
+const ed = document.getElementById("ed");
+ed.addEventListener("input", () => {
+  if (ed.textContent.includes("富文本写入测试")) parent.postMessage("rich:ok", "*");
+});
+</script></body></html>

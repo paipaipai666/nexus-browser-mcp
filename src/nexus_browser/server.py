@@ -468,9 +468,32 @@ async def _type(task_id, text, ref, role, name, selector, clear, press_enter, po
             if wait_stable:
                 await _settle_after_action(ts)
             return "已输入文本。"
-        if clear:
-            await locator.clear(timeout=5000)
-        await locator.fill(text, timeout=5000)
+        try:
+            if clear:
+                await locator.clear(timeout=5000)
+            await locator.fill(text, timeout=5000)
+            # fill 对"内嵌在 contenteditable 容器里的子元素"静默无效 (Playwright 层, 实测捕获)
+            # → 读回校验: 目标值/文本不含所填内容即视为未写入
+            try:
+                current = await locator.evaluate("e => e.value ?? e.textContent ?? ''")
+                landed = text in (current or "")
+            except Exception:
+                landed = True  # 读回失败不动 fill 结果 (正常 input 路径)
+        except Exception:
+            landed = False
+        if not landed:
+            # 升级到最近 contenteditable 容器 (无则退回目标本身), 聚焦逐键写入
+            host = locator.locator("xpath=ancestor-or-self::*[@contenteditable='true'][1]")
+            try:
+                if await host.count() == 0:
+                    host = locator
+            except Exception:
+                host = locator
+            await host.click(timeout=3000, no_wait_after=True)
+            if clear:
+                await host.press("Control+a")
+                await host.press("Delete")
+            await host.press_sequentially(text, timeout=5000)
         if press_enter:
             await locator.press("Enter")
         if wait_stable:

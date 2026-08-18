@@ -7,84 +7,91 @@
         "note": "browser_hover 真实鼠标移动",
         "calls": 4,
         "tokens": 155,
-        "ms": 4406
+        "ms": 4345
       },
       "select下拉": {
         "tier": "native",
         "note": "select_option 直达",
         "calls": 3,
         "tokens": 154,
-        "ms": 3225
+        "ms": 3223
       },
       "文件上传": {
         "tier": "native",
         "note": "upload_file (confirmed=true, HITL 门)",
         "calls": 3,
         "tokens": 178,
-        "ms": 3212
+        "ms": 3220
       },
       "键盘Esc": {
         "tier": "native",
         "note": "press_key 真实 CDP 键事件",
         "calls": 4,
         "tokens": 163,
-        "ms": 3739
+        "ms": 3727
       },
       "confirm对话框": {
         "tier": "native",
         "note": "挂起 → dialog_respond(accept, confirmed=true) → confirm() 返回 true",
         "calls": 4,
         "tokens": 317,
-        "ms": 9031
+        "ms": 9036
       },
       "HTML5拖拽": {
         "tier": "native",
         "note": "browser_drag 真实输入管线",
         "calls": 3,
         "tokens": 128,
-        "ms": 1768
+        "ms": 1748
       },
       "批量表单": {
         "tier": "native",
         "note": "调用数对比: 对手 fill_form=1 次 vs 我方 type=5 次",
         "calls": 8,
         "tokens": 365,
-        "ms": 1477
+        "ms": 1537
       },
       "后退导航": {
         "tier": "native",
         "note": "navigate_back 直达",
         "calls": 4,
         "tokens": 235,
-        "ms": 2752
+        "ms": 2750
       },
       "iframe深交互": {
         "tier": "native",
         "note": "ref=f11e2",
         "calls": 4,
         "tokens": 350,
-        "ms": 1462
+        "ms": 1474
+      },
+      "iframe富文本": {
+        "tier": "native",
+        "note": "ref=f13e3",
+        "calls": 4,
+        "tokens": 375,
+        "ms": 963
       }
     },
     "calls": [
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3754,
+        "ms": 3700,
         "tokens": 92,
         "note": ""
       },
       {
         "tool": "browser_hover",
         "ok": true,
-        "ms": 46,
+        "ms": 50,
         "tokens": 13,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 595,
+        "ms": 584,
         "tokens": 12,
         "note": ""
       },
@@ -98,14 +105,14 @@
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3205,
+        "ms": 3200,
         "tokens": 97,
         "note": ""
       },
       {
         "tool": "browser_select_option",
         "ok": true,
-        "ms": 16,
+        "ms": 19,
         "tokens": 19,
         "note": ""
       },
@@ -119,7 +126,7 @@
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3195,
+        "ms": 3203,
         "tokens": 96,
         "note": ""
       },
@@ -140,7 +147,7 @@
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3205,
+        "ms": 3194,
         "tokens": 102,
         "note": ""
       },
@@ -168,49 +175,49 @@
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3200,
+        "ms": 3192,
         "tokens": 98,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 5015,
+        "ms": 5016,
         "tokens": 159,
         "note": ""
       },
       {
         "tool": "browser_dialog_respond",
         "ok": true,
-        "ms": 812,
+        "ms": 824,
         "tokens": 22,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 3,
+        "ms": 2,
         "tokens": 38,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 833,
+        "ms": 837,
         "tokens": 68,
         "note": ""
       },
       {
         "tool": "browser_drag",
         "ok": true,
-        "ms": 931,
+        "ms": 908,
         "tokens": 22,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 4,
+        "ms": 2,
         "tokens": 38,
         "note": ""
       },
@@ -224,42 +231,42 @@
       {
         "tool": "browser_type",
         "ok": true,
-        "ms": 14,
+        "ms": 29,
         "tokens": 18,
         "note": ""
       },
       {
         "tool": "browser_type",
         "ok": true,
-        "ms": 11,
+        "ms": 17,
         "tokens": 18,
         "note": ""
       },
       {
         "tool": "browser_type",
         "ok": true,
-        "ms": 11,
+        "ms": 16,
         "tokens": 18,
         "note": ""
       },
       {
         "tool": "browser_type",
         "ok": true,
-        "ms": 10,
+        "ms": 17,
         "tokens": 18,
         "note": ""
       },
       {
         "tool": "browser_type",
         "ok": true,
-        "ms": 11,
+        "ms": 16,
         "tokens": 18,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 578,
+        "ms": 600,
         "tokens": 11,
         "note": ""
       },
@@ -273,14 +280,14 @@
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 840,
+        "ms": 835,
         "tokens": 175,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 569,
+        "ms": 584,
         "tokens": 11,
         "note": ""
       },
@@ -294,29 +301,57 @@
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 5,
+        "ms": 4,
         "tokens": 21,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 850,
+        "ms": 855,
         "tokens": 176,
         "note": ""
       },
       {
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 9,
+        "ms": 11,
         "tokens": 122,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 598,
+        "ms": 603,
         "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 853,
+        "tokens": 184,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 127,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 95,
+        "tokens": 26,
         "note": ""
       },
       {
@@ -336,211 +371,113 @@
         "note": "browser_hover 直达",
         "calls": 4,
         "tokens": 454,
-        "ms": 1569
+        "ms": 1529
       },
       "select下拉": {
         "tier": "native",
         "note": "select_option 直达",
         "calls": 3,
         "tokens": 295,
-        "ms": 575
+        "ms": 591
       },
       "文件上传": {
         "tier": "native",
         "note": "click 开 chooser → file_upload (Playwright set_input_files)",
         "calls": 4,
         "tokens": 411,
-        "ms": 1090
+        "ms": 1088
       },
       "键盘Esc": {
         "tier": "native",
         "note": "press_key 直达 (可信 CDP 键事件)",
         "calls": 4,
         "tokens": 314,
-        "ms": 1093
+        "ms": 1114
       },
       "confirm对话框": {
         "tier": "native",
         "note": "click → handle_dialog(accept)",
         "calls": 4,
         "tokens": 333,
-        "ms": 1085
+        "ms": 1088
       },
       "HTML5拖拽": {
         "tier": "native",
         "note": "browser_drag 直达 (真实输入管线)",
         "calls": 3,
         "tokens": 313,
-        "ms": 1108
+        "ms": 1124
       },
       "批量表单": {
         "tier": "native",
         "note": "调用数对比: 对手 fill_form=1 次 vs 我方 type=5 次",
         "calls": 4,
         "tokens": 483,
-        "ms": 1133
+        "ms": 1139
       },
       "后退导航": {
         "tier": "native",
         "note": "navigate_back 直达",
         "calls": 4,
         "tokens": 332,
-        "ms": 2481
+        "ms": 2521
       },
       "iframe深交互": {
         "tier": "native",
         "note": "ref=f11e2",
         "calls": 4,
         "tokens": 409,
-        "ms": 1157
+        "ms": 1163
+      },
+      "iframe富文本": {
+        "tier": "fail",
+        "note": "ref=f13e3",
+        "calls": 4,
+        "tokens": 365,
+        "ms": 621
       }
     },
     "calls": [
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 461,
+        "ms": 423,
         "tokens": 158,
         "note": ""
       },
       {
         "tool": "browser_hover",
         "ok": true,
-        "ms": 61,
+        "ms": 53,
         "tokens": 107,
-        "note": ""
-      },
-      {
-        "tool": "browser_click",
-        "ok": true,
-        "ms": 536,
-        "tokens": 107,
-        "note": ""
-      },
-      {
-        "tool": "browser_evaluate",
-        "ok": true,
-        "ms": 509,
-        "tokens": 82,
-        "note": ""
-      },
-      {
-        "tool": "browser_navigate",
-        "ok": true,
-        "ms": 37,
-        "tokens": 109,
-        "note": ""
-      },
-      {
-        "tool": "browser_select_option",
-        "ok": true,
-        "ms": 21,
-        "tokens": 104,
-        "note": ""
-      },
-      {
-        "tool": "browser_evaluate",
-        "ok": true,
-        "ms": 515,
-        "tokens": 82,
-        "note": ""
-      },
-      {
-        "tool": "browser_navigate",
-        "ok": true,
-        "ms": 37,
-        "tokens": 109,
-        "note": ""
-      },
-      {
-        "tool": "browser_click",
-        "ok": true,
-        "ms": 22,
-        "tokens": 103,
-        "note": ""
-      },
-      {
-        "tool": "browser_file_upload",
-        "ok": true,
-        "ms": 519,
-        "tokens": 117,
-        "note": ""
-      },
-      {
-        "tool": "browser_evaluate",
-        "ok": true,
-        "ms": 510,
-        "tokens": 82,
-        "note": ""
-      },
-      {
-        "tool": "browser_navigate",
-        "ok": true,
-        "ms": 36,
-        "tokens": 112,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
         "ms": 544,
-        "tokens": 93,
-        "note": ""
-      },
-      {
-        "tool": "browser_press_key",
-        "ok": true,
-        "ms": 4,
-        "tokens": 27,
+        "tokens": 107,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 507,
+        "ms": 506,
         "tokens": 82,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 36,
+        "ms": 42,
         "tokens": 109,
         "note": ""
       },
       {
-        "tool": "browser_click",
-        "ok": true,
-        "ms": 26,
-        "tokens": 110,
-        "note": ""
-      },
-      {
-        "tool": "browser_handle_dialog",
-        "ok": true,
-        "ms": 513,
-        "tokens": 32,
-        "note": ""
-      },
-      {
-        "tool": "browser_evaluate",
-        "ok": true,
-        "ms": 508,
-        "tokens": 82,
-        "note": ""
-      },
-      {
-        "tool": "browser_navigate",
+        "tool": "browser_select_option",
         "ok": true,
         "ms": 32,
-        "tokens": 112,
-        "note": ""
-      },
-      {
-        "tool": "browser_drag",
-        "ok": true,
-        "ms": 559,
-        "tokens": 119,
+        "tokens": 104,
         "note": ""
       },
       {
@@ -558,58 +495,163 @@
         "note": ""
       },
       {
-        "tool": "browser_fill_form",
+        "tool": "browser_click",
         "ok": true,
-        "ms": 43,
-        "tokens": 200,
+        "ms": 22,
+        "tokens": 103,
         "note": ""
       },
       {
-        "tool": "browser_click",
+        "tool": "browser_file_upload",
         "ok": true,
-        "ms": 545,
-        "tokens": 92,
+        "ms": 518,
+        "tokens": 117,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 505,
+        "ms": 510,
         "tokens": 82,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 35,
+        "ms": 50,
+        "tokens": 112,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 539,
+        "tokens": 93,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 3,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 519,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 34,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 27,
+        "tokens": 110,
+        "note": ""
+      },
+      {
+        "tool": "browser_handle_dialog",
+        "ok": true,
+        "ms": 511,
+        "tokens": 32,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 514,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 46,
+        "tokens": 112,
+        "note": ""
+      },
+      {
+        "tool": "browser_drag",
+        "ok": true,
+        "ms": 566,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 36,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_fill_form",
+        "ok": true,
+        "ms": 50,
+        "tokens": 200,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 542,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 510,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 71,
         "tokens": 113,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 571,
+        "ms": 584,
         "tokens": 94,
         "note": ""
       },
       {
         "tool": "browser_navigate_back",
         "ok": true,
-        "ms": 34,
+        "ms": 37,
         "tokens": 80,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 525,
+        "ms": 507,
         "tokens": 45,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 66,
+        "ms": 59,
         "tokens": 113,
         "note": ""
       },
@@ -623,14 +665,42 @@
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 569,
+        "ms": 583,
         "tokens": 117,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 513,
+        "ms": 512,
+        "tokens": 82,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 62,
+        "tokens": 117,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 7,
+        "tokens": 100,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 35,
+        "tokens": 66,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
         "tokens": 82,
         "note": ""
       }

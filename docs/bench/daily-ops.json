@@ -1,0 +1,1270 @@
+{
+  "nexus": {
+    "kind": "nexus",
+    "cases": [
+      {
+        "case": "登录认证流",
+        "passed": 2,
+        "total": 3,
+        "subs": [
+          {
+            "sub": "登录成功进安全区",
+            "ok": false,
+            "note": ""
+          },
+          {
+            "sub": "欢迎横幅可见",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "登出回登录页",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 32254,
+        "tokens": 464
+      },
+      {
+        "case": "动态加载等待",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "等到延迟元素出现",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 11832,
+        "tokens": 294
+      },
+      {
+        "case": "无限滚动",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "滚动触发内容增长",
+            "ok": true,
+            "note": "2→5"
+          },
+          {
+            "sub": "至少追加 2 屏",
+            "ok": true,
+            "note": "2→5"
+          }
+        ],
+        "ms": 9629,
+        "tokens": 275
+      },
+      {
+        "case": "右键菜单",
+        "passed": 1,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "右键 contextmenu (逃生舱)",
+            "ok": true,
+            "note": "无 button=right 参数; synthetic contextmenu 事件"
+          },
+          {
+            "sub": "browser_click 无右键参数 = 能力缺口",
+            "ok": false,
+            "note": "待补: click 加 button 参数"
+          }
+        ],
+        "ms": 1949,
+        "tokens": 349
+      },
+      {
+        "case": "混沌DOM定位",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "点击不稳定 id 的 foo (role=link)",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "点击后页面仍正常",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 2401,
+        "tokens": 961
+      },
+      {
+        "case": "大DOM表格",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "大表快照返回",
+            "ok": true,
+            "note": "835 chars"
+          },
+          {
+            "sub": "定点读 25行3列",
+            "ok": true,
+            "note": "25.3"
+          }
+        ],
+        "ms": 5353,
+        "tokens": 764
+      },
+      {
+        "case": "按键验证",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "按 G 回显",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "按 Backspace 回显",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 3626,
+        "tokens": 351
+      },
+      {
+        "case": "复选框",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "checkbox 1 勾选",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "checkbox 2 取消",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 3511,
+        "tokens": 329
+      },
+      {
+        "case": "iframe富文本",
+        "passed": 0,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "contenteditable 写入成功",
+            "ok": false,
+            "note": ""
+          }
+        ],
+        "ms": 16121,
+        "tokens": 1972
+      },
+      {
+        "case": "日期选择器",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "日历选 15 号写入输入框",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 9346,
+        "tokens": 178
+      },
+      {
+        "case": "自动补全",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "自动补全选中 Java",
+            "ok": true,
+            "note": "结果: 'Java'"
+          }
+        ],
+        "ms": 2569,
+        "tokens": 190
+      },
+      {
+        "case": "文件下载",
+        "passed": 1,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "点击下载链接不崩",
+            "ok": true,
+            "note": "双方均无 download 工具/事件 —— 共享缺口, 记录在案"
+          },
+          {
+            "sub": "下载可观测性 = 缺口",
+            "ok": false,
+            "note": "无 download 事件/路径回报, 双方同缺"
+          }
+        ],
+        "ms": 3722,
+        "tokens": 3324
+      },
+      {
+        "case": "重定向链",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "重定向到 status_codes",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 3397,
+        "tokens": 275
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 28482,
+        "tokens": 311,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 34,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 18,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 596,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 658,
+        "tokens": 37,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 24,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 618,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 4503,
+        "tokens": 233,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 584,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_wait",
+        "ok": true,
+        "ms": 6741,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 4247,
+        "tokens": 159,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 1138,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 7,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 1205,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 12,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1439,
+        "tokens": 270,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 37,
+        "note": ""
+      },
+      {
+        "tool": "browser_dialog_respond",
+        "ok": true,
+        "ms": 2,
+        "tokens": 42,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1814,
+        "tokens": 922,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 581,
+        "tokens": 17,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 5254,
+        "tokens": 393,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 90,
+        "tokens": 351,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 7,
+        "tokens": 20,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1594,
+        "tokens": 278,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 4,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 4,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1141,
+        "tokens": 239,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 585,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 569,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 12464,
+        "tokens": 722,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 28,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 631,
+        "tokens": 818,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 3018,
+        "tokens": 359,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 45,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 7568,
+        "tokens": 118,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 584,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 586,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1619,
+        "tokens": 120,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 31,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 5,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 3,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1608,
+        "tokens": 1675,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 12,
+        "tokens": 1635,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 594,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1600,
+        "tokens": 244,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 584,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 6,
+        "tokens": 20,
+        "note": ""
+      }
+    ]
+  },
+  "playwright": {
+    "kind": "pw",
+    "cases": [
+      {
+        "case": "登录认证流",
+        "passed": 3,
+        "total": 3,
+        "subs": [
+          {
+            "sub": "登录成功进安全区",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "欢迎横幅可见",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "登出回登录页",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 10115,
+        "tokens": 684
+      },
+      {
+        "case": "动态加载等待",
+        "passed": 0,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "等到延迟元素出现",
+            "ok": false,
+            "note": ""
+          }
+        ],
+        "ms": 18195,
+        "tokens": 478
+      },
+      {
+        "case": "无限滚动",
+        "passed": 1,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "滚动触发内容增长",
+            "ok": true,
+            "note": "1→2"
+          },
+          {
+            "sub": "至少追加 2 屏",
+            "ok": false,
+            "note": "1→2"
+          }
+        ],
+        "ms": 6398,
+        "tokens": 352
+      },
+      {
+        "case": "右键菜单",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "右键触发 alert 并处理",
+            "ok": true,
+            "note": "以 dialog 事件为准"
+          }
+        ],
+        "ms": 1746,
+        "tokens": 230
+      },
+      {
+        "case": "混沌DOM定位",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "点击不稳定 id 的 foo (role=link)",
+            "ok": true,
+            "note": "### Ran Playwright code\n```js\nawait page.getByRole('link', {"
+          },
+          {
+            "sub": "点击后页面仍正常",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 2220,
+        "tokens": 2511
+      },
+      {
+        "case": "大DOM表格",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "大表快照返回",
+            "ok": true,
+            "note": "127350 chars"
+          },
+          {
+            "sub": "定点读 25行3列 (eval)",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 6960,
+        "tokens": 43381
+      },
+      {
+        "case": "按键验证",
+        "passed": 0,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "按 G 回显",
+            "ok": false,
+            "note": ""
+          },
+          {
+            "sub": "按 Backspace 回显",
+            "ok": false,
+            "note": ""
+          }
+        ],
+        "ms": 3790,
+        "tokens": 257
+      },
+      {
+        "case": "复选框",
+        "passed": 1,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "checkbox 1 勾选",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "checkbox 2 取消",
+            "ok": false,
+            "note": ""
+          }
+        ],
+        "ms": 4294,
+        "tokens": 552
+      },
+      {
+        "case": "iframe富文本",
+        "passed": 0,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "contenteditable 写入成功",
+            "ok": false,
+            "note": ""
+          }
+        ],
+        "ms": 7338,
+        "tokens": 1431
+      },
+      {
+        "case": "日期选择器",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "日历选 15 号写入输入框",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 4578,
+        "tokens": 397
+      },
+      {
+        "case": "自动补全",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "自动补全选中 Java",
+            "ok": true,
+            "note": "### Result\n\"Java\"\n### Ran Playwright cod"
+          }
+        ],
+        "ms": 2806,
+        "tokens": 317
+      },
+      {
+        "case": "文件下载",
+        "passed": 1,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "点击下载链接不崩",
+            "ok": true,
+            "note": "双方均无 download 工具/事件 —— 共享缺口, 记录在案"
+          },
+          {
+            "sub": "下载可观测性 = 缺口",
+            "ok": false,
+            "note": "无 download 事件/路径回报, 双方同缺"
+          }
+        ],
+        "ms": 3616,
+        "tokens": 2894
+      },
+      {
+        "case": "重定向链",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "重定向到 status_codes",
+            "ok": true,
+            "note": ""
+          }
+        ],
+        "ms": 3451,
+        "tokens": 277
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 2818,
+        "tokens": 129,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 25,
+        "tokens": 46,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 12,
+        "tokens": 48,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 2190,
+        "tokens": 126,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 42,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 52,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 1717,
+        "tokens": 127,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 512,
+        "tokens": 114,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 596,
+        "tokens": 104,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 577,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "ok": false,
+        "ms": 17015,
+        "tokens": 57,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": false,
+        "ms": 4,
+        "tokens": 177,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 721,
+        "tokens": 98,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2125,
+        "tokens": 46,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 3,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 3,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 3,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 118,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 678,
+        "tokens": 95,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 550,
+        "tokens": 106,
+        "note": ""
+      },
+      {
+        "tool": "browser_handle_dialog",
+        "ok": false,
+        "ms": 4,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1149,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 8,
+        "tokens": 2262,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 540,
+        "tokens": 100,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 48,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 6345,
+        "tokens": 143,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 70,
+        "tokens": 43174,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 64,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 732,
+        "tokens": 98,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 2,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
+        "tokens": 50,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 2,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 517,
+        "tokens": 52,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 997,
+        "tokens": 135,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 531,
+        "tokens": 108,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 516,
+        "tokens": 132,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 528,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
+        "tokens": 58,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 6266,
+        "tokens": 143,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 521,
+        "tokens": 56,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 967,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": false,
+        "ms": 30,
+        "tokens": 168,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 508,
+        "tokens": 97,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1847,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 1064,
+        "tokens": 96,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 535,
+        "tokens": 142,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 521,
+        "tokens": 50,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 850,
+        "tokens": 109,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 19,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 6,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "ok": true,
+        "ms": 515,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 508,
+        "tokens": 42,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 1541,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 6,
+        "tokens": 2667,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 564,
+        "tokens": 135,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 601,
+        "tokens": 98,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 1132,
+        "tokens": 136,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 513,
+        "tokens": 43,
+        "note": ""
+      }
+    ]
+  }
+}

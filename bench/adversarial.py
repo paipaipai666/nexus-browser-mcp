@@ -216,10 +216,27 @@ async def case_iframe(a: A, base: str) -> tuple[str, str]:
     return (("native" if await a.verify() else "fail"), f"ref={ref}")
 
 
+async def case_richtext(a: A, base: str) -> tuple[str, str]:
+    """iframe 内 contenteditable 富文本写入 (TinyMCE 真实站点 CDN  flaky, 本地确定性等价)。
+    快照中编辑器正文是带占位文本的 paragraph (f-ref); fill 拒收 → 点击聚焦+真实键事件。"""
+    await a.nav(f"{base}/richtext.html")
+    snap, _ = await a.call("browser_snapshot", {"diff": False} if a.kind == "nexus" else {})
+    m = re.search(r"paragraph[^\n]*在此输入[^\n]*?ref=((?:f\d+)?e\d+)", snap) or \
+        re.search(r"paragraph[^\n]*?ref=(f\d+e\d+)", snap)
+    if not m:
+        return "fail", "快照未暴露编辑器 paragraph ref"
+    if a.kind == "nexus":
+        await a.call("browser_type", {"ref": m.group(1), "text": "富文本写入测试"})
+    else:
+        await a.call("browser_type", {"target": m.group(1), "element": "编辑器", "text": "富文本写入测试"})
+    return (("native" if await a.verify() else "fail"), f"ref={m.group(1)}")
+
+
 CASES = [
     ("hover菜单", case_hover), ("select下拉", case_select), ("文件上传", case_upload),
     ("键盘Esc", case_keyboard), ("confirm对话框", case_dialog), ("HTML5拖拽", case_drag),
     ("批量表单", case_form), ("后退导航", case_back), ("iframe深交互", case_iframe),
+    ("iframe富文本", case_richtext),
 ]
 
 

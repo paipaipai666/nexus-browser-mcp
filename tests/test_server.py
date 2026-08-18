@@ -713,6 +713,26 @@ async def test_drag_calls_drag_to(patch_server):
     assert task.page.mouse.move.await_count >= 11  # 入位 + 10 步分段
 
 
+async def test_type_fallback_rich_editor(patch_server):
+    """fill 拒收/静默无效 (富文本内嵌节点, 实测捕获) → 升级 contenteditable 容器逐键写入。"""
+    mgr, _ = patch_server
+    await mgr.ensure_task("s", "t")
+    host = MagicMock()
+    host.count = AsyncMock(return_value=1)
+    host.click = AsyncMock()
+    host.press = AsyncMock()
+    host.press_sequentially = AsyncMock()
+    loc = MagicMock()
+    loc.clear = AsyncMock(side_effect=Exception("Element is not an <input>, <textarea>, "
+                                                "<select> or [contenteditable]"))
+    loc.locator = MagicMock(return_value=host)
+    mgr.find_element = AsyncMock(return_value=loc)
+    out = await server_mod.browser_type(text="hello", ref="f1e2", task_id="t")
+    assert "已输入文本" in out
+    host.click.assert_awaited_once()
+    host.press_sequentially.assert_awaited_once_with("hello", timeout=5000)
+
+
 # ── 对话框治理 (第二波) ───────────────────────────────────────────
 
 
