@@ -1,0 +1,1045 @@
+{
+  "nexus": {
+    "kind": "nexus",
+    "cases": [
+      {
+        "case": "列表过滤",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "名称过滤: 行数=真值",
+            "ok": true,
+            "note": "visible=3.0 truth=3"
+          },
+          {
+            "sub": "名称+状态组合过滤",
+            "ok": true,
+            "note": "visible=1.0 truth=1"
+          }
+        ],
+        "ms": 4844,
+        "tokens": 2465,
+        "calls_n": 6
+      },
+      {
+        "case": "列表排序",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "元素命中: 点中排序表头",
+            "ok": true,
+            "note": "结果: 'desc'"
+          },
+          {
+            "sub": "首行金额=极值 (排序生效)",
+            "ok": true,
+            "note": "first=950.0 max=950.0 min=51.0"
+          }
+        ],
+        "ms": 4674,
+        "tokens": 2319,
+        "calls_n": 6
+      },
+      {
+        "case": "仪表盘读数",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "销售额: 工具输出值=真值",
+            "ok": true,
+            "note": "tool=42268.0 truth=42268.0"
+          },
+          {
+            "sub": "转化率: 工具输出含真值",
+            "ok": true,
+            "note": "truth=3.81%"
+          }
+        ],
+        "ms": 3242,
+        "tokens": 471,
+        "calls_n": 4
+      },
+      {
+        "case": "知识库答题",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "搜索过滤命中 1 篇",
+            "ok": true,
+            "note": "count=1.0"
+          },
+          {
+            "sub": "退款天数: 工具输出值=真值",
+            "ok": true,
+            "note": "tool=12.0 truth=12.0"
+          }
+        ],
+        "ms": 5110,
+        "tokens": 494,
+        "calls_n": 6
+      },
+      {
+        "case": "下单流",
+        "passed": 5,
+        "total": 5,
+        "subs": [
+          {
+            "sub": "解析商品列表",
+            "ok": true,
+            "note": "共5个, 最低=机械键盘¥210"
+          },
+          {
+            "sub": "工具输出最低价=真值",
+            "ok": true,
+            "note": "tool=210 truth=210.0"
+          },
+          {
+            "sub": "订单确认出现",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "元素命中: 点中的是最低价商品",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "订单号格式 NXP+8位",
+            "ok": true,
+            "note": "结果: 'NXP30157729'"
+          }
+        ],
+        "ms": 6920,
+        "tokens": 835,
+        "calls_n": 11
+      },
+      {
+        "case": "下单流·变体",
+        "passed": 5,
+        "total": 5,
+        "subs": [
+          {
+            "sub": "解析商品列表",
+            "ok": true,
+            "note": "共5个, 最低=降噪耳机¥18"
+          },
+          {
+            "sub": "工具输出最低价=真值",
+            "ok": true,
+            "note": "tool=18 truth=18.0"
+          },
+          {
+            "sub": "订单确认出现",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "元素命中: 点中的是最低价商品",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "订单号格式 NXP+8位",
+            "ok": true,
+            "note": "结果: 'NXP30162528'"
+          }
+        ],
+        "ms": 3777,
+        "tokens": 835,
+        "calls_n": 11
+      },
+      {
+        "case": "跨店比价",
+        "passed": 3,
+        "total": 3,
+        "subs": [
+          {
+            "sub": "读到 A 店价格",
+            "ok": true,
+            "note": "A=486"
+          },
+          {
+            "sub": "读到 B 店价格",
+            "ok": true,
+            "note": "B=232"
+          },
+          {
+            "sub": "买到便宜店",
+            "ok": true,
+            "note": "bought=结果: 'B' cheaper=B A=486 B=232"
+          }
+        ],
+        "ms": 3383,
+        "tokens": 358,
+        "calls_n": 6
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3758,
+        "tokens": 2023,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 357,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 32,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "ok": true,
+        "ms": 10,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3246,
+        "tokens": 2184,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 906,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 37,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 37,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3228,
+        "tokens": 372,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 5,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 32,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3211,
+        "tokens": 363,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 36,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 836,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 4,
+        "tokens": 61,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3207,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 812,
+        "tokens": 288,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 42,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 829,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 30,
+        "tokens": 17,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 27,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 27,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 837,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 6,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 863,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 13,
+        "tokens": 288,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 42,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 847,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 30,
+        "tokens": 17,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 19,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 19,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 852,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 850,
+        "tokens": 211,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 4,
+        "tokens": 40,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 67,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 17,
+        "tokens": 37,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 826,
+        "tokens": 11,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 21,
+        "note": ""
+      }
+    ]
+  },
+  "playwright": {
+    "kind": "pw",
+    "cases": [
+      {
+        "case": "列表过滤",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "名称过滤: 行数=真值",
+            "ok": true,
+            "note": "visible=3.0 truth=3"
+          },
+          {
+            "sub": "名称+状态组合过滤",
+            "ok": true,
+            "note": "visible=0.0 truth=0"
+          }
+        ],
+        "ms": 3053,
+        "tokens": 880,
+        "calls_n": 6
+      },
+      {
+        "case": "列表排序",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "元素命中: 点中排序表头",
+            "ok": true,
+            "note": "### Result\n\"desc\"\n### Ran Playwright cod"
+          },
+          {
+            "sub": "首行金额=极值 (排序生效)",
+            "ok": true,
+            "note": "first=955.0 max=955.0 min=68.0"
+          }
+        ],
+        "ms": 3158,
+        "tokens": 464,
+        "calls_n": 6
+      },
+      {
+        "case": "仪表盘读数",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "销售额: 工具输出值=真值",
+            "ok": true,
+            "note": "tool=18960.0 truth=18960.0"
+          },
+          {
+            "sub": "转化率: 工具输出含真值",
+            "ok": true,
+            "note": "truth=1.52%"
+          }
+        ],
+        "ms": 1075,
+        "tokens": 444,
+        "calls_n": 4
+      },
+      {
+        "case": "知识库答题",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "搜索过滤命中 1 篇",
+            "ok": true,
+            "note": "count=1.0"
+          },
+          {
+            "sub": "退款天数: 工具输出值=真值",
+            "ok": true,
+            "note": "tool=29.0 truth=29.0"
+          }
+        ],
+        "ms": 2638,
+        "tokens": 552,
+        "calls_n": 6
+      },
+      {
+        "case": "下单流",
+        "passed": 5,
+        "total": 5,
+        "subs": [
+          {
+            "sub": "解析商品列表",
+            "ok": true,
+            "note": "共5个, 最低=护眼台灯¥142"
+          },
+          {
+            "sub": "工具输出最低价=真值",
+            "ok": true,
+            "note": "tool=142 truth=142.0"
+          },
+          {
+            "sub": "订单确认出现",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "元素命中: 点中的是最低价商品",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "订单号格式 NXP+8位",
+            "ok": true,
+            "note": "### Result\n\"NXP30188729\"\n### Ran Playwri"
+          }
+        ],
+        "ms": 4341,
+        "tokens": 1015,
+        "calls_n": 9
+      },
+      {
+        "case": "下单流·变体",
+        "passed": 5,
+        "total": 5,
+        "subs": [
+          {
+            "sub": "解析商品列表",
+            "ok": true,
+            "note": "共5个, 最低=机械键盘¥56"
+          },
+          {
+            "sub": "工具输出最低价=真值",
+            "ok": true,
+            "note": "tool=56 truth=56.0"
+          },
+          {
+            "sub": "订单确认出现",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "元素命中: 点中的是最低价商品",
+            "ok": true,
+            "note": ""
+          },
+          {
+            "sub": "订单号格式 NXP+8位",
+            "ok": true,
+            "note": "### Result\n\"NXP30194096\"\n### Ran Playwri"
+          }
+        ],
+        "ms": 4362,
+        "tokens": 1015,
+        "calls_n": 9
+      },
+      {
+        "case": "跨店比价",
+        "passed": 3,
+        "total": 3,
+        "subs": [
+          {
+            "sub": "读到 A 店价格",
+            "ok": true,
+            "note": "A=308"
+          },
+          {
+            "sub": "读到 B 店价格",
+            "ok": true,
+            "note": "B=573"
+          },
+          {
+            "sub": "买到便宜店",
+            "ok": true,
+            "note": "bought=### Result\n\"A\"\n### Ran Playwright code\n```js\nawait page.evaluate('() => window.__bought || \\'\\'');\n``` cheaper=A A=308 B=573"
+          }
+        ],
+        "ms": 2607,
+        "tokens": 727,
+        "calls_n": 7
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 446,
+        "tokens": 159,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 514,
+        "tokens": 419,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 22,
+        "tokens": 90,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 46,
+        "note": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "ok": true,
+        "ms": 14,
+        "tokens": 120,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 517,
+        "tokens": 46,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 40,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 543,
+        "tokens": 99,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 518,
+        "tokens": 51,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 513,
+        "tokens": 49,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
+        "tokens": 76,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 514,
+        "tokens": 76,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 45,
+        "tokens": 117,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 4,
+        "tokens": 218,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 513,
+        "tokens": 65,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 39,
+        "tokens": 118,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 18,
+        "tokens": 43,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 534,
+        "tokens": 105,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 5,
+        "tokens": 206,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 510,
+        "tokens": 36,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 75,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 4,
+        "tokens": 303,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 508,
+        "tokens": 86,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 543,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_fill_form",
+        "ok": true,
+        "ms": 25,
+        "tokens": 139,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 525,
+        "tokens": 96,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 516,
+        "tokens": 54,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 516,
+        "tokens": 51,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 513,
+        "tokens": 54,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 38,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 4,
+        "tokens": 303,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 518,
+        "tokens": 86,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 589,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_fill_form",
+        "ok": true,
+        "ms": 23,
+        "tokens": 139,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 540,
+        "tokens": 96,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 517,
+        "tokens": 54,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 512,
+        "tokens": 51,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 512,
+        "tokens": 54,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 37,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 4,
+        "tokens": 145,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 34,
+        "tokens": 113,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 3,
+        "tokens": 143,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "ok": true,
+        "ms": 69,
+        "tokens": 78,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 534,
+        "tokens": 94,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 41,
+        "note": ""
+      }
+    ]
+  }
+}

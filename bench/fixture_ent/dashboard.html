@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>经营仪表盘</title></head><body>
+<h1>经营仪表盘</h1>
+<div class="card"><h3>今日销售额</h3><div id="sales"></div></div>
+<div class="card"><h3>今日订单数</h3><div id="orders"></div></div>
+<div class="card"><h3>转化率</h3><div id="conv"></div></div>
+<script>
+// 每次加载随机真值; 答案只能从展示文本读到 (eval 读真值由 bench 做)
+document.getElementById("sales").textContent = "¥" + (Math.floor(Math.random()*90000)+10000).toLocaleString();
+document.getElementById("orders").textContent = Math.floor(Math.random()*900)+100;
+document.getElementById("conv").textContent = (Math.random()*4+1).toFixed(2) + "%";
+</script></body></html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>A店</title></head><body>
+<h1>A 店</h1>
+<div>人体工学椅 售价: <b id="price"></b></div>
+<button id="buy">在A店购买</button>
+<a id="toB" href="shop_b.html" target="_blank">去B店比价</a>
+<div id="done" style="display:none">A店已下单</div>
+<script>
+window.__price = Math.floor(Math.random()*400)+200;
+document.getElementById("price").textContent = "¥" + window.__price;
+document.getElementById("buy").addEventListener("click", () => {
+  window.__bought = "A"; document.getElementById("done").style.display = "block";
+});
+</script></body></html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>帮助中心</title></head><body>
+<h1>帮助中心</h1>
+<input id="q" placeholder="搜索帮助文章">
+<ul id="list"></ul>
+<div id="article" style="display:none"><h2 id="atitle"></h2><p id="abody"></p><a id="back" href="#">返回列表</a></div>
+<script>
+const REFUND_DAYS = Math.floor(Math.random()*24)+7;   // 7-30 天, 随机真值
+const ARTS = [
+  {t: "退款政策", b: `自签收之日起 ${REFUND_DAYS} 天内可申请无理由退款，退款将在 3 个工作日内原路退回。`, days: REFUND_DAYS},
+  {t: "以旧换新规则", b: "旧机评估价可在下单时直接抵扣，支持跨品类换新。"},
+  {t: "发票开具说明", b: "电子发票在发货后 24 小时内自动发送到邮箱。"},
+  {t: "配送时效", b: "工作日 16 点前的订单当日发出，其余次日发出。"},
+  {t: "会员积分", b: "每消费 1 元积 1 分，积分有效期两年。"},
+];
+window.__refundDays = REFUND_DAYS;
+function render() {
+  const q = document.getElementById("q").value.trim();
+  const ul = document.getElementById("list");
+  ul.innerHTML = "";
+  ARTS.filter(a => !q || a.t.includes(q)).forEach(a => {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = "#"; link.textContent = a.t;
+    link.addEventListener("click", (e) => { e.preventDefault();
+      document.getElementById("list").style.display = "none";
+      document.getElementById("article").style.display = "block";
+      document.getElementById("atitle").textContent = a.t;
+      document.getElementById("abody").textContent = a.b;
+    });
+    li.appendChild(link); ul.appendChild(li);
+  });
+}
+document.getElementById("q").addEventListener("input", render);
+document.getElementById("back").addEventListener("click", (e) => { e.preventDefault();
+  document.getElementById("article").style.display = "none";
+  document.getElementById("list").style.display = "block"; });
+render();
+</script></body></html>
