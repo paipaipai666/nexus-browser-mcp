@@ -114,6 +114,8 @@ Start `chrome --remote-debugging-port=9222` first, then set `BROWSER_MODE=cdp`.
 
 > If the CDP connection fails, the server now **fails loudly** (no silent fallback to a fresh browser) and tells you to start the debug-port browser first.
 
+In CDP (or persistent-profile) mode the agent can also **take over tabs you already have open**: `browser_list_pages` shows them under "external tabs", and `browser_adopt_page(ext_index)` pulls one into the task (snapshot/click/read all work from then on). Adoption always requires `confirmed=true` — it hands the agent full read/write access to that page, including its login state.
+
 ## Configuration (environment variables)
 
 Every option can be overridden via `BROWSER_`-prefixed env vars:
@@ -154,7 +156,7 @@ Every option can be overridden via `BROWSER_`-prefixed env vars:
 
 ## Tools
 
-32 tools: `browser_navigate`, `browser_navigate_back`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_hover`, `browser_press_key`, `browser_select_option`, `browser_upload_file` (HITL-confirmed), `browser_drag`, `browser_dialog_respond` (dialogs are parked for agent/user decision; accept requires `confirmed=true`), `browser_read`, `browser_screenshot`, `browser_evaluate`, `browser_wait`, `browser_wait_stable`, `browser_wait_ms`, `browser_scroll`, `browser_scroll_to`, `browser_wait_navigation`, `browser_dismiss_popup`, `browser_list_pages`, `browser_switch_page`, observability tools `browser_console`, `browser_errors`, `browser_network`, `browser_perf`, `browser_network_body`, plus 4 lifecycle tools: `browser_tasks`, `browser_close_task`, `browser_list_sessions`, `browser_close_session`.
+33 tools: `browser_navigate`, `browser_navigate_back`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_hover`, `browser_press_key`, `browser_select_option`, `browser_upload_file` (HITL-confirmed), `browser_drag`, `browser_dialog_respond` (dialogs are parked for agent/user decision; accept requires `confirmed=true`), `browser_adopt_page` (take over an already-open browser tab in cdp/persistent mode; HITL-confirmed), `browser_read`, `browser_screenshot`, `browser_evaluate`, `browser_wait`, `browser_wait_stable`, `browser_wait_ms`, `browser_scroll`, `browser_scroll_to`, `browser_wait_navigation`, `browser_dismiss_popup`, `browser_list_pages`, `browser_switch_page`, observability tools `browser_console`, `browser_errors`, `browser_network`, `browser_perf`, `browser_network_body`, plus 4 lifecycle tools: `browser_tasks`, `browser_close_task`, `browser_list_sessions`, `browser_close_session`.
 
 Observability (debugging): console output, uncaught exceptions and request metadata are buffered per page from creation; `browser_errors()` returns a merged "JS exceptions + console.error + failed requests" view in one call. All three support a `since` cursor (omit = continue from last read, `0` = full) and `limit` paging.
 

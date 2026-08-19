@@ -128,8 +128,53 @@ async def test_same_task_reuses_page(mgr, fake_playwright):
     assert fake_playwright.new_context.call_count == 1
 
 
-async def test_cdp_shares_context_isolates_page(mgr, fake_playwright):
-    # cdp 需要共享 context 已存在; 每个 new_page 返回独立可 await 的 page
+async def test_isolated_has_no_external_pages(mgr, fake_playwright):
+    """isolated 模式每 task 独立 context → 无外部标签可列可接管。"""
+    await mgr.ensure_task("s", "t")
+    assert await mgr.list_external_pages("s", "t") == []
+    with pytest.raises(ValueError, match="没有可接管的外部标签"):
+        await mgr.adopt_page("s", "t", 0)
+
+
+async def test_cdp_adopt_external_page(fake_playwright):
+    """cdp 共享 context: 既有标签可枚举 → adopt 收进 task (置当前页/挂归属) → 不再外部;
+    重复接管报错。这是"接管用户已开浏览器标签"能力的核心契约。"""
+    ext = _Page()
+    ext.url = "https://mail.example.com"
+    shared = AsyncMock()
+    shared.pages = [ext]                      # 用户手动开的标签
+    shared.new_page = AsyncMock(side_effect=lambda: _Page())
+    shared.on = MagicMock(return_value=None)
+    fake_playwright.contexts = [shared]
+
+    s = BrowserSettings(mode="cdp", context_ttl_sec=60)
+    m = BrowserManager(s)
+    m._ttl_enabled = False
+    m._browser = fake_playwright
+    m._browser_ready = True
+    try:
+        await m.ensure_task("s", "t")
+        listing = await m.list_external_pages("s", "t")
+        assert len(listing) == 1 and listing[0]["ext_index"] == 0
+        assert listing[0]["url"] == "https://mail.example.com"
+
+        page = await m.adopt_page("s", "t", 0)
+        assert page is ext
+        ts = m._task("s", "t")
+        assert ts.pages[-1] is ext
+        assert ts.active_page_idx == len(ts.pages) - 1
+        assert ts.last_url == "https://mail.example.com"
+        assert m._page_owners[id(ext)] == ("s", "t")
+        assert await m.list_external_pages("s", "t") == []  # 已接管 → 不再外部
+
+        with pytest.raises(ValueError, match="没有可接管的外部标签"):
+            await m.adopt_page("s", "t", 0)
+    finally:
+        m._browser_ready = False
+        m._browser = None
+
+
+async def test_cdp_shares_context_isolates_page(mgr, fake_playwright):    # cdp 需要共享 context 已存在; 每个 new_page 返回独立可 await 的 page
     shared = AsyncMock()
     shared.new_page = AsyncMock(side_effect=lambda: _Page())
     shared.on = MagicMock(return_value=None)

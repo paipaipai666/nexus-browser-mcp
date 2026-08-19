@@ -267,7 +267,7 @@ async def test_new_tools_listed(patch_server):
     assert "browser_network" in names
     assert "browser_perf" in names
     assert "browser_network_body" in names
-    assert len(names) == 32  # 31 + browser_dialog_respond (对话框治理)
+    assert len(names) == 33  # 32 + browser_adopt_page (外部标签接管)
 
 
 async def test_read_follow_creates_stream_and_returns_delta(patch_server):

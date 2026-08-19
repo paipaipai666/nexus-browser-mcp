@@ -75,7 +75,7 @@ def tool_names() -> list[str]:
         "browser_network_body",
         "browser_press_key", "browser_hover", "browser_select_option",
         "browser_upload_file", "browser_navigate_back", "browser_drag",
-        "browser_dialog_respond",
+        "browser_dialog_respond", "browser_adopt_page",
         "browser_tasks", "browser_close_task",
         "browser_list_sessions", "browser_close_session",
     ]
@@ -158,6 +158,7 @@ _RISK = {
     "browser_network_body": "high", "browser_upload_file": "high",
     "browser_press_key": "medium", "browser_select_option": "medium",
     "browser_drag": "medium", "browser_dialog_respond": "high",
+    "browser_adopt_page": "high",
 }
 
 
@@ -1166,14 +1167,42 @@ async def _list_pages(task_id) -> str:
     if err:
         return err
     pages = await _manager.list_pages(_sid(), task_id)
-    if not pages:
+    ext = await _manager.list_external_pages(_sid(), task_id)
+    if not pages and not ext:
         return "当前 task 没有打开的页面。"
     parts = ["## 打开的标签页"]
     for p in pages:
         marker = " ← 当前" if p["active"] else ""
         dead = " (已关闭,下次操作将自动重建)" if not p.get("alive", True) else ""
         parts.append(f"  [{p['index']}] \"{p['title']}\" ({p['url']}){marker}{dead}")
+    if ext:
+        parts.append("## 外部标签页 (浏览器里已开、未被接管)")
+        for p in ext:
+            parts.append(f"  [ext {p['ext_index']}] \"{p['title']}\" ({p['url']})")
+        parts.append("用 browser_adopt_page(ext_index) 接管; 接管是高危操作, 需用户 confirmed=true。")
     return "\n".join(parts)
+
+
+async def browser_adopt_page(ext_index: int, *, confirmed: bool = False, task_id: str = ""):
+    if not confirmed:
+        return "CONFIRMATION_REQUIRED\n" + fmt.warning(
+            "接管外部标签页需人工确认",
+            detail=f"将接管用户浏览器中已打开的第 {ext_index} 个外部标签,"
+                   "接管后 agent 可读写该页面全部内容(可能含登录态/敏感信息)。"
+                   "向用户展示 browser_list_pages 的外部标签清单, 同意后以 confirmed=true 重调。")
+    return await _adopt_page(_default_task(task_id), ext_index)
+
+
+async def _adopt_page(task_id, ext_index) -> str:
+    err = await _require_task(task_id)
+    if err:
+        return err
+    try:
+        page = await _manager.adopt_page(_sid(), task_id, ext_index)
+        return (f"已接管外部标签 [ext {ext_index}]: {await page.title()} ({page.url})。"
+                "现为当前页, 快照/点击/读取全部可用; 事件观测自接管时刻起。")
+    except ValueError as e:
+        return fmt.error(str(e))
 
 
 async def browser_switch_page(index: int, *, task_id: str = ""):
@@ -1657,11 +1686,19 @@ def _register_all(register) -> None:
          "自动检测并关闭弹窗(登录/cookie同意/广告): 关闭按钮→取消→Escape。",
          {"type": "object", "properties": {"task_id": {"type": "string"}}, "required": []}),
         (browser_list_pages, "browser_list_pages",
-         "列出当前task所有打开的标签页。",
+         "列出当前task所有打开的标签页; cdp/持久化模式下附带列出浏览器里已开的外部标签(ext 索引, 可接管)。",
          {"type": "object", "properties": {"task_id": {"type": "string"}}, "required": []}),
         (browser_switch_page, "browser_switch_page",
          "切换到指定索引的标签页。",
          {"type": "object", "properties": {"index": {"type": "integer"}, "task_id": {"type": "string"}}, "required": ["index"]}),
+        (browser_adopt_page, "browser_adopt_page",
+         "接管浏览器中已打开的外部标签页(cdp/持久化模式): 收进当前 task 并置为当前页,"
+         "之后快照/点击/读取可用, 事件观测自接管时刻起。高危(可读写该页全部内容与登录态),"
+         "每次需人工确认: 首次返回 CONFIRMATION_REQUIRED, 用户同意后以 confirmed=true 重调。",
+         {"type": "object", "properties": {
+             "ext_index": {"type": "integer", "description": "browser_list_pages 列出的外部标签索引"},
+             "confirmed": {"type": "boolean", "default": False, "description": "人工确认标记"},
+             "task_id": {"type": "string"}}, "required": ["ext_index"]}),
         (browser_console, "browser_console",
          "读取页面 console 输出(级别/文本/位置)。增量游标: 不传 since=接着上次读, since=0=全量; "
          "level 过滤(error/warning/log/...), pattern 正则过滤文本, limit 封顶(默认50, 超了再调一次继续)。",

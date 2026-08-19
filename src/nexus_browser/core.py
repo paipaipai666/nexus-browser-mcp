@@ -786,6 +786,60 @@ class BrowserManager:
         self._touch(session_id, task_id)
         return ts.pages[index]
 
+    def _external_pages(self, session: Any, ts: Any) -> list:
+        """共享 context (cdp/持久化模式) 里既有的、未被任何 task 接管的页面 = 用户手动开的标签。
+
+        只列未被 _page_owners 登记的: 其他 nexus task 的页面不算"外部"(避免双主)。
+        """
+        ctx = session.shared_context
+        if ctx is None:
+            return []
+        try:
+            pages = ctx.pages
+        except Exception:
+            return []
+        return [p for p in pages
+                if id(p) not in self._page_owners and not p.is_closed()]
+
+    async def list_external_pages(self, session_id: str, task_id: str) -> list[dict]:
+        session = self._sessions.get(session_id)
+        if not session or task_id not in session.tasks:
+            return []
+        ts = session.tasks[task_id]
+        result = []
+        for j, page in enumerate(self._external_pages(session, ts)):
+            try:
+                result.append({"ext_index": j, "url": page.url,
+                               "title": await page.title(), "alive": not page.is_closed()})
+            except Exception:
+                result.append({"ext_index": j, "url": "unknown", "title": "unknown",
+                               "alive": False})
+        return result
+
+    async def adopt_page(self, session_id: str, task_id: str, ext_index: int) -> Any:
+        """把外部标签收进 task: 挂全套事件钩子 + 置为当前页。调用方负责 HITL 门。"""
+        ts = self._task(session_id, task_id)
+        session = self._sessions[session_id]
+        ext = self._external_pages(session, ts)
+        if not ext:
+            raise ValueError("没有可接管的外部标签 (仅 cdp/持久化模式存在; isolated 模式每 task 独立浏览器)")
+        if ext_index < 0 or ext_index >= len(ext):
+            raise ValueError(f"外部标签索引 {ext_index} 超出范围(共 {len(ext)} 个)")
+        page = ext[ext_index]
+        if id(page) in self._page_owners:
+            raise ValueError("该标签已被其他 task 接管")
+        ts.pages.append(page)
+        ts.active_page_idx = len(ts.pages) - 1
+        self._hook_page(session_id, task_id, page)
+        if page.url and page.url != "about:blank":
+            ts.last_url = page.url
+            try:
+                ts.last_title = await page.title()
+            except Exception:
+                pass
+        self._touch(session_id, task_id)
+        return page
+
     async def _goto(self, page: Any, url: str, wait_until: str, timeout: int) -> Any:
         """page.goto + ERR_ABORTED 一次性重试。
 

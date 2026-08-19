@@ -30,6 +30,16 @@
 - **confirm/prompt**: **挂起等决策**。`browser_dialog_respond(accept=false)` 直接拒绝; `accept=true` 是替用户点"确定"——**每次需 confirmed=true**(先向用户展示对话框内容征得同意)。prompt 用 `prompt_text` 填文本。
 - 超时(默认 20s, `BROWSER_DIALOG_TIMEOUT_MS`)无决策自动 dismiss 并留痕, 防页面永久冻结。
 
+## 接管已打开的标签页 (cdp/持久化模式)
+
+cdp 模式(`BROWSER_MODE=cdp`, 浏览器以 `--remote-debugging-port=9222` 启动)或持久化 profile 模式下, agent 可操作**用户已经打开的标签**:
+
+1. `browser_list_pages` — "外部标签页"区列出未被接管的既有标签 (ext 索引)。
+2. `browser_adopt_page(ext_index=...)` — 收进当前 task 并置为当前页; **每次需 confirmed=true**(接管后 agent 可读写该页全部内容含登录态, 先向用户展示清单征得同意)。
+3. 之后快照/点击/读取照常; 事件观测(console/网络/下载)自接管时刻起, 之前的history 不可追溯。
+
+isolated 模式(默认)每 task 独立浏览器, 无外部标签可接管。
+
 ## 流式内容(AI 回复)
 
 - **一次读全**:`browser_read(selector=..., wait_stable=true, max_wait_ms=...)` — 等 DOM 静默(默认 800ms 无变异)后再读,免轮询。

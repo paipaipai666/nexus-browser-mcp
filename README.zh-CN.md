@@ -105,6 +105,8 @@ BROWSER_USER_DATA_DIR="C:\Users\你的用户名\.nexus-browser\chrome-profile"
 
 > 若 CDP 连接失败,服务器现在会**明确报错**(不再静默启动全新浏览器),提示你先启动调试端口浏览器。
 
+CDP(或持久化 profile)模式下 agent 还能**接管你已经打开的标签页**: `browser_list_pages` 会把它们列在"外部标签页"区, `browser_adopt_page(ext_index)` 将该标签收进当前 task(之后快照/点击/读取全可用)。接管一律要求 `confirmed=true`——它把该页面的全部读写权(含登录态)交给 agent。
+
 ## 配置(环境变量)
 
 所有可选项通过 `BROWSER_` 前缀环境变量覆盖:
@@ -143,7 +145,7 @@ BROWSER_USER_DATA_DIR="C:\Users\你的用户名\.nexus-browser\chrome-profile"
 
 ## 工具
 
-32 个工具:`browser_navigate`、`browser_navigate_back`、`browser_snapshot`、`browser_click`、`browser_type`、`browser_hover`、`browser_press_key`、`browser_select_option`、`browser_upload_file`(HITL 确认)、`browser_drag`、`browser_dialog_respond`(confirm/prompt 挂起待 agent/用户决策, accept 须 `confirmed=true`)、`browser_read`、`browser_screenshot`、`browser_evaluate`、`browser_wait`、`browser_wait_stable`、`browser_wait_ms`、`browser_scroll`、`browser_scroll_to`、`browser_wait_navigation`、`browser_dismiss_popup`、`browser_list_pages`、`browser_switch_page`,观测工具 `browser_console`、`browser_errors`、`browser_network`、`browser_perf`、`browser_network_body`,及 4 个生命周期工具 `browser_tasks`、`browser_close_task`、`browser_list_sessions`、`browser_close_session`。
+33 个工具:`browser_navigate`、`browser_navigate_back`、`browser_snapshot`、`browser_click`、`browser_type`、`browser_hover`、`browser_press_key`、`browser_select_option`、`browser_upload_file`(HITL 确认)、`browser_drag`、`browser_dialog_respond`(confirm/prompt 挂起待 agent/用户决策, accept 须 `confirmed=true`)、`browser_adopt_page`(接管浏览器已开标签, cdp/持久化模式, HITL 确认)、`browser_read`、`browser_screenshot`、`browser_evaluate`、`browser_wait`、`browser_wait_stable`、`browser_wait_ms`、`browser_scroll`、`browser_scroll_to`、`browser_wait_navigation`、`browser_dismiss_popup`、`browser_list_pages`、`browser_switch_page`,观测工具 `browser_console`、`browser_errors`、`browser_network`、`browser_perf`、`browser_network_body`,及 4 个生命周期工具 `browser_tasks`、`browser_close_task`、`browser_list_sessions`、`browser_close_session`。
 
 观测(排障):页面建立后所有 console 输出、未捕获异常、请求元数据持续入缓冲;`browser_errors()` 一次调用给出"JS 异常 + console.error + 失败请求"合并视图,三个工具均支持 `since` 增量游标(省略=接着上次读,`0`=全量)与 `limit` 分页。
 
