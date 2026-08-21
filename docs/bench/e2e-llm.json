@@ -1,0 +1,906 @@
+{
+  "nexus": {
+    "kind": "nexus",
+    "model": "deepseek-ai/DeepSeek-V4-Flash",
+    "results": [
+      {
+        "ok": true,
+        "note": "confirm=True data-ok=cheap",
+        "steps": 15,
+        "usage": {
+          "prompt": 97441,
+          "completion": 1392
+        },
+        "mcp_chars": 4402,
+        "ms": 73021,
+        "final": "任务已完成。页面显示\"订单已提交: NXP15746236 (护眼台灯 x2)\"。\n\n任务完成:在商城中找到最便宜的商品护眼台灯(¥51),购买 2 件,收货人填张三、地址填北京,订单已成功提交(订单号 NXP15746236)。",
+        "id": "buy-cheapest",
+        "tier": "easy",
+        "passed": true,
+        "mcp_tokens": 2367,
+        "calls_n": 17
+      },
+      {
+        "ok": true,
+        "note": "真值=918",
+        "steps": 4,
+        "usage": {
+          "prompt": 32570,
+          "completion": 864
+        },
+        "mcp_chars": 2736,
+        "ms": 122570,
+        "final": "过滤后张伟的订单共7条,分页只剩第1页(无其他页码),数据完整。最高金额为 SO-1041 的 918。\n\n张伟名下金额最高的一笔订单是 SO-1041,金额为 **918**。",
+        "id": "max-amt-of-name",
+        "tier": "medium",
+        "passed": true,
+        "mcp_tokens": 2869,
+        "calls_n": 5
+      },
+      {
+        "ok": true,
+        "note": "hits=['row3-del', 'row3-del']",
+        "steps": 20,
+        "usage": {
+          "prompt": 286723,
+          "completion": 4597
+        },
+        "mcp_chars": 37684,
+        "ms": 486657,
+        "final": "让我重新审视。点击删除按钮后 PO-2003 行的删除按钮变为 active,但\"删除选中\"按钮仍为 disabled。让我检查是否有挂起的对话框,并再次点击删除按钮观察变化。",
+        "id": "row-action",
+        "tier": "medium",
+        "passed": false,
+        "mcp_tokens": 18361,
+        "calls_n": 21
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 3692,
+        "tokens": 546,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 815,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 70,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 16,
+        "tokens": 860,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 891,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 261,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 6,
+        "tokens": 36,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 29,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 14,
+        "tokens": 19,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 15,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 8,
+        "tokens": 278,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 834,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 90,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 4,
+        "tokens": 31,
+        "note": ""
+      },
+      {
+        "tool": "browser_console",
+        "ok": true,
+        "ms": 1,
+        "tokens": 47,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 24,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 852,
+        "tokens": 350,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 28,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 12,
+        "tokens": 960,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 4,
+        "tokens": 116,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 1421,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 865,
+        "tokens": 1534,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 4,
+        "tokens": 459,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 822,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2557,
+        "note": ""
+      },
+      {
+        "tool": "browser_read",
+        "ok": true,
+        "ms": 5,
+        "tokens": 459,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 8,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 2558,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 825,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 834,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll_to",
+        "ok": true,
+        "ms": 8,
+        "tokens": 16,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 9,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 22,
+        "tokens": 2559,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 896,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2562,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 7,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 18,
+        "tokens": 2558,
+        "note": ""
+      },
+      {
+        "tool": "browser_console",
+        "ok": true,
+        "ms": 2,
+        "tokens": 73,
+        "note": ""
+      },
+      {
+        "tool": "browser_errors",
+        "ok": true,
+        "ms": 1,
+        "tokens": 103,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 825,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 44,
+        "note": ""
+      }
+    ]
+  },
+  "pw": {
+    "kind": "pw",
+    "model": "deepseek-ai/DeepSeek-V4-Flash",
+    "results": [
+      {
+        "ok": true,
+        "note": "confirm=true data-ok=cheap",
+        "steps": 8,
+        "usage": {
+          "prompt": 53498,
+          "completion": 701
+        },
+        "mcp_chars": 3909,
+        "ms": 31770,
+        "final": "订单已成功提交,页面显示\"订单已提交: NXP16397076 (护眼台灯 x2)\"。\n\n任务完成:已购买最便宜的商品\"护眼台灯\"(¥51)2 件,收货人张三、地址北京,订单号 NXP16397076 提交成功。",
+        "id": "buy-cheapest",
+        "tier": "easy",
+        "passed": true,
+        "mcp_tokens": 1806,
+        "calls_n": 10
+      },
+      {
+        "ok": true,
+        "note": "真值=918",
+        "steps": 4,
+        "usage": {
+          "prompt": 28822,
+          "completion": 541
+        },
+        "mcp_chars": 4604,
+        "ms": 34474,
+        "final": "张伟名下共7笔订单,金额分别为:333、316、383、333、301、880、918。其中最高的是 SO-1041,金额 918。\n\n客户「张伟」名下金额最高的一笔订单是 SO-1041,金额为 918。",
+        "id": "max-amt-of-name",
+        "tier": "medium",
+        "passed": true,
+        "mcp_tokens": 3566,
+        "calls_n": 5
+      },
+      {
+        "ok": false,
+        "note": "模型调用失败: The read operation timed out",
+        "steps": 11,
+        "usage": {
+          "prompt": 81946,
+          "completion": 1411
+        },
+        "mcp_chars": 24065,
+        "ms": 259839,
+        "id": "row-action",
+        "tier": "medium",
+        "passed": [],
+        "mcp_tokens": 9420,
+        "calls_n": 11
+      }
+    ],
+    "calls": [
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 425,
+        "tokens": 171,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 5,
+        "tokens": 558,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 585,
+        "tokens": 126,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 226,
+        "note": ""
+      },
+      {
+        "tool": "browser_fill_form",
+        "ok": true,
+        "ms": 32,
+        "tokens": 149,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 8,
+        "tokens": 237,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 531,
+        "tokens": 120,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 8,
+        "tokens": 119,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 512,
+        "tokens": 51,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 515,
+        "tokens": 49,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 88,
+        "tokens": 131,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 7,
+        "tokens": 1037,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 27,
+        "tokens": 96,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 6,
+        "tokens": 741,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 513,
+        "tokens": 1561,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 96,
+        "tokens": 160,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 13,
+        "tokens": 2870,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 557,
+        "tokens": 122,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 2870,
+        "note": ""
+      },
+      {
+        "tool": "browser_console_messages",
+        "ok": true,
+        "ms": 4,
+        "tokens": 65,
+        "note": ""
+      },
+      {
+        "tool": "browser_handle_dialog",
+        "ok": false,
+        "ms": 2,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "browser_find",
+        "ok": true,
+        "ms": 12,
+        "tokens": 16,
+        "note": ""
+      },
+      {
+        "tool": "browser_find",
+        "ok": true,
+        "ms": 10,
+        "tokens": 2282,
+        "note": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "ok": true,
+        "ms": 98,
+        "tokens": 129,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 520,
+        "tokens": 543,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 511,
+        "tokens": 334,
+        "note": ""
+      }
+    ]
+  },
+  "cdt": {
+    "kind": "cdt",
+    "model": "deepseek-ai/DeepSeek-V4-Flash",
+    "results": [
+      {
+        "ok": true,
+        "note": "confirm=true data-ok=cheap",
+        "steps": 7,
+        "usage": {
+          "prompt": 55122,
+          "completion": 497
+        },
+        "mcp_chars": 2243,
+        "ms": 61208,
+        "final": "任务完成:已购买最便宜的商品\"护眼台灯\"(¥51)2 件,收货人张三、地址北京,订单已成功提交(订单号 NXP16761516)。",
+        "id": "buy-cheapest",
+        "tier": "easy",
+        "passed": true,
+        "mcp_tokens": 1215,
+        "calls_n": 9
+      },
+      {
+        "ok": true,
+        "note": "真值=918",
+        "steps": 4,
+        "usage": {
+          "prompt": 33883,
+          "completion": 526
+        },
+        "mcp_chars": 3509,
+        "ms": 40409,
+        "final": "筛选后显示张伟名下共7条订单,金额分别为 333、316、383、333、301、880、918,其中最高的是 SO-1041 的 918。\n\n张伟名下金额最高的一笔订单金额是 **918**。",
+        "id": "max-amt-of-name",
+        "tier": "medium",
+        "passed": true,
+        "mcp_tokens": 3075,
+        "calls_n": 5
+      },
+      {
+        "ok": true,
+        "note": "hits=['row3-del', 'row3-del']",
+        "steps": 20,
+        "usage": {
+          "prompt": 209195,
+          "completion": 3865
+        },
+        "mcp_chars": 17761,
+        "ms": 275068,
+        "final": "脚本中没有为删除按钮绑定实际的删除逻辑,这看起来是一个测试页面。让我确认点击是否被记录到 `__hits` 中。",
+        "id": "row-action",
+        "tier": "medium",
+        "passed": false,
+        "mcp_tokens": 7573,
+        "calls_n": 21
+      }
+    ],
+    "calls": [
+      {
+        "tool": "navigate_page",
+        "ok": true,
+        "ms": 437,
+        "tokens": 85,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 7,
+        "tokens": 738,
+        "note": ""
+      },
+      {
+        "tool": "click",
+        "ok": true,
+        "ms": 214,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 4,
+        "tokens": 168,
+        "note": ""
+      },
+      {
+        "tool": "fill_form",
+        "ok": true,
+        "ms": 663,
+        "tokens": 52,
+        "note": ""
+      },
+      {
+        "tool": "click",
+        "ok": true,
+        "ms": 218,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 3,
+        "tokens": 87,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 218,
+        "tokens": 30,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 216,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "navigate_page",
+        "ok": true,
+        "ms": 141,
+        "tokens": 92,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 815,
+        "note": ""
+      },
+      {
+        "tool": "fill",
+        "ok": true,
+        "ms": 217,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 6,
+        "tokens": 602,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 222,
+        "tokens": 1545,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 5,
+        "tokens": 602,
+        "note": ""
+      },
+      {
+        "tool": "navigate_page",
+        "ok": true,
+        "ms": 165,
+        "tokens": 74,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 18,
+        "tokens": 2114,
+        "note": ""
+      },
+      {
+        "tool": "click",
+        "ok": true,
+        "ms": 223,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "take_snapshot",
+        "ok": true,
+        "ms": 15,
+        "tokens": 2118,
+        "note": ""
+      },
+      {
+        "tool": "take_screenshot",
+        "ok": true,
+        "ms": 50,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "handle_dialog",
+        "ok": false,
+        "ms": 2,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "list_console_messages",
+        "ok": true,
+        "ms": 3,
+        "tokens": 50,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 219,
+        "tokens": 79,
+        "note": ""
+      },
+      {
+        "tool": "take_screenshot",
+        "ok": false,
+        "ms": 3,
+        "tokens": 47,
+        "note": ""
+      },
+      {
+        "tool": "take_screenshot",
+        "ok": true,
+        "ms": 49,
+        "tokens": 12,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 212,
+        "tokens": 152,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 218,
+        "tokens": 219,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 220,
+        "tokens": 272,
+        "note": ""
+      },
+      {
+        "tool": "click",
+        "ok": true,
+        "ms": 220,
+        "tokens": 13,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 226,
+        "tokens": 115,
+        "note": ""
+      },
+      {
+        "tool": "list_network_requests",
+        "ok": true,
+        "ms": 2,
+        "tokens": 18,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 223,
+        "tokens": 781,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 219,
+        "tokens": 806,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 213,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "evaluate_script",
+        "ok": true,
+        "ms": 218,
+        "tokens": 35,
+        "note": ""
+      }
+    ]
+  }
+}

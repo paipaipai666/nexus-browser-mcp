@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from adversarial import A  # noqa: E402
 from mcp import ClientSession, StdioServerParameters  # noqa: E402
 from mcp.client.stdio import stdio_client  # noqa: E402
-from scale_ops import Rec, _body, _json2  # noqa: E402
+from scale_ops import Rec, _body, _json2, _s  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "bench"
@@ -84,15 +84,15 @@ async def v_filter_first_row(a: A, final: str):
     rows = await _truth(a)
     exp = [x for x in rows if x["st"] == "已发货"]
     vis, _ = await a.eval("document.querySelector('#st').value")
-    ok = "已发货" in _body(vis) and (exp and exp[0]["id"] in final)
-    return ok, f"筛选值={_body(vis)} 首行={exp[0]['id'] if exp else '?'} in答案={exp[0]['id'] in final if exp else '-'}"
+    ok = "已发货" in _s(vis) and (exp and exp[0]["id"] in final)
+    return ok, f"筛选值={_s(vis)} 首行={exp[0]['id'] if exp else '?'} in答案={exp[0]['id'] in final if exp else '-'}"
 
 
 async def v_buy_cheapest(a: A, final: str):
     vis, _ = await a.eval("document.getElementById('confirm').style.display === 'block'")
     dok, _ = await a.eval("document.getElementById('confirm').dataset.ok || ''")
-    return "true" in _body(vis).lower() and _body(dok) == "cheap", \
-        f"confirm={_body(vis)} data-ok={_body(dok)}"
+    return "true" in _s(vis).lower() and _s(dok) == "cheap", \
+        f"confirm={_s(vis)} data-ok={_s(dok)}"
 
 
 async def v_dash_value(a: A, final: str):
@@ -142,8 +142,8 @@ async def v_last_page_last_order(a: A, final: str):
     pages = math.ceil(len(done) / 10)
     last_id = done[pages * 10 - 1]["id"] if len(done) >= pages * 10 else done[-1]["id"]
     cur, _ = await a.eval("document.title")
-    return str(pages) in final and last_id in final and f"第{pages}/{pages}页" in _body(cur), \
-        f"pages={pages} last={last_id} title={_body(cur)[:30]}"
+    return str(pages) in final and last_id in final and f"第{pages}/{pages}页" in _s(cur), \
+        f"pages={pages} last={last_id} title={_s(cur)[:30]}"
 
 
 async def v_price_compare(a: A, final: str):
@@ -182,7 +182,7 @@ TASKS = [
       "打开商品网格页,先点「价格排序」,然后把排完序后第一个商品加入购物车。",
       v_grid_sort_buy),
     # medium (6-10 步)
-    T("max-amt-of-name", "medium", "orders.html", 9,
+    T("max-amt-of-name", "medium", "orders.html", 19,
       "打开订单页面,找出客户「张伟」名下金额最高的一笔订单,告诉我金额是多少。",
       v_max_amt_of_name),
     T("wizard-flow", "medium", "wizard.html", 0,
