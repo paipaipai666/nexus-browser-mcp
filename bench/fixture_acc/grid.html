@@ -1,0 +1,54 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>商品网格</title>
+<style>body{font:14px sans-serif;margin:16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:900px}
+.item{border:1px solid #ccc;padding:8px}
+.toolbar{margin-bottom:12px;display:flex;gap:8px}
+</style></head><body>
+<div class="toolbar">
+  <button data-acc="sort-default">默认排序</button>
+  <button data-acc="sort-price">价格排序</button>
+  <span id="order-note">当前: 默认</span>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+const NAMES = ["抗菌拖把","硅胶铲","空气炸锅","瑜伽垫","保温壶","收纳箱","落地灯","颈椎枕",
+               "洗衣凝珠","电动牙刷","体脂秤","挂烫机","除螨仪","破壁机","加湿器","煮蛋器",
+               "砧板","沥水篮","鞋架","衣架组","密封罐","切菜器","灭蚊灯","暖脚宝"];
+// 固定价格表: ¥88 恰好一个 (目标锚), 其余重复价制造干扰
+const PRICES = [199, 88, 59, 129, 79, 45, 159, 99, 39, 149, 69, 229, 89, 259, 49, 119,
+                29, 139, 69, 169, 55, 95, 77, 88];
+let items = NAMES.map((n, i) => ({n, p: PRICES[i], id: "G" + String(i + 1).padStart(2, "0")}));
+window.__hits = [];
+function walk(el) {
+  while (el && el.nodeType === 1) {
+    if (el.dataset && el.dataset.acc) return el.dataset.acc;
+    el = el.parentNode;
+  }
+  return null;
+}
+document.addEventListener("click", (e) => {
+  const acc = walk(e.target);
+  if (acc) window.__hits.push(acc);
+}, true);
+function render(list) {
+  const g = document.getElementById("grid");
+  g.innerHTML = "";                       // 整体重建 → 旧 ref 全部失效
+  list.forEach(it => {
+    const d = document.createElement("div");
+    d.className = "item";
+    d.innerHTML = `<b>${it.n}</b><div>¥${it.p}</div><span>${it.id}</span>`;
+    const b = document.createElement("button");
+    b.textContent = "加入购物车";
+    b.dataset.acc = "buy-" + it.id;
+    d.appendChild(b);
+    g.appendChild(d);
+  });
+  document.getElementById("order-note").textContent =
+    "当前: " + (list === items ? "默认" : "价格");
+}
+render(items);
+document.querySelector('[data-acc="sort-price"]').addEventListener("click", () => {
+  render([...items].sort((a, b) => a.p - b.p));
+});
+document.querySelector('[data-acc="sort-default"]').addEventListener("click", () => render(items));
+</script></body></html>

@@ -166,6 +166,8 @@ HITL 确认闭环:任何被拦截的调用先回 `CONFIRMATION_REQUIRED`,用户�
 
 真实站点基准(7 场景 × 5-7 可验证子任务:百度/Bing/DDG 搜索、维基阅读、HackerNews、GitHub——[docs/bench/realworld.md](docs/bench/realworld.md)):**子任务完成 37/42 vs 31/42**,**18.2k vs 566.4k tok(31x)**,耗时 **107s vs 179s**。企业任务套件(过滤/排序、仪表盘读数、知识库答题、多步下单、跨店比价——[docs/bench/enterprise-ops.md](docs/bench/enterprise-ops.md)):**三家服务端全部 21/21(对 playwright-mcp 与 chrome-devtools-mcp);token 3.6k vs 5.1k vs 10.9k**。规模化套件(**106 案例 / 184 子任务、三方、种子化确定性夹具**——[docs/bench/scale-ops.md](docs/bench/scale-ops.md)):**完成率 184/184 vs 180/184 vs 178/184;token 153.5k vs 180.5k vs 231.1k(1.00 : 1.18 : 1.51)**——竞品缺口是稳定的零分(富文本 iframe 写入、下载观测、右键),不是噪声。
 
+元素正确识别率(对抗性复杂页面:同名按钮海、shadow DOM、iframe、隐藏/禁用陷阱、整表重渲染——[docs/bench/element-acc.md](docs/bench/element-acc.md)):**nexus 92% = pw 92% < chrome-devtools-mcp 100%,且 cdt token 最低**——它的逐节点平铺 dump 带着商品文本,而精简快照把这些裁掉了,按值定位正需要它们。我们把这作为文本裁剪的已知代价如实公布:总 token 省不省,要看"单位准确率的成本"守不守得住,本套件就是金丝雀(修复方向已基准化:仅同名冲突时附带邻近文本摘要)。
+
 ## HTTP 传输(远程/多客户端)
 
 默认 stdio(单客户端)。远程或多客户端场景可起 streamable-http 服务:

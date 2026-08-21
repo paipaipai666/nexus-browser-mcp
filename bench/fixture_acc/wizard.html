@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>入驻向导</title>
+<style>body{font:14px sans-serif;margin:24px;max-width:560px}
+.step{border:1px solid #ccc;padding:16px;margin-bottom:12px}
+.err{color:#c00;display:none}
+label{display:block;margin:8px 0 2px}
+</style></head><body>
+<h1>商家入驻向导</h1>
+<div class="step" id="s1">
+  <h2>第一步 · 基本信息</h2>
+  <label>姓名 <input data-acc="f-name"></label>
+  <label>联系人姓名 <input data-acc="f-contact-name"></label>
+  <label>紧急联系人姓名 <input data-acc="f-emergency-name"></label>
+  <span class="err" id="e1">请填写完整</span>
+  <div><button data-acc="s1-next">下一步</button> <button data-acc="decoy:s1-cancel">取消</button></div>
+</div>
+<div class="step" id="s2" style="display:none">
+  <h2>第二步 · 店铺信息</h2>
+  <label>店铺名称 <input data-acc="f-shop"></label>
+  <label>客服姓名 <input data-acc="f-cs-name"></label>
+  <div><button data-acc="s2-prev">上一步</button> <button data-acc="s2-next">下一步</button></div>
+</div>
+<div class="step" id="s3" style="display:none">
+  <h2>第三步 · 确认提交</h2>
+  <p>信息已填写, 确认无误后提交。</p>
+  <button data-acc="submit-apply">提交申请</button>
+  <button data-acc="decoy:resubmit-apply">重新提交申请</button>
+</div>
+<div style="margin-top:8px">
+  <button data-acc="save-exit">保存并退出</button>
+</div>
+<script>
+window.__hits = [];
+function walk(el) {
+  while (el && el.nodeType === 1) {
+    if (el.dataset && el.dataset.acc) return el.dataset.acc;
+    el = el.parentNode;
+  }
+  return null;
+}
+for (const type of ["click", "input"]) {
+  document.addEventListener(type, (e) => {
+    const acc = walk(e.target);
+    if (acc) window.__hits.push(acc);
+  });
+}
+function show(id) {
+  for (const s of ["s1", "s2", "s3"]) document.getElementById(s).style.display = s === id ? "block" : "none";
+}
+document.querySelector('[data-acc="s1-next"]').addEventListener("click", () => {
+  if (!document.querySelector('[data-acc="f-name"]').value
+      || !document.querySelector('[data-acc="f-contact-name"]').value) {
+    document.getElementById("e1").style.display = "inline"; return;
+  }
+  show("s2");
+});
+document.querySelector('[data-acc="s2-prev"]').addEventListener("click", () => show("s1"));
+document.querySelector('[data-acc="s2-next"]').addEventListener("click", () => show("s3"));
+</script></body></html>

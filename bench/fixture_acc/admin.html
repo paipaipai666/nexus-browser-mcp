@@ -1,0 +1,117 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>运营后台</title>
+<style>
+body{font:14px sans-serif;margin:0}
+header{border-bottom:1px solid #ddd;display:flex;align-items:center;gap:12px;padding:8px 16px}
+nav{float:left;width:150px;padding:12px;box-sizing:border-box}
+main{margin-left:166px;padding:16px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{border:1px solid #ccc;padding:10px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+td,th{border:1px solid #eee;padding:4px 8px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none}
+.modal{position:fixed;top:30%;left:35%;background:#fff;border:1px solid #999;padding:16px;display:none}
+</style></head><body>
+<header>
+  <b>运营后台 Pro</b>
+  <button data-acc="decoy:icon-bell" aria-label="通知" style="width:32px;height:32px">🔔</button>
+  <button data-acc="icon-setting" aria-label="设置" style="width:32px;height:32px">⚙</button>
+  <button data-acc="decoy:icon-help" aria-label="帮助" style="width:32px;height:32px">?</button>
+</header>
+<nav>
+  <a href="#" data-acc="nav-home">首页</a><br>
+  <a href="#" data-acc="nav-order">订单</a><br>
+  <a href="#" data-acc="nav-goods">商品</a><br>
+  <a href="#" data-acc="nav-report">报表</a>
+  <hr>
+  <a href="#" data-acc="decoy:footer-report">报表(归档)</a>
+</nav>
+<main>
+  <div class="cards">
+    <div class="card"><h2>销售概览</h2><p>今日 ¥128,400</p>
+      <button data-acc="card-sales-edit">编辑</button> <button data-acc="decoy:card-sales-refresh">刷新</button></div>
+    <div class="card"><h2>库存告警</h2><p>3 个 SKU 低于安全库存</p>
+      <button data-acc="card-stock-edit">编辑</button> <button data-acc="decoy:card-stock-refresh">刷新</button></div>
+    <div class="card"><h2>用户增长</h2><p>周环比 +4.2%</p>
+      <button data-acc="card-user-edit">编辑</button> <button data-acc="decoy:card-user-refresh">刷新</button></div>
+    <div class="card"><h2>系统公告</h2><p>v2.13 发布说明已更新</p>
+      <button data-acc="card-notice-edit">编辑</button> <button data-acc="decoy:card-notice-refresh">刷新</button></div>
+  </div>
+
+  <h2 id="order-title">订单列表</h2>
+  <table id="orders"><thead><tr><th>单号</th><th>客户</th><th>金额</th><th>操作</th></tr></thead>
+  <tbody></tbody></table>
+
+  <div style="margin-top:16px">
+    <button data-acc="submit-order">提交订单</button>
+    <button data-acc="decoy:submit-apply">提交申请</button>
+    <button data-acc="decoy:resubmit-order">重新提交订单</button>
+    <button data-acc="hidden-delete-all" style="display:none">删除全部</button>
+    <button data-acc="disabled-del" disabled>删除选中</button>
+  </div>
+
+  <user-card></user-card>
+  <iframe src="panel.html" width="320" height="120" title="备注面板"></iframe>
+
+  <button data-acc="open-modal" style="margin-top:12px">打开危险操作</button>
+</main>
+<div class="modal-backdrop" id="backdrop"></div>
+<div class="modal" id="modal">
+  <h3>危险操作确认</h3>
+  <p>将清空回收站, 不可恢复。</p>
+  <button data-acc="modal-confirm">确认清空</button>
+  <button data-acc="decoy:modal-cancel">取消</button>
+</div>
+<script>
+// 订单表: 20 行, 每行 编辑/删除/复制 同名; 第 7 行删除禁用
+const tb = document.querySelector("#orders tbody");
+for (let i = 1; i <= 20; i++) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>PO-${2000 + i}</td><td>客户${i}</td><td>¥${100 * i}</td>`;
+  const td = document.createElement("td");
+  for (const [act, label] of [["edit", "编辑"], ["del", "删除"], ["copy", "复制"]]) {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.dataset.acc = (i === 7 && act === "del") ? "decoy:row7-del-disabled"
+                  : `row${i}-${act}`;
+    if (i === 7 && act === "del") b.disabled = true;
+    if (i > 15) b.style.display = "none";   // 15 行以后操作列隐藏 (视口外+隐藏陷阱)
+    td.appendChild(b); td.append(" ");
+  }
+  tr.appendChild(td); tb.appendChild(tr);
+}
+class UserCard extends HTMLElement {
+  connectedCallback() {
+    const sh = this.attachShadow({mode: "open"});
+    sh.innerHTML = `<div style="border:1px dashed #888;margin-top:12px;padding:8px">
+      <b>会员卡组件</b><br><span>张三 · 黄金会员</span><br>
+      <button data-acc="shadow-view-profile">查看资料</button></div>`;
+    sh.addEventListener("click", (e) => {
+      const el = e.composedPath()[0];
+      const acc = el.closest && el.closest("[data-acc]") ? el.closest("[data-acc]").dataset.acc : null;
+      if (acc) { window.__hits.push(acc); }
+    });
+  }
+}
+customElements.define("user-card", UserCard);
+window.__hits = [];
+function walk(el) {
+  while (el && el.nodeType === 1) {
+    if (el.dataset && el.dataset.acc) return el.dataset.acc;
+    el = el.parentNode;
+  }
+  return null;
+}
+document.addEventListener("click", (e) => {
+  const acc = walk(e.target);
+  if (acc) window.__hits.push(acc);
+}, true);
+document.querySelector('[data-acc="open-modal"]').addEventListener("click", () => {
+  document.getElementById("backdrop").style.display = "block";
+  document.getElementById("modal").style.display = "block";
+});
+document.querySelector('[data-acc="decoy:modal-cancel"]').addEventListener("click", () => {
+  document.getElementById("backdrop").style.display = "none";
+  document.getElementById("modal").style.display = "none";
+});
+window.addEventListener("message", (ev) => { if (ev.data) window.__hits.push(ev.data); });
+</script></body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>备注面板</title></head><body>
+<label>备注 <input id="memo" data-acc="iframe-memo"></label>
+<button data-acc="iframe-save">保存草稿</button>
+<script>
+window.__hits = [];
+function walk(el) {
+  while (el && el.nodeType === 1) {
+    if (el.dataset && el.dataset.acc) return el.dataset.acc;
+    el = el.parentNode;
+  }
+  return null;
+}
+document.addEventListener("click", (e) => {
+  const acc = walk(e.target);
+  if (acc) { window.__hits.push(acc); parent.postMessage(acc, "*"); }
+}, true);
+document.addEventListener("input", (e) => {
+  const acc = walk(e.target);
+  if (acc) { window.__hits.push(acc); parent.postMessage(acc, "*"); }
+}, true);
+</script></body></html>
