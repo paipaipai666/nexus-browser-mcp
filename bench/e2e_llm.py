@@ -511,4 +511,6 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")   # Windows GBK 控制台防崩
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     asyncio.run(main())
