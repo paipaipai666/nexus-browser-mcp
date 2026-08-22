@@ -91,6 +91,46 @@ API token 总量 (首轮全量): **nexus 1,098k / pw 894k / cdt 1,157k**。
 但模型显式要更多内容时应有一条便宜的升级路径 (现在 browser_read 之后的二次快照
 没复用已读内容, 且 interactive 视图对文本任务太瘦)。
 
+## Gitea 自托管真实应用 (N=2 × 12 任务 × 3 侧, 2026-08-21)
+
+环境: Docker `gitea/gitea` (sqlite), 种子 = 2 仓库/3 issue/3 标签/1 特性分支;
+任务含真实登录; **验证器走 Gitea API 查后端状态** (DOM 会撒谎, 后端不会)。
+24 任务执行/侧, 轨迹全落盘。
+
+| task | tier | nexus | pw | cdt |
+|---|---|---|---|---|
+| gitea-readme | easy | ✓✓ 10.5步 85k | ✓✓ 4.0步 29k | ✓✓ 3.0步 29k |
+| gitea-search | easy | ✓✓ 12.0步 115k | ✓✓ 8.0步 55k | ✓✓ 5.0步 44k |
+| gitea-star | easy | ✓✓ 6.0步 62k | ✓✓ 7.0步 63k | ✓✓ 6.0步 64k |
+| gitea-create-issue | medium | ✓✓ 19.0步 174k | ✓✓ 20.0步 175k | ✓✓ 13.5步 157k |
+| gitea-label-issue | medium | ✓✓ **6.0步 69k** | ✓✓ 15.0步 180k | ✓✓ 14.5步 182k |
+| gitea-issue-comment | medium | ✓✓ 14.5步 197k | ✓✓ 19.5步 236k | ✓✓ 19.5步 312k |
+| gitea-close-issue | medium | ✓✓ 12.5步 164k | ✓✓ 18.0步 194k | ✓✓ 14.5步 204k |
+| gitea-create-branch | medium | ✗✓ 18.0步 252k | ✓✓ 19.0步 231k | ✓✓ 13.5步 220k |
+| gitea-milestone | medium | ✓✓ **15.0步 203k** | ✓✓ 7.0步 63k | ✓✓ 4.0步 40k |
+| gitea-open-pr | hard | ✓✓ 16.0步 193k | ✓✓ 20.0步 197k | ✓✓ 14.0步 201k |
+| gitea-issue-filter | hard | ✓✓ 16.5步 239k | ✓✓ 12.5步 119k | ✓✓ 9.0步 109k |
+| gitea-create-label-assign | hard | ✗✗ 撞20步 | ✗✗ 撞20步 | ✗✓ 19.5步 |
+
+| 侧 | SR | 成功任务均 tok | 失败分类 |
+|---|---|---|---|
+| nexus | 21/24 | **154k** | cap-hit ×3 |
+| pw | 22/24 | **140k** | cap-hit ×2 |
+| cdt | 23/24 | 149k | cap-hit ×1 |
+
+### 真实应用层结论
+
+1. **唯一系统性失败 = 三动作链 (创建+标签+指派)**: 三方几乎全撞 20 步上限 ——
+   这是当前模型的长链规划上限, 与 MCP 无关 (cdt r1 恰好 19 步挤过)。
+2. **步数效率差距在真实页面上放大且稳定**: 读类任务 (readme/search/milestone/filter)
+   我们 10.5-16.5 步 vs pw/cdt 3-9 步。与夹具层同构: 快照信息密度低 → 探索循环多。
+   竞对真实应用上的 Fomantic 下拉/密集表单正好压在我们裁剪策略的痛点上。
+3. **反例**: label-issue 我们 6 步全场最快 (69k vs 对手 180k) —— 列表页 navigate
+   附视图直接把标签按钮喂到眼前时, 我们的设计是对的。
+4. 轨迹取证: nexus r0 create-branch 失败轨迹显示模型做了 20 步"下拉考古",
+   其中一次点击分支下拉后快照报"无变化" (菜单实际可能未展开但无任何反馈) ——
+   疑似点击无效果盲区, 值得单独复查元素粒度 (点到 wrapper 而非可展开子节点)。
+
 ## 下一步
 
 - Gitea 任务库扩容 (分支/PR/搜索/里程碑) + N=3 化; 第二个自托管应用

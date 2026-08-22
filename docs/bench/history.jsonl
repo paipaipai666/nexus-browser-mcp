@@ -1,0 +1,1 @@
+{"ts": "2026-08-22T10:13:35", "model": "deepseek-ai/DeepSeek-V4-Flash", "runs": 2, "sides": {"nexus": {"ok": 21, "n": 24, "api_tokens": 4084203, "steps": 332}, "pw": {"ok": 22, "n": 24, "api_tokens": 3514734, "steps": 340}, "cdt": {"ok": 23, "n": 24, "api_tokens": 3756666, "steps": 272}}}
