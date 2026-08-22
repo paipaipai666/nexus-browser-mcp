@@ -168,8 +168,49 @@ async def v_multi_filter_read(a: A, final: str):
     return str(cnt) in final and str(tot) in final, f"真值={cnt}笔/¥{tot}"
 
 
-TASKS = [
-    # easy (参考步数 ≤5)
+# ── Gitea 自托管真实应用 (Phase 3): API 状态验证器 (WebArena 式, 不查 DOM 查后端) ──
+
+GITEA_BASE = os.environ.get("GITEA_BASE", "http://127.0.0.1:3000")
+_GITEA_AUTH = os.environ.get("GITEA_AUTH", "benchadmin:BenchPass123")
+
+
+def _gitea(path: str):
+    req = urllib.request.Request(f"{GITEA_BASE}/api/v1{path}")
+    import base64
+    req.add_header("Authorization", "Basic " + base64.b64encode(_GITEA_AUTH.encode()).decode())
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return json.loads(r.read())
+
+
+async def v_gitea_create_issue(a: A, final: str):
+    issues = _gitea("/repos/benchadmin/nexus-demo/issues?state=all&type=issues")
+    hit = [i for i in issues if i["title"] == "修复登录页样式"]
+    return bool(hit), f"issues={len(issues)} 命中={bool(hit)}"
+
+
+async def v_gitea_label(a: A, final: str):
+    issue = _gitea("/repos/benchadmin/nexus-demo/issues/1")
+    labels = [lb["name"] for lb in issue.get("labels", [])]
+    return "bug" in labels, f"labels={labels}"
+
+
+async def v_gitea_readme(a: A, final: str):
+    return "nexus-demo" in final, "README 标题应含 nexus-demo"
+
+
+async def v_gitea_create_label_assign(a: A, final: str):
+    issues = _gitea("/repos/benchadmin/nexus-demo/issues?state=all&type=issues")
+    hit = [i for i in issues if i["title"] == "v1.0 发布检查单"]
+    if not hit:
+        return False, "issue 未创建"
+    issue = hit[0]
+    labels = [lb["name"] for lb in issue.get("labels", [])]
+    assignees = [u["login"] for u in issue.get("assignees") or []]
+    ok = "enhancement" in labels and "benchadmin" in assignees
+    return ok, f"labels={labels} assignees={assignees}"
+
+
+TASKS = [    # easy (参考步数 ≤5)
     T("filter-first-row", "easy", "orders.html", 3,
       "打开订单页面,把状态筛选改成「已发货」,然后告诉我筛选后第一行的订单编号。",
       v_filter_first_row),
@@ -207,6 +248,22 @@ TASKS = [
     T("multi-filter-read", "hard", "orders.html", 17,
       "打开订单页面,按客户名过滤「李娜」,告诉我她名下有几笔订单、这些订单金额加起来一共多少。",
       v_multi_filter_read),
+    # ── Gitea 自托管真实应用 (登录 + 后端状态验证) ──
+    T("gitea-readme", "easy", "gitea:/benchadmin/nexus-demo", 0,
+      "打开这个 Gitea 仓库主页,告诉我仓库根目录 README.md 的第一行标题是什么(不含 # 号)。",
+      v_gitea_readme),
+    T("gitea-create-issue", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "然后在 benchadmin/nexus-demo 仓库创建一个 issue: 标题「修复登录页样式」, 内容「按钮圆角丢失」。",
+      v_gitea_create_issue),
+    T("gitea-label-issue", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "然后进入 benchadmin/nexus-demo 仓库的 issue 列表, 给标题为「首页在移动端错位」的 issue 打上 bug 标签。",
+      v_gitea_label),
+    T("gitea-create-label-assign", "hard", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "在 benchadmin/nexus-demo 仓库创建 issue 标题「v1.0 发布检查单」, 给它打上 enhancement 标签,"
+      "并把负责人设置为 benchadmin。", v_gitea_create_label_assign),
 ]
 
 PAGE_BASE = {"orders.html": "scale", "shop.html": "scale", "dash.html": "scale",
@@ -214,12 +271,16 @@ PAGE_BASE = {"orders.html": "scale", "shop.html": "scale", "dash.html": "scale",
 
 _filters = [x for x in sys.argv[1:] if not x.startswith("-")]
 _sides = "nexus,pw,cdt"
+_runs = 1
 for x in sys.argv[1:]:
     if x.startswith("--sides="):
         _sides = x.split("=", 1)[1]
     elif x.startswith("--model="):
         MODEL = x.split("=", 1)[1]
+    elif x.startswith("--runs="):
+        _runs = int(x.split("=", 1)[1])
 SEL = [t for t in TASKS if not _filters or any(f in t["id"] for f in _filters)]
+TRACES = OUT / "e2e-traces"
 
 
 def _serve(d: Path) -> tuple[str, object]:
@@ -227,6 +288,15 @@ def _serve(d: Path) -> tuple[str, object]:
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return f"http://127.0.0.1:{srv.server_address[1]}", srv
+
+
+def _flush_trace(path: Path | None, trace: list[dict]) -> None:
+    if path is None:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        for ev in trace:
+            f.write(json.dumps(ev, ensure_ascii=False) + "\n")
 
 
 def _mcp_to_openai(tools: list) -> list[dict]:
@@ -238,12 +308,22 @@ def _mcp_to_openai(tools: list) -> list[dict]:
     return out
 
 
-async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec) -> dict:
-    """一个任务的完整 agent 循环。"""
+async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec,
+                   trace_path: Path | None = None) -> dict:
+    """一个任务的完整 agent 循环。trace_path 给则录制轨迹 (JSONL, 供裁判/人评/复盘)。"""
+    trace: list[dict] = []
+
+    def rec(ev: str, data: dict) -> None:
+        if trace_path is not None:
+            trace.append({"t": round(time.perf_counter() - t0, 2), "ev": ev, **data})
+
     oai_tools = _mcp_to_openai(a.mcp_tools)
-    url = f"{base_map[PAGE_BASE[task['page']]]}/{task['page']}"
-    if task["seed"]:
-        url += f"?seed={task['seed']}"
+    if task["page"].startswith("gitea:"):
+        url = GITEA_BASE + task["page"][6:]
+    else:
+        url = f"{base_map[PAGE_BASE[task['page']]]}/{task['page']}"
+        if task["seed"]:
+            url += f"?seed={task['seed']}"
     prompt = f"起始页面: {url}\n\n任务: {task['prompt']}"
     messages = [{"role": "system", "content": SYSTEM},
                 {"role": "user", "content": prompt}]
@@ -253,10 +333,20 @@ async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec
     final_text = ""
     t0 = time.perf_counter()
     while steps < MAX_STEPS:
-        try:
-            resp = await asyncio.to_thread(call_model, messages, oai_tools)
-        except Exception as e:
-            return {"ok": False, "note": f"模型调用失败: {e}", "steps": steps,
+        resp = None
+        for attempt, wait in enumerate((0, 8, 20)):      # 并发/大上下文下 API 偶发慢, 退避重试
+            if wait:
+                await asyncio.sleep(wait)
+            try:
+                rec("model_req", {"n_msgs": len(messages), "steps": steps, "retry": attempt})
+                resp = await asyncio.to_thread(call_model, messages, oai_tools)
+                break
+            except Exception as e:
+                rec("model_retry", {"attempt": attempt, "err": str(e)[:150]})
+        if resp is None:
+            rec("model_error", {"err": "重试耗尽"})
+            _flush_trace(trace_path, trace)
+            return {"ok": False, "note": "模型调用失败: 重试耗尽", "steps": steps,
                     "usage": usage, "mcp_chars": mcp_chars,
                     "ms": int((time.perf_counter() - t0) * 1000)}
         u = resp.get("usage") or {}
@@ -264,6 +354,8 @@ async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec
         usage["completion"] += u.get("completion_tokens", 0)
         msg = resp["choices"][0]["message"]
         calls = msg.get("tool_calls") or []
+        rec("model_resp", {"content": (msg.get("content") or "")[:300],
+                           "tool_calls": [c["function"]["name"] for c in calls]})
         if not calls:
             final_text = msg.get("content") or ""
             break
@@ -277,12 +369,16 @@ async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec
                 args = {}
             text, _ = await a.call(name, args)
             mcp_chars += len(text)
+            rec("tool", {"name": name, "args": {k: str(v)[:120] for k, v in args.items()},
+                         "resp": text[:2000]})
             messages.append({"role": "tool", "tool_call_id": c["id"],
                              "content": text[:6000]})
             steps += 1
         if steps >= MAX_STEPS:
             final_text = msg.get("content") or ""
     ok, note = await task["verify"](a, final_text)
+    rec("verdict", {"ok": ok, "note": note, "final": final_text[:300]})
+    _flush_trace(trace_path, trace)
     r.check("任务成功 (硬验证)", ok, note)
     if steps >= MAX_STEPS:
         r.check("步数未爆", False, f"达到 {MAX_STEPS} 步上限")
@@ -291,7 +387,20 @@ async def run_task(sess: ClientSession, a: A, task: dict, base_map: dict, r: Rec
             "final": final_text[:200]}
 
 
-async def run_side(kind: str, params: StdioServerParameters, base_map: dict) -> dict:
+def _classify_failure(res: dict) -> str:
+    """失败分类法 v1 (自动归因, 供批量复盘)。"""
+    note = res.get("note", "")
+    if "模型调用失败" in note:
+        return "model-error"
+    if res.get("steps", 0) >= MAX_STEPS:
+        return "cap-hit"             # 撞步数上限 (迷路/打转)
+    if not res.get("final"):
+        return "no-final-answer"     # 没给出终答就停了
+    return "verifier-fail"           # 动作跑完但验证器不认 (真失败 or 验证器 bug)
+
+
+async def run_side(kind: str, params: StdioServerParameters, base_map: dict,
+                   round_idx: int) -> dict:
     async with stdio_client(params) as (rd, wr):
         async with ClientSession(rd, wr) as s:
             await s.initialize()
@@ -300,26 +409,43 @@ async def run_side(kind: str, params: StdioServerParameters, base_map: dict) -> 
             results = []
             mark = 0
             for task in SEL:
-                print(f"[{kind}] ▶ {task['id']} ({task['tier']})", file=sys.stderr, flush=True)
+                print(f"[{kind}#r{round_idx}] ▶ {task['id']} ({task['tier']})",
+                      file=sys.stderr, flush=True)
                 r = Rec(task["id"])
+                tpath = TRACES / f"{kind}-{task['id']}-r{round_idx}.jsonl"
                 try:
-                    res = await run_task(s, a, task, base_map, r)
+                    res = await run_task(s, a, task, base_map, r, trace_path=tpath)
                 except Exception as e:
                     r.check("任务异常中断", False, f"{type(e).__name__}: {e}")
                     res = {"ok": False, "note": str(e), "steps": 0,
                            "usage": {"prompt": 0, "completion": 0}, "mcp_chars": 0, "ms": 0}
                 calls = a.calls[mark:]
                 mark = len(a.calls)
-                res.update({"id": task["id"], "tier": task["tier"],
+                res.update({"id": task["id"], "tier": task["tier"], "round": round_idx,
                             "passed": r.subs and all(x["ok"] for x in r.subs),
                             "mcp_tokens": sum(c["tokens"] for c in calls),
                             "calls_n": len(calls)})
+                if not res["ok"]:
+                    res["failure_class"] = _classify_failure(res)
                 results.append(res)
-                print(f"[{kind}] {task['id']}: {'OK' if res['ok'] else 'FAIL'} "
+                print(f"[{kind}#r{round_idx}] {task['id']}: {'OK' if res['ok'] else 'FAIL'}"
+                      f"{'(' + res['failure_class'] + ')' if not res['ok'] else ''} "
                       f"{res['steps']}步 api={res['usage']['prompt'] + res['usage']['completion']}tok "
                       f"{res['ms'] // 1000}s", file=sys.stderr, flush=True)
                 await asyncio.sleep(0.5)
-            return {"kind": kind, "model": MODEL, "results": results, "calls": a.calls}
+            return {"kind": kind, "model": MODEL, "round": round_idx,
+                    "results": results, "calls": a.calls}
+
+
+def _wilson(ok: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson score 区间 (比例型指标的诚实 CI, 小样本不崩)。"""
+    if n == 0:
+        return 0.0, 1.0
+    p = ok / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    spread = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / denom
+    return max(0.0, center - spread), min(1.0, center + spread)
 
 
 async def main() -> None:
@@ -329,46 +455,58 @@ async def main() -> None:
     env = {**os.environ, "BROWSER_HEADLESS": "true", "BROWSER_ALLOW_JS_EXECUTION": "true"}
     base_map = {}
     srvs = []
+    all_rounds: dict[str, list[dict]] = {}
     try:
         base_map["scale"], srv = _serve(FIXS)
         base_map["acc"], srv2 = _serve(FIXA)
         srvs = [srv, srv2]
-        sides = []
+        side_params = {}
         if "nexus" in _sides:
-            sides.append(await run_side("nexus", StdioServerParameters(
-                command=py, args=["-m", "nexus_browser.server"], env=env), base_map))
+            side_params["nexus"] = StdioServerParameters(
+                command=py, args=["-m", "nexus_browser.server"], env=env)
         if "pw" in _sides:
-            sides.append(await run_side("pw", StdioServerParameters(
-                command="npx", args=["-y", "@playwright/mcp@latest", "--headless"]), base_map))
+            side_params["pw"] = StdioServerParameters(
+                command="npx", args=["-y", "@playwright/mcp@latest", "--headless"])
         if "cdt" in _sides:
-            sides.append(await run_side("cdt", StdioServerParameters(
-                command="npx", args=["-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"]),
-                base_map))
+            side_params["cdt"] = StdioServerParameters(
+                command="npx", args=["-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"])
+        for rnd in range(_runs):
+            for kind, params in side_params.items():
+                all_rounds.setdefault(kind, []).append(await run_side(kind, params, base_map, rnd))
     finally:
         for s_ in srvs:
             s_.shutdown()
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "e2e-llm.json").write_text(
-        json.dumps({s["kind"]: s for s in sides}, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps({k: v for k, v in all_rounds.items()}, ensure_ascii=False, indent=2),
+        encoding="utf-8")
 
-    print(f"\n模型: {MODEL}")
-    print(f"{'task':18s} {'tier':7s} │" + "".join(
-        f" {s['kind']:>5s} 步 api_tok {'ms':>6s} │" for s in sides))
+    print(f"\n模型: {MODEL} · 每任务轮数 N={_runs}")
+    kinds = list(all_rounds)
+    print(f"{'task':18s} {'tier':7s} │" + "".join(f" {k:>5s} {'':>3s} {'均步':>4s} {'均tok':>7s} │" for k in kinds))
     for i, task in enumerate(SEL):
         row = f"{task['id']:18s} {task['tier']:7s} │"
-        for sd in sides:
-            x = sd["results"][i]
-            api = x["usage"]["prompt"] + x["usage"]["completion"]
-            row += f" {'✓' if x['ok'] else '✗':>4s} {x['steps']:>3d} {api:>7d} {x['ms']:>6d} │"
+        for k in kinds:
+            rs = [rd["results"][i] for rd in all_rounds[k]]
+            oks = "".join("✓" if x["ok"] else "✗" for x in rs)
+            mstep = sum(x["steps"] for x in rs) / len(rs)
+            mtok = sum(x["usage"]["prompt"] + x["usage"]["completion"] for x in rs) // len(rs)
+            row += f"  {oks:>4s} {mstep:>4.1f} {mtok:>7d} │"
         print(row)
-    row = f"{'TOTAL SR':18s} {'':7s} │"
-    for sd in sides:
-        ok_n = sum(1 for x in sd["results"] if x["ok"])
-        api = sum(x["usage"]["prompt"] + x["usage"]["completion"] for x in sd["results"])
-        st = sum(x["steps"] for x in sd["results"])
-        row += f" {ok_n}/{len(SEL):<3d} {st:>3d} {api:>7d} {'':>6s} │"
     print("-" * 90)
+    row = f"{'SR (Wilson95)':18s} {'':7s} │"
+    for k in kinds:
+        allr = [x for rd in all_rounds[k] for x in rd["results"]]
+        ok_n = sum(1 for x in allr if x["ok"])
+        lo, hi = _wilson(ok_n, len(allr))
+        row += f"  {ok_n}/{len(allr)} [{lo:.0%},{hi:.0%}]"[:22].ljust(22) + "│"
+    print(row)
+    row = f"{'失败分类':18s} {'':7s} │"
+    for k in kinds:
+        from collections import Counter
+        cls = Counter(x.get("failure_class") for rd in all_rounds[k] for x in rd["results"] if not x["ok"])
+        row += f"  {dict(cls)!s:>19s} │"
     print(row)
 
 
