@@ -210,6 +210,58 @@ async def v_gitea_create_label_assign(a: A, final: str):
     return ok, f"labels={labels} assignees={assignees}"
 
 
+async def v_gitea_search(a: A, final: str):
+    return "基准种子仓库" in final or "工具库" in final, "探索页搜索应找到种子仓库"
+
+
+async def v_gitea_star(a: A, final: str):
+    repo = _gitea("/repos/benchadmin/nexus-lib")
+    n = repo.get("stars_count", 0)
+    return n >= 1, f"stars={n}"
+
+
+async def v_gitea_comment(a: A, final: str):
+    issues = _gitea("/repos/benchadmin/nexus-demo/issues?state=all&type=issues")
+    hit = [i for i in issues if i["title"] == "添加导出 CSV 功能"]
+    if not hit:
+        return False, "issue 不存在"
+    comments = _gitea(f"/repos/benchadmin/nexus-demo/issues/{hit[0]['number']}/comments")
+    ok = any("下个迭代" in c.get("body", "") for c in comments)
+    return ok, f"comments={len(comments)}"
+
+
+async def v_gitea_close(a: A, final: str):
+    issues = _gitea("/repos/benchadmin/nexus-demo/issues?state=all&type=issues")
+    hit = [i for i in issues if i["title"] == "更新 README 安装段"]
+    if not hit:
+        return False, "issue 不存在"
+    return hit[0]["state"] == "closed", f"state={hit[0]['state']}"
+
+
+async def v_gitea_branch(a: A, final: str):
+    branches = _gitea("/repos/benchadmin/nexus-demo/branches")
+    names = [b["name"] for b in branches]
+    return "fix/login-style" in names, f"branches={names}"
+
+
+async def v_gitea_milestone(a: A, final: str):
+    ms = _gitea("/repos/benchadmin/nexus-demo/milestones?state=all")
+    titles = [m["title"] for m in ms]
+    return "v1.0" in titles, f"milestones={titles}"
+
+
+async def v_gitea_pr(a: A, final: str):
+    prs = _gitea("/repos/benchadmin/nexus-demo/pulls?state=all")
+    titles = [p["title"] for p in prs]
+    return "导出功能" in titles, f"pulls={titles}"
+
+
+async def v_gitea_issue_filter(a: A, final: str):
+    issues = _gitea("/repos/benchadmin/nexus-demo/issues?state=all&type=issues")
+    n = sum(1 for i in issues if any(lb["name"] == "bug" for lb in i.get("labels", [])))
+    return str(n) in final, f"bug 标签 issue 数={n}"
+
+
 TASKS = [    # easy (参考步数 ≤5)
     T("filter-first-row", "easy", "orders.html", 3,
       "打开订单页面,把状态筛选改成「已发货」,然后告诉我筛选后第一行的订单编号。",
@@ -264,6 +316,36 @@ TASKS = [    # easy (参考步数 ≤5)
       "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
       "在 benchadmin/nexus-demo 仓库创建 issue 标题「v1.0 发布检查单」, 给它打上 enhancement 标签,"
       "并把负责人设置为 benchadmin。", v_gitea_create_label_assign),
+    T("gitea-search", "easy", "gitea:/explore/repos", 0,
+      "打开这个 Gitea 实例的仓库探索页, 搜索 nexus, 告诉我搜到的其中一个仓库的描述是什么。",
+      v_gitea_search),
+    T("gitea-star", "easy", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "然后打开 benchadmin/nexus-lib 仓库主页并给它加星 (star)。", v_gitea_star),
+    T("gitea-issue-comment", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "进入 benchadmin/nexus-demo 仓库, 在标题为「添加导出 CSV 功能」的 issue 下评论「排期到下个迭代」。",
+      v_gitea_comment),
+    T("gitea-close-issue", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "进入 benchadmin/nexus-demo 仓库, 把标题为「更新 README 安装段」的 issue 关闭。",
+      v_gitea_close),
+    T("gitea-create-branch", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "在 benchadmin/nexus-demo 仓库从 main 创建一个名为 fix/login-style 的新分支。",
+      v_gitea_branch),
+    T("gitea-milestone", "medium", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "在 benchadmin/nexus-demo 仓库创建一个标题为 v1.0 的里程碑 (milestone)。",
+      v_gitea_milestone),
+    T("gitea-open-pr", "hard", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "在 benchadmin/nexus-demo 仓库, 给已有分支 feature/add-export 向 main 发一个 Pull Request,"
+      "标题填「导出功能」。", v_gitea_pr),
+    T("gitea-issue-filter", "hard", "gitea:/user/login", 0,
+      "这是本地 Gitea 测试实例, 先登录(用户名 benchadmin 密码 BenchPass123),"
+      "进入 benchadmin/nexus-demo 仓库的 issue 列表, 按 bug 标签筛选, 告诉我筛出来有几个 issue。",
+      v_gitea_issue_filter),
 ]
 
 PAGE_BASE = {"orders.html": "scale", "shop.html": "scale", "dash.html": "scale",
@@ -481,6 +563,18 @@ async def main() -> None:
     (OUT / "e2e-llm.json").write_text(
         json.dumps({k: v for k, v in all_rounds.items()}, ensure_ascii=False, indent=2),
         encoding="utf-8")
+    # 趋势看板: 每次全量追加一行 (Phase 5 回归追踪)
+    import datetime
+    hist = {"ts": datetime.datetime.now().isoformat(timespec="seconds"), "model": MODEL,
+            "runs": _runs, "sides": {}}
+    for k, rounds in all_rounds.items():
+        allr = [x for rd in rounds for x in rd["results"]]
+        hist["sides"][k] = {
+            "ok": sum(1 for x in allr if x["ok"]), "n": len(allr),
+            "api_tokens": sum(x["usage"]["prompt"] + x["usage"]["completion"] for x in allr),
+            "steps": sum(x["steps"] for x in allr)}
+    with open(OUT / "history.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(hist, ensure_ascii=False) + "\n")
 
     print(f"\n模型: {MODEL} · 每任务轮数 N={_runs}")
     kinds = list(all_rounds)
@@ -507,6 +601,17 @@ async def main() -> None:
         from collections import Counter
         cls = Counter(x.get("failure_class") for rd in all_rounds[k] for x in rd["results"] if not x["ok"])
         row += f"  {dict(cls)!s:>19s} │"
+    print(row)
+    row = f"{'成功任务均tok':18s} {'':7s} │"
+    for k in kinds:
+        succ = [x["usage"]["prompt"] + x["usage"]["completion"]
+                for rd in all_rounds[k] for x in rd["results"] if x["ok"]]
+        tps = sum(succ) // len(succ) if succ else 0
+        sr = len(succ) / max(1, sum(len(rd["results"]) for rd in all_rounds[k]))
+        all_tok = sum(x["usage"]["prompt"] + x["usage"]["completion"]
+                      for rd in all_rounds[k] for x in rd["results"])
+        eff = sr / (all_tok / 1000) * 1000 if all_tok else 0   # 每 1k tok 换回的成功率百分点×100
+        row += f"  {tps // 1000}k tok/成功 {eff:>5.2f}SR/Mtok │"
     print(row)
 
 

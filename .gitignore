@@ -25,3 +25,9 @@ venv/
 Thumbs.db
 Desktop.ini
 .playwright-mcp/
+
+# 基准运行日志/探针残留 (入库无意义)
+bench/*.log
+after-*
+current-state.png
+full-snapshot.md

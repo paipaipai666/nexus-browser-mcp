@@ -1,0 +1,253 @@
+{
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "n": 24,
+  "agreement": 0.9166666666666666,
+  "confusion": {
+    "tp": 21,
+    "fn": 2,
+    "fp": 0,
+    "tn": 1
+  },
+  "rows": [
+    {
+      "trace": "cdt-modal-flow-r0.jsonl",
+      "side": "cdt",
+      "task": "modal-flow",
+      "round": 0,
+      "hard": false,
+      "judge": false,
+      "agree": true,
+      "reason": "轨迹中从未成功打开危险操作对话框并点击确认清空，多次尝试均失败，最终停留在调试阶段。"
+    },
+    {
+      "trace": "cdt-buy-cheapest-r0.jsonl",
+      "side": "cdt",
+      "task": "buy-cheapest",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示实际完成了选择最便宜商品、购买2件、填写收货信息并成功提交订单,且硬验证器通过。"
+    },
+    {
+      "trace": "cdt-buy-cheapest-r1.jsonl",
+      "side": "cdt",
+      "task": "buy-cheapest",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示订单已提交,硬验证器确认商品为最便宜且表单信息正确,任务完成。"
+    },
+    {
+      "trace": "cdt-buy-cheapest-r2.jsonl",
+      "side": "cdt",
+      "task": "buy-cheapest",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示订单已成功提交,且验证器确认购买的是最便宜商品,任务完成。"
+    },
+    {
+      "trace": "cdt-dash-read-r0.jsonl",
+      "side": "cdt",
+      "task": "dash-read",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "任务要求打开仪表盘并报告日活用户数值，轨迹显示导航成功且最终回答与页面真值一致。"
+    },
+    {
+      "trace": "cdt-dash-read-r1.jsonl",
+      "side": "cdt",
+      "task": "dash-read",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示已打开仪表盘并获取到正确数值，任务完成。"
+    },
+    {
+      "trace": "cdt-dash-read-r2.jsonl",
+      "side": "cdt",
+      "task": "dash-read",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示已打开仪表盘并获取到正确数值，任务完成。"
+    },
+    {
+      "trace": "cdt-filter-first-row-r0.jsonl",
+      "side": "cdt",
+      "task": "filter-first-row",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示筛选已生效且首行订单编号与最终回答一致，任务完成。"
+    },
+    {
+      "trace": "cdt-filter-first-row-r1.jsonl",
+      "side": "cdt",
+      "task": "filter-first-row",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示筛选操作已执行且硬验证器确认结果正确，最终回答与页面数据一致。"
+    },
+    {
+      "trace": "cdt-filter-first-row-r2.jsonl",
+      "side": "cdt",
+      "task": "filter-first-row",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的实际动作和验证器均表明任务已完成。"
+    },
+    {
+      "trace": "cdt-grid-sort-buy-r0.jsonl",
+      "side": "cdt",
+      "task": "grid-sort-buy",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的点击事件和硬验证器结果均表明已按顺序完成价格排序和将第一个商品加入购物车。"
+    },
+    {
+      "trace": "cdt-grid-sort-buy-r1.jsonl",
+      "side": "cdt",
+      "task": "grid-sort-buy",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的实际点击操作与任务要求一致,且验证器确认了价格排序和第一个商品加入购物车的事件,任务真正完成。"
+    },
+    {
+      "trace": "cdt-grid-sort-buy-r2.jsonl",
+      "side": "cdt",
+      "task": "grid-sort-buy",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的点击操作与验证器记录的事件一致,任务按顺序完成"
+    },
+    {
+      "trace": "cdt-kb-owner-r0.jsonl",
+      "side": "cdt",
+      "task": "kb-owner",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "任务要求查询KB-107负责人,轨迹中验证器确认真值且最终回答正确,任务完成。"
+    },
+    {
+      "trace": "cdt-kb-owner-r1.jsonl",
+      "side": "cdt",
+      "task": "kb-owner",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "任务要求查询KB-107负责人,轨迹中验证器确认真值且最终回答正确,任务完成。"
+    },
+    {
+      "trace": "cdt-kb-owner-r2.jsonl",
+      "side": "cdt",
+      "task": "kb-owner",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "任务要求查询KB-107负责人，轨迹中页面验证器确认真值为陈静，最终回答与之相符，任务完成。"
+    },
+    {
+      "trace": "cdt-last-page-order-r0.jsonl",
+      "side": "cdt",
+      "task": "last-page-order",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹显示筛选已完成且结果正确,任务要求的信息均已准确获取。"
+    },
+    {
+      "trace": "cdt-last-page-order-r1.jsonl",
+      "side": "cdt",
+      "task": "last-page-order",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "筛选结果只有1页,无需翻页,最后一行的订单编号和总页数均正确给出,任务完成。"
+    },
+    {
+      "trace": "cdt-last-page-order-r2.jsonl",
+      "side": "cdt",
+      "task": "last-page-order",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的硬验证器确认筛选结果正确,且最终回答与验证结果一致,任务完成。"
+    },
+    {
+      "trace": "cdt-max-amt-of-name-r0.jsonl",
+      "side": "cdt",
+      "task": "max-amt-of-name",
+      "round": 0,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "agent 正确筛选出张伟的订单并给出最高金额 918,与验证真值一致,任务完成。"
+    },
+    {
+      "trace": "cdt-max-amt-of-name-r1.jsonl",
+      "side": "cdt",
+      "task": "max-amt-of-name",
+      "round": 1,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的实际动作和验证器均表明已正确找出张伟名下金额最高的订单为918。"
+    },
+    {
+      "trace": "cdt-max-amt-of-name-r2.jsonl",
+      "side": "cdt",
+      "task": "max-amt-of-name",
+      "round": 2,
+      "hard": true,
+      "judge": true,
+      "agree": true,
+      "reason": "轨迹中的实际动作和验证器均表明已正确找出张伟名下金额最高的订单为918。"
+    },
+    {
+      "trace": "cdt-modal-flow-r1.jsonl",
+      "side": "cdt",
+      "task": "modal-flow",
+      "round": 1,
+      "hard": true,
+      "judge": false,
+      "agree": false,
+      "reason": "轨迹中没有完成对「确认清空」按钮的实际点击,任务未完成。"
+    },
+    {
+      "trace": "cdt-modal-flow-r2.jsonl",
+      "side": "cdt",
+      "task": "modal-flow",
+      "round": 2,
+      "hard": true,
+      "judge": false,
+      "agree": false,
+      "reason": "轨迹显示对话框始终未成功打开或确认，最终未执行「确认清空」操作。"
+    }
+  ]
+}
