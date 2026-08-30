@@ -8,6 +8,7 @@ task_id 不传时自动生成默认 task。
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import re
@@ -69,7 +70,7 @@ def tool_names() -> list[str]:
         "browser_navigate", "browser_snapshot", "browser_click", "browser_type",
         "browser_read", "browser_screenshot", "browser_evaluate", "browser_wait",
         "browser_wait_stable", "browser_wait_ms",
-        "browser_scroll", "browser_scroll_to", "browser_wait_navigation",
+        "browser_scroll", "browser_scroll_to", "browser_wait_navigation", "browser_find",
         "browser_dismiss_popup", "browser_list_pages", "browser_switch_page",
         "browser_console", "browser_errors", "browser_network", "browser_perf",
         "browser_network_body",
@@ -420,6 +421,11 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
         # window.open 的新标签导航把本等待拖死成 5s 误报。no_wait_after 跳过该等待:
         # 点击动作在返回前已执行完毕; 导航等待交给 browser_wait_navigation / nav_event。
         ts.nav_event.clear()
+        try:
+            await ensure_watcher(ts.page, _settings)
+            ts._pre_click_mutation = await ts.page.evaluate("window.__nexusLastMutation ?? 0")
+        except Exception:
+            ts._pre_click_mutation = None
         if double_click:
             await locator.dblclick(timeout=5000, no_wait_after=True)
         else:
@@ -443,11 +449,13 @@ async def _click(task_id, ref, role, name, selector, double_click, pos, wait_sta
             return f"已点击元素; 开始下载: {dl['filename']} → 已保存 {dl['path']}"
         if wait_stable:
             await _settle_after_action(ts)
-        return "已点击元素。"
+        return "已点击元素。" + await _no_effect_hint(ts)
     except ValueError as e:
         return fmt.error(str(e))
     except Exception as e:
         return _op_error("点击", e, hint="尝试用 pos 坐标: browser_click(pos='x,y,w,h')")
+
+
 
 
 async def _settle_after_action(ts) -> None:
@@ -457,6 +465,23 @@ async def _settle_after_action(ts) -> None:
         await wait_dom_settled(ts.page, _settings, task=ts)
     except Exception:
         pass
+
+
+async def _no_effect_hint(ts) -> str:
+    """点击零反馈检测: 无导航且零 DOM 变异 → 附提示 (E2E 取证: 模型曾对无效点击原地打转)。
+    变异计数读 watcher 的 __nexusLastMutation; watcher 缺失则弃权不猜。"""
+    if ts.nav_event.is_set():
+        return ""
+    try:
+        m0 = getattr(ts, "_pre_click_mutation", None)
+        if m0 is None:
+            return ""
+        m1 = await ts.page.evaluate("window.__nexusLastMutation ?? 0")
+        if m1 == m0:
+            return " (页面无变化: 目标可能无响应/需悬停展开/被遮挡——建议重新快照或换定位)"
+    except Exception:
+        pass
+    return ""
 
 
 async def browser_type(text: str, ref=None, role=None, name=None, selector=None,
@@ -966,6 +991,90 @@ async def _page_of(task_id):
     return ts.page
 
 
+_FIND_JS = r"""
+(query) => {
+  const q = query.toLowerCase();
+  const out = [];
+  const seen = new Set();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const t = (node.nodeValue || '').trim();
+    if (!t || !t.toLowerCase().includes(q)) continue;
+    const el = node.parentElement;
+    if (!el || !el.getClientRects().length) continue;
+    const cont = el.closest('tr, li, article, section, [role="row"], [class*="card"], [class*="item"]') || el;
+    if (seen.has(cont)) continue;
+    seen.add(cont);
+    const acts = [...cont.querySelectorAll('a, button, input, select, textarea, [role="button"], [role="link"]')]
+      .slice(0, 6).map(e => {
+        const nm = (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 30);
+        const b = e.getBoundingClientRect();
+        return {tag: e.tagName.toLowerCase(), name: nm,
+                box: [b.x, b.y, b.width, b.height].map(v => Math.round(v))};
+      });
+    out.push({text: (cont.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+              acts: acts.map(a => ({...a, box: a.box}))});
+    if (out.length >= 8) break;
+  }
+  return JSON.stringify(out);
+}
+"""
+
+
+async def browser_find(text: str, *, task_id: str = ""):
+    return await _find(_default_task(task_id), text)
+
+
+async def _find(task_id, text) -> str:
+    """文本查找原语: 一次调用替代 滚动→快照→滚动 探索循环 (E2E 取证: row-action /
+    last-page-order / gitea-search 等任务三方均因此多耗 3-10 步)。返回命中容器
+    文本 + 容器内可交互元素的 ref (先内部全页盖章 aria-ref, 视口外也有效)。"""
+    err = await _require_task(task_id)
+    if err:
+        return err
+    if not text or not text.strip():
+        return fmt.error("text 不能为空")
+    ts = await _manager.ensure_task(_sid(), task_id)
+    try:
+        await ensure_watcher(ts.page, _settings)
+        await get_stable_tree(ts.page, None, _settings, task=ts)  # 内部盖章, 不回流给模型
+        snap_nodes = await get_stable_tree(ts.page, None, _settings, task=ts)  # 内部盖章, 不回流
+        rows = json.loads(await ts.page.evaluate(_FIND_JS, text.strip()))
+        _attach_refs(rows, snap_nodes)
+    except Exception as e:
+        return _op_error("查找", e)
+    if not rows:
+        return f"未找到包含「{text}」的可见内容 (可先 browser_scroll 翻页再查)。"
+    parts = [f"## 找到 {len(rows)} 处「{text}」"]
+    for i, row in enumerate(rows):
+        parts.append(f"[{i + 1}] {row['text']}")
+        for actx in row.get("acts", []):
+            parts.append(f"    {actx}")
+    parts.append("ref 可直接用于 browser_click/browser_type; 标注(无ref)请先滚动到该处再 find。")
+    return "\n".join(parts)
+
+
+def _attach_refs(rows: list[dict], nodes: list[dict]) -> None:
+    """把 JS 找到的容器内可交互元素 (带 box) 匹配回快照节点的 ref。
+    box 同坐标系 (都是视口相对 CSS 像素), 容差 2px。匹配不到 → None (调用方标'无ref')。"""
+    def match(box: list) -> str | None:
+        best, best_d = None, 9.0   # 2px 容差 => 距离平方和阈值
+        for n in nodes:
+            nb = n.get("box")
+            if not n.get("ref") or not nb:
+                continue
+            d = sum((float(a) - float(b)) ** 2 for a, b in zip(box, nb, strict=False))
+            if d < best_d:
+                best, best_d = n["ref"], d
+        return best
+    for row in rows:
+        for act in row.get("acts", []):
+            act["ref"] = match(act.get("box") or [])
+        row["acts"] = [f'{a["tag"]} "{a["name"]}" ref={a["ref"]}' if a.get("ref")
+                       else f'{a["tag"]} "{a["name"]}" (无ref)' for a in row.get("acts", [])]
+
+
 async def browser_scroll(direction: str = "down", amount: int = 500, *, task_id: str = ""):
     return await _scroll(_default_task(task_id), direction, amount)
 
@@ -989,7 +1098,10 @@ async def _scroll(task_id, direction, amount) -> str:
     try:
         await ts.page.mouse.wheel(dx, dy)
         await _settle_after_action(ts)  # 滚动触发懒加载, 等静默避免快照拍在中间态
-        return f"已向{direction}滚动 {amount}px。"
+                # 滚动即视图 (E2E 取证: scroll+snapshot 两步合一, 省一次全史重放):
+        # 回新视口的 interactive diff; diff 命中"无变化"= 到顶/底了, 也是有价值信号
+        view = await _snapshot_text(task_id, None, "interactive", False, False, False, True)
+        return f"已向{direction}滚动 {amount}px。\n{view}"
     except Exception as e:
         return _op_error("滚动", e)
 
@@ -1664,8 +1776,14 @@ def _register_all(register) -> None:
          {"type": "object", "properties": {
              "ms": {"type": "integer"}, "task_id": {"type": "string"},
          }, "required": ["ms"]}),
+        (browser_find, "browser_find",
+         "按文本查找页面内容并返回命中处的容器摘要与同容器可交互元素 ref —— 找特定行/卡片/"
+         "商品时用它, 不要反复滚动快照。视口外内容同样可查 (内部全页索引)。",
+         {"type": "object", "properties": {
+             "text": {"type": "string", "description": "要查找的文本片段 (大小写不敏感)"},
+             "task_id": {"type": "string"}}, "required": ["text"]}),
         (browser_scroll, "browser_scroll",
-         "滚动页面。direction: up/down/left/right, amount: 像素(默认500)。",
+         "滚动页面, 返回新视口的 interactive diff (到顶/底会报'无变化')。direction: up/down/left/right, amount: 像素(默认500)。",
          {"type": "object", "properties": {
              "direction": {"type": "string", "enum": ["up", "down", "left", "right"], "default": "down"},
              "amount": {"type": "integer", "default": 500}, "task_id": {"type": "string"},

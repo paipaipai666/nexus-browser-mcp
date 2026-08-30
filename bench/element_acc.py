@@ -96,7 +96,8 @@ def _resolve_nexus(snap: str, role: str, name: str, hint: str) -> str | None:
         mr = re.search(r"ref=(\S+)", line)
         if m.group(1) == role and m.group(2) == name and mr:
             parsed_cands.append((i, mr.group(1)))
-    after = [ref_ for i, ref_ in parsed_cands if i > hint_idx]
+    # 候选行自身携带 ctx 注解 (同名冲突附邻近文本) → 命中行即目标, 不算"之后"
+    after = [ref_ for i, ref_ in parsed_cands if i > hint_idx or (i == hint_idx and hint in lines[i])]
     return after[0] if after else None   # 锚点后无候选 → 可能在更下方, 升级滚动
 
 

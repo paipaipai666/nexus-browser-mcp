@@ -16,6 +16,16 @@
 
 ## 进阶交互
 
+- **查找**:`browser_find(text)` — 按文本定位内容, 返回命中容器摘要 + 同容器可交互元素 ref (视口外也能查)。找"某行/某卡片/某商品"时用它, 别反复滚动快照。
+- **键盘**:`browser_press_key(key)` — 真实键事件(isTrusted=true), Escape 关模态框/Tab 序/组合键(Control+a)。
+- **悬停**:`browser_hover(ref/selector/pos)` — 真实鼠标移动, CSS :hover 菜单可用。
+- **下拉**:`browser_select_option(values=[...], ref/selector)` — <select> 按 value/label 选。
+- **上传**:`browser_upload_file(paths=[...], ref/selector)` — 文件出站, **每次需 confirmed=true**(HITL)。
+- **拖拽**:`browser_drag(from_ref/from_selector, to_ref/to_selector)`;**后退**:`browser_navigate_back()`。
+- **滚动即视图**:`browser_scroll` 直接回新视口 diff (报"无变化"=到顶/底), 不用再补 snapshot。
+- **零反馈提示**: 点击后既无导航也无 DOM 变化时, 回复会附"页面无变化"提示——换定位, 别原地重试。
+- **同名消歧**: 快照里同名同角色的元素自动附 `← 前文文本` (如卡片标题/行金额), 用它区分目标。
+
 - **键盘**:`browser_press_key(key)` — 真实键事件(isTrusted=true), Escape 关模态框/Tab 序/组合键(Control+a)。
 - **悬停**:`browser_hover(ref/selector/pos)` — 真实鼠标移动, CSS :hover 菜单可用。
 - **下拉**:`browser_select_option(values=[...], ref/selector)` — <select> 按 value/label 选。

@@ -483,3 +483,41 @@ def test_nodes_digest_changes_on_content():
     assert nodes_digest([base[0], dict(base[0], name="第二个")]) != d0
 
 
+
+
+def test_annotate_conflicts_adds_ctx_only_on_duplicates():
+    """同名冲突注解: 仅同 (role,name)≥2 组附前文文本; 无冲突零注解 (零成本契约)。"""
+    from nexus_browser.snapshot import _annotate_conflicts
+    all_nodes = [
+        {"role": "StaticText", "name": "", "text": "销售概览"},
+        {"role": "button", "name": "编辑", "ref": "e19"},
+        {"role": "StaticText", "name": "", "text": "库存告警"},
+        {"role": "button", "name": "编辑", "ref": "e25"},
+        {"role": "button", "name": "唯一按钮", "ref": "e30"},
+    ]
+    detail = [all_nodes[1], all_nodes[3], all_nodes[4]]
+    _annotate_conflicts(detail, all_nodes)
+    assert detail[0]["ctx"] == "销售概览"
+    assert detail[1]["ctx"] == "库存告警"
+    assert "ctx" not in detail[2]          # 唯一名不注解
+
+    # 无冲突页面: 完全不动
+    solo = [{"role": "button", "name": "提交", "ref": "e1"}]
+    _annotate_conflicts(solo, solo)
+    assert "ctx" not in solo[0]
+
+
+def test_annotate_conflicts_skips_interactive_preceding():
+    """前文收集跳过交互元素的名 (按钮名不是区分性上下文)。"""
+    from nexus_browser.snapshot import _annotate_conflicts
+    all_nodes = [
+        {"role": "StaticText", "name": "", "text": "订单行A"},
+        {"role": "button", "name": "编辑", "ref": "e1"},
+        {"role": "button", "name": "删除", "ref": "e2"},
+        {"role": "button", "name": "编辑", "ref": "e3"},
+    ]
+    detail = [all_nodes[1], all_nodes[3]]
+    _annotate_conflicts(detail, all_nodes)
+    assert detail[0]["ctx"] == "订单行A"
+    # 第二个"编辑"前是交互元素 编辑/删除 → 跳过, 取到 订单行A
+    assert "订单行A" in detail[1]["ctx"] and "删除" not in detail[1]["ctx"]

@@ -14,6 +14,7 @@ import asyncio
 import hashlib
 import re
 import time
+from collections import Counter
 from time import monotonic
 from typing import Any
 
@@ -256,6 +257,8 @@ def _format_a11y_tree(nodes: list[dict], start_idx: int = 1, show_url: bool = Fa
             parts.append(f'"{n["name"]}"')
         if n.get("ref"):
             parts.append(f"ref={n['ref']}")
+        if n.get("ctx"):
+            parts.append(f"← {n['ctx']}")
         if n.get("attrs"):
             parts.append(f"[{n['attrs']}]")
         box = n.get("box")
@@ -464,6 +467,7 @@ def assemble_snapshot(
     if not include_offscreen:
         detail = [n for n in detail if n.get("viewport_status") != "offscreen"]
     detail = _truncate_by_priority(detail, max_nodes)
+    _annotate_conflicts(detail, all_nodes)
 
     scopes = []
     for n in skeleton:
@@ -483,3 +487,31 @@ def assemble_snapshot(
         "suggested_scopes": scopes,
         "popup_hint": popup_hint,
     }
+
+
+def _annotate_conflicts(detail: list[dict], all_nodes: list[dict]) -> None:
+    """同名冲突注解 (element_acc 取证: 同名按钮海里 LLM 无法消歧 → 92% vs 100%)。
+    同 (role, name) ≥2 的组, 每个节点附最近的文档序前文文本 (商品名/行标识),
+    渲染为 "← 文本"。无冲突页面零成本。"""
+    groups = Counter((n.get("role"), n.get("name")) for n in detail if n.get("name"))
+    if not any(c >= 2 for c in groups.values()):
+        return
+    order = {id(n): i for i, n in enumerate(all_nodes)}
+
+    def ctx_for(n: dict) -> str:
+        texts: list[str] = []
+        j = order.get(id(n), 0) - 1
+        while j >= 0 and len(texts) < 1:
+            m = all_nodes[j]
+            t = (m.get("text") or m.get("name") or "").strip()
+            if t and m.get("role") not in INTERACTIVE_ROLES and t != n.get("name"):
+                texts.append(t[:16])
+            j -= 1
+        return " ".join(reversed(texts))
+
+    for n in detail:
+        key = (n.get("role"), n.get("name"))
+        if n.get("name") and groups[key] >= 2:
+            ctx = ctx_for(n)
+            if ctx:
+                n["ctx"] = ctx[:34]

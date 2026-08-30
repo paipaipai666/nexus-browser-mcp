@@ -5,6 +5,7 @@
 .toolbar{margin-bottom:12px;display:flex;gap:8px}
 </style></head><body>
 <div class="toolbar">
+  <span id="cart-n" style="border:1px solid #888;padding:2px 8px">购物车 (0)</span>
   <button data-acc="sort-default">默认排序</button>
   <button data-acc="sort-price">价格排序</button>
   <span id="order-note">当前: 默认</span>
@@ -29,6 +30,10 @@ function walk(el) {
 document.addEventListener("click", (e) => {
   const acc = walk(e.target);
   if (acc) window.__hits.push(acc);
+  if (acc && acc.startsWith("buy-")) {
+    const el = document.getElementById("cart-n");
+    el.textContent = "购物车 (" + (parseInt(el.textContent.match(/\d+/)[0]) + 1) + ")";
+  }
 }, true);
 function render(list) {
   const g = document.getElementById("grid");
