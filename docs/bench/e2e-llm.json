@@ -7,20 +7,128 @@
       "results": [
         {
           "ok": true,
-          "note": "hits=['buy-G17', 'buy-G17']",
-          "steps": 20,
+          "note": "筛选值=已发货 首行=SO-1001 in答案=True",
+          "steps": 3,
           "usage": {
-            "prompt": 177910,
-            "completion": 3105
+            "prompt": 26105,
+            "completion": 293
           },
-          "mcp_chars": 17092,
-          "ms": 139966,
-          "final": "页面通过 `window.__hits` 记录点击的按钮标识。让我检查这个数组,确认「加入购物车」点击是否被记录。",
+          "mcp_chars": 3285,
+          "ms": 20660,
+          "final": "筛选已生效,第一行订单编号为 **SO-1001**(客户:郑爽,状态:已发货)。",
+          "id": "filter-first-row",
+          "tier": "easy",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 3116,
+          "calls_n": 5
+        },
+        {
+          "ok": true,
+          "note": "confirm=True data-ok=cheap",
+          "steps": 9,
+          "usage": {
+            "prompt": 54531,
+            "completion": 657
+          },
+          "mcp_chars": 1866,
+          "ms": 34893,
+          "final": "订单已成功提交:订单号 NXP09710408,护眼台灯 x2。\n\n任务完成:已购买商城中最便宜的商品「护眼台灯」(¥51)2 件,收货人张三、地址北京,订单提交成功,订单号 NXP09710408。",
+          "id": "buy-cheapest",
+          "tier": "easy",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 1099,
+          "calls_n": 11
+        },
+        {
+          "ok": true,
+          "note": "真值=205",
+          "steps": 3,
+          "usage": {
+            "prompt": 24468,
+            "completion": 261
+          },
+          "mcp_chars": 550,
+          "ms": 14616,
+          "final": "「日活用户」的当前数值是 **205**,环比 -8.8%。",
+          "id": "dash-read",
+          "tier": "easy",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 647,
+          "calls_n": 4
+        },
+        {
+          "ok": true,
+          "note": "hits=['sort-price', 'buy-G17']",
+          "steps": 5,
+          "usage": {
+            "prompt": 43332,
+            "completion": 491
+          },
+          "mcp_chars": 3976,
+          "ms": 33851,
+          "final": "已完成:点击「价格排序」后,价格最低的第一个商品 G17(砧板,¥29)已成功加入购物车,页面顶部显示「购物车 (1)」确认添加成功。",
           "id": "grid-sort-buy",
           "tier": "easy",
           "round": 0,
+          "passed": true,
+          "mcp_tokens": 2302,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "真值=918",
+          "steps": 4,
+          "usage": {
+            "prompt": 33538,
+            "completion": 901
+          },
+          "mcp_chars": 2866,
+          "ms": 20442,
+          "final": "张伟名下的订单已全部显示(过滤后仅1页,共7笔):SO-1001(333)、SO-1013(316)、SO-1016(383)、SO-1020(333)、SO-1023(301)、SO-1030(880)、SO-1041(918)。\n\n客户「张伟」名下金额最高的一笔订单是 SO-1041,金额为 **918**。",
+          "id": "max-amt-of-name",
+          "tier": "medium",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 2960,
+          "calls_n": 5
+        },
+        {
+          "ok": true,
+          "note": "",
+          "steps": 20,
+          "usage": {
+            "prompt": 119628,
+            "completion": 1949
+          },
+          "mcp_chars": 3757,
+          "ms": 77790,
+          "final": "检查网络请求，看提交是否已发出：",
+          "id": "wizard-flow",
+          "tier": "medium",
+          "round": 0,
           "passed": false,
-          "mcp_tokens": 8437,
+          "mcp_tokens": 2330,
+          "calls_n": 21
+        },
+        {
+          "ok": true,
+          "note": "hits=['row3-del', 'row3-del']",
+          "steps": 20,
+          "usage": {
+            "prompt": 204957,
+            "completion": 3072
+          },
+          "mcp_chars": 20602,
+          "ms": 113397,
+          "final": "点击后页面无变化,可能弹出了确认对话框。检查是否有挂起的对话框:",
+          "id": "row-action",
+          "tier": "medium",
+          "round": 0,
+          "passed": false,
+          "mcp_tokens": 10265,
           "calls_n": 21
         },
         {
@@ -28,706 +136,482 @@
           "note": "真值=陈静",
           "steps": 5,
           "usage": {
-            "prompt": 39055,
-            "completion": 519
+            "prompt": 33227,
+            "completion": 560
           },
-          "mcp_chars": 1594,
-          "ms": 31182,
-          "final": "KB-107 安全规范的负责人是 **陈静**。",
+          "mcp_chars": 3366,
+          "ms": 63914,
+          "final": "KB-107「安全规范」这篇文章的负责人是 **陈静**(更新日期 2026-07-23,阅读量 741)。",
           "id": "kb-owner",
           "tier": "medium",
           "round": 0,
           "passed": true,
-          "mcp_tokens": 1441,
+          "mcp_tokens": 2296,
           "calls_n": 6
         },
         {
           "ok": true,
           "note": "pages=1 last=SO-1050 title=订单管理 (9条 第1/1页)",
-          "steps": 9,
+          "steps": 6,
           "usage": {
-            "prompt": 59002,
-            "completion": 1326
+            "prompt": 58984,
+            "completion": 1038
           },
-          "mcp_chars": 6949,
-          "ms": 43361,
-          "final": "筛选「已完成」后,页面标题显示「订单管理 (9条 第1/1页)」,筛选结果共 9 条,只有 1 页,无需翻页。最后一页(即第 1 页)最后一行的订单编号是 **SO-1050**。\n\n**结论:筛选「已完成」后结果共 1 页,最后一页最后一行的订单编号是 SO-1050。**",
+          "mcp_chars": 7875,
+          "ms": 28052,
+          "final": "筛选「已完成」后,页面标题显示「订单管理 (9条 第1/1页)」,即筛选结果共 9 条,只有 1 页。表格最后一行是 SO-1050(孙丽,已完成)。\n\n**结论:筛选「已完成」后结果共 1 页(9 条订单),最后一页(即第 1 页)最后一行的订单编号是 SO-1050,总页数为 1 页。**",
           "id": "last-page-order",
           "tier": "hard",
           "round": 0,
           "passed": true,
-          "mcp_tokens": 5078,
-          "calls_n": 11
+          "mcp_tokens": 5494,
+          "calls_n": 8
         },
         {
-          "ok": false,
-          "note": "README 标题应含 nexus-demo",
-          "steps": 10,
+          "ok": true,
+          "note": "人体工学椅 差21",
+          "steps": 1,
           "usage": {
-            "prompt": 66307,
-            "completion": 1174
+            "prompt": 12308,
+            "completion": 298
           },
-          "mcp_chars": 1848,
-          "ms": 76255,
-          "final": "无法完成任务: 目标 Gitea 服务 (http://127.0.0.1:3000) 始终返回 `net::ERR_CONNECTION_REFUSED`, 多次重试(含等待 11 秒后)均连接失败, 说明该端口上的服务未启动或不可达, 因此无法打开仓库主页读取 README.md 的第一行标题。",
+          "mcp_chars": 1118,
+          "ms": 10340,
+          "final": "商城页面已打开,商品列表直接显示了价格:「升降桌 ¥207」、「人体工学椅 ¥228」。\n\n结论:人体工学椅更贵,比升降桌贵 21 元(228 − 207 = 21)。",
+          "id": "price-compare",
+          "tier": "hard",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 748,
+          "calls_n": 2
+        },
+        {
+          "ok": true,
+          "note": "hits=['open-modal', 'modal-confirm', 'modal-confirm']",
+          "steps": 20,
+          "usage": {
+            "prompt": 270358,
+            "completion": 2460
+          },
+          "mcp_chars": 27398,
+          "ms": 52583,
+          "final": "",
+          "id": "modal-flow",
+          "tier": "hard",
+          "round": 0,
+          "passed": false,
+          "mcp_tokens": 13268,
+          "calls_n": 21
+        },
+        {
+          "ok": true,
+          "note": "真值=3笔/¥725",
+          "steps": 4,
+          "usage": {
+            "prompt": 32995,
+            "completion": 653
+          },
+          "mcp_chars": 2285,
+          "ms": 45291,
+          "final": "李娜名下共有 3 笔订单(SO-1002、SO-1014、SO-1017),金额分别为 96、396、233,合计 725。",
+          "id": "multi-filter-read",
+          "tier": "hard",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 2640,
+          "calls_n": 5
+        },
+        {
+          "ok": true,
+          "note": "README 标题应含 nexus-demo",
+          "steps": 7,
+          "usage": {
+            "prompt": 62375,
+            "completion": 1072
+          },
+          "mcp_chars": 4917,
+          "ms": 114526,
+          "final": "已获取 README.md 原始内容。README.md 的第一行标题是 `# nexus-demo`,去掉 `#` 号后为 **nexus-demo**。\n\n**结论:仓库根目录 README.md 的第一行标题是 \"nexus-demo\"。**",
           "id": "gitea-readme",
           "tier": "easy",
           "round": 0,
-          "passed": false,
-          "mcp_tokens": 869,
-          "calls_n": 10,
-          "failure_class": "verifier-fail"
+          "passed": true,
+          "mcp_tokens": 2168,
+          "calls_n": 7
         },
         {
-          "ok": false,
-          "note": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
-          "steps": 0,
+          "ok": true,
+          "note": "issues=14 命中=True",
+          "steps": 18,
           "usage": {
-            "prompt": 0,
-            "completion": 0
+            "prompt": 171655,
+            "completion": 1280
           },
-          "mcp_chars": 0,
-          "ms": 0,
-          "id": "gitea-milestone",
+          "mcp_chars": 21258,
+          "ms": 66569,
+          "final": "Issue #15 已成功创建:标题「修复登录页样式」,内容「按钮圆角丢失」,页面已确认显示(URL: http://127.0.0.1:3000/benchadmin/nexus-demo/issues/15)。",
+          "id": "gitea-create-issue",
+          "tier": "medium",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 8911,
+          "calls_n": 18
+        },
+        {
+          "ok": true,
+          "note": "labels=['bug']",
+          "steps": 14,
+          "usage": {
+            "prompt": 164431,
+            "completion": 1922
+          },
+          "mcp_chars": 26074,
+          "ms": 124534,
+          "final": "Issue #1「首页在移动端错位」详情页已打开。从快照可以看到:\n- 右侧 Labels 区域已显示 `bug` 标签 (ref f25e264)\n- 活动记录显示 \"benchadmin added the bug label\" (ref f25e161)\n\n确认 bug 标签已成功打在该 issue 上, 任务完成。\n\n任务已完成: 已登录 benchadmin 账号, 进入 benchad",
+          "id": "gitea-label-issue",
+          "tier": "medium",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 10931,
+          "calls_n": 14
+        },
+        {
+          "ok": true,
+          "note": "labels=['enhancement'] assignees=['benchadmin']",
+          "steps": 10,
+          "usage": {
+            "prompt": 103056,
+            "completion": 6428
+          },
+          "mcp_chars": 19054,
+          "ms": 91037,
+          "final": "issue #14「v1.0 发布检查单」已经存在, 且从详情页确认:\n- 标题: v1.0 发布检查单 ✓\n- 标签: enhancement ✓(活动记录显示 \"benchadmin added the enhancement label\")\n- 负责人: benchadmin ✓(活动记录显示 \"benchadmin self-assigned this\")\n- 状态: Open\n\n任务要求",
+          "id": "gitea-create-label-assign",
+          "tier": "hard",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 7769,
+          "calls_n": 10
+        },
+        {
+          "ok": true,
+          "note": "探索页搜索应找到种子仓库",
+          "steps": 4,
+          "usage": {
+            "prompt": 36463,
+            "completion": 479
+          },
+          "mcp_chars": 5166,
+          "ms": 17075,
+          "final": "搜索 \"nexus\" 找到了两个仓库, 其中 **nexus-demo** 的描述是\"基准种子仓库\", **nexus-lib** 的描述是\"工具库\"。",
+          "id": "gitea-search",
+          "tier": "easy",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 2216,
+          "calls_n": 4
+        },
+        {
+          "ok": true,
+          "note": "stars=1",
+          "steps": 4,
+          "usage": {
+            "prompt": 31092,
+            "completion": 2461
+          },
+          "mcp_chars": 7235,
+          "ms": 44391,
+          "final": "页面右上角显示的是 \"Unstar\" 按钮且星标计数为 1, 说明当前登录用户 benchadmin 已经对该仓库加过星, 任务目标已达成。\n\n任务完成: 已登录 benchadmin 账号并打开 benchadmin/nexus-lib 仓库主页, 该仓库当前已处于加星状态(按钮显示 \"Unstar\", 星标数为 1), 无需重复操作。",
+          "id": "gitea-star",
+          "tier": "easy",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 3039,
+          "calls_n": 4
+        },
+        {
+          "ok": true,
+          "note": "comments=6",
+          "steps": 20,
+          "usage": {
+            "prompt": 350782,
+            "completion": 1728
+          },
+          "mcp_chars": 67933,
+          "ms": 577197,
+          "final": "滚动到底部查看评论输入框。",
+          "id": "gitea-issue-comment",
           "tier": "medium",
           "round": 0,
           "passed": false,
-          "mcp_tokens": 660,
-          "calls_n": 9,
-          "failure_class": "no-final-answer"
+          "mcp_tokens": 27420,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "state=closed",
+          "steps": 20,
+          "usage": {
+            "prompt": 228742,
+            "completion": 2310
+          },
+          "mcp_chars": 38234,
+          "ms": 372281,
+          "final": "",
+          "id": "gitea-close-issue",
+          "tier": "medium",
+          "round": 0,
+          "passed": false,
+          "mcp_tokens": 15193,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "branches=['feature/add-export', 'fix/login-style', 'main']",
+          "steps": 20,
+          "usage": {
+            "prompt": 229258,
+            "completion": 3752
+          },
+          "mcp_chars": 39244,
+          "ms": 164019,
+          "final": "模态框仍然打开。让我查看模态框的详细内容,找到输入框和创建按钮。",
+          "id": "gitea-create-branch",
+          "tier": "medium",
+          "round": 0,
+          "passed": false,
+          "mcp_tokens": 15894,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "milestones=['v1.0']",
+          "steps": 11,
+          "usage": {
+            "prompt": 130712,
+            "completion": 4189
+          },
+          "mcp_chars": 19730,
+          "ms": 127457,
+          "final": "任务已完成: 在 benchadmin/nexus-demo 仓库中已存在标题为 **v1.0** 的里程碑(状态 Open, 无截止日期, 0% 完成), 目标状态已达成, 无需重复创建。",
+          "id": "gitea-milestone",
+          "tier": "medium",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 8223,
+          "calls_n": 11
+        },
+        {
+          "ok": true,
+          "note": "pulls=['导出功能']",
+          "steps": 19,
+          "usage": {
+            "prompt": 237823,
+            "completion": 5459
+          },
+          "mcp_chars": 30911,
+          "ms": 225639,
+          "final": "PR #8「导出功能」已确认存在:状态 Open,分支 feature/add-export → main,标题为「导出功能」。任务已完成。\n\n任务完成:已在 benchadmin/nexus-demo 仓库为 feature/add-export → main 创建了 Pull Request #8,标题为「导出功能」,当前状态为 Open。",
+          "id": "gitea-open-pr",
+          "tier": "hard",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 12740,
+          "calls_n": 19
+        },
+        {
+          "ok": true,
+          "note": "bug 标签 issue 数=1",
+          "steps": 6,
+          "usage": {
+            "prompt": 66837,
+            "completion": 847
+          },
+          "mcp_chars": 15642,
+          "ms": 81617,
+          "final": "按 bug 标签筛选后, 页面显示 \"1 Open / 0 Closed\", 只有一条 issue: **#1 首页在移动端错位**(带 bug 标签)。\n\n结论: 按 bug 标签筛选, benchadmin/nexus-demo 仓库共有 **1 个** issue。",
+          "id": "gitea-issue-filter",
+          "tier": "hard",
+          "round": 0,
+          "passed": true,
+          "mcp_tokens": 6508,
+          "calls_n": 6
         }
       ],
       "calls": [
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 3751,
-          "tokens": 865,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 895,
-          "tokens": 19,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 13,
-          "tokens": 816,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 845,
-          "tokens": 60,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 5,
-          "tokens": 440,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 22,
-          "tokens": 309,
-          "note": ""
-        },
-        {
-          "tool": "browser_errors",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 13,
-          "tokens": 823,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": false,
-          "ms": 2,
-          "tokens": 25,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 852,
-          "tokens": 60,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 18,
-          "tokens": 35,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 16,
-          "tokens": 33,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 12,
-          "tokens": 2193,
-          "note": ""
-        },
-        {
-          "tool": "browser_network",
-          "ok": true,
-          "ms": 3,
-          "tokens": 71,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 32,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 5,
-          "tokens": 441,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 1340,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 725,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 31,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 2,
-          "tokens": 33,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 847,
-          "tokens": 484,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 884,
-          "tokens": 55,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 10,
-          "tokens": 65,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 15,
-          "tokens": 65,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 6,
-          "tokens": 412,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 3,
-          "tokens": 360,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 835,
-          "tokens": 350,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 11,
-          "tokens": 70,
+          "ms": 4486,
+          "tokens": 332,
           "note": ""
         },
         {
           "tool": "browser_select_option",
           "ok": true,
-          "ms": 8,
+          "ms": 12,
           "tokens": 23,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
-          "ms": 13,
-          "tokens": 1240,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 8,
-          "tokens": 10,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 14,
-          "tokens": 142,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 5,
-          "tokens": 169,
+          "ms": 871,
+          "tokens": 1312,
           "note": ""
         },
         {
           "tool": "browser_evaluate",
           "ok": true,
-          "ms": 6,
-          "tokens": 26,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 17,
-          "tokens": 1612,
+          "ms": 3,
+          "tokens": 1426,
           "note": ""
         },
         {
           "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 5,
-          "tokens": 1410,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 26,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2064,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2060,
-          "tokens": 145,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_pages",
-          "ok": true,
-          "ms": 7,
-          "tokens": 27,
-          "note": ""
-        },
-        {
-          "tool": "browser_tasks",
           "ok": true,
           "ms": 2,
-          "tokens": 9,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 3006,
-          "tokens": 15,
+          "tokens": 23,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2050,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2041,
-          "tokens": 111,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 8012,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2041,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2067,
-          "tokens": 145,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2061,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2030,
-          "tokens": 129,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_pages",
-          "ok": true,
-          "ms": 4,
-          "tokens": 27,
-          "note": ""
-        },
-        {
-          "tool": "browser_tasks",
-          "ok": true,
-          "ms": 2,
-          "tokens": 9,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 3005,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2034,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2032,
-          "tokens": 111,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 10005,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2046,
-          "tokens": 118,
-          "note": ""
-        }
-      ]
-    },
-    {
-      "kind": "nexus",
-      "model": "deepseek-ai/DeepSeek-V4-Flash",
-      "round": 1,
-      "results": [
-        {
-          "ok": true,
-          "note": "hits=['buy-G17', 'buy-G17']",
-          "steps": 20,
-          "usage": {
-            "prompt": 162285,
-            "completion": 2976
-          },
-          "mcp_chars": 11487,
-          "ms": 157868,
-          "final": "页面通过全局 click 监听器将点击记录到 `window.__hits`。让我检查该数组确认点击是否生效。",
-          "id": "grid-sort-buy",
-          "tier": "easy",
-          "round": 1,
-          "passed": false,
-          "mcp_tokens": 6315,
-          "calls_n": 21
-        },
-        {
-          "ok": true,
-          "note": "真值=陈静",
-          "steps": 3,
-          "usage": {
-            "prompt": 26531,
-            "completion": 318
-          },
-          "mcp_chars": 3520,
-          "ms": 13528,
-          "final": "KB-107 安全规范这篇文章的负责人是**陈静**。",
-          "id": "kb-owner",
-          "tier": "medium",
-          "round": 1,
-          "passed": true,
-          "mcp_tokens": 2358,
-          "calls_n": 4
-        },
-        {
-          "ok": true,
-          "note": "pages=1 last=SO-1050 title=订单管理 (9条 第1/1页)",
-          "steps": 9,
-          "usage": {
-            "prompt": 72510,
-            "completion": 1755
-          },
-          "mcp_chars": 6435,
-          "ms": 75929,
-          "final": "筛选「已完成」后,页面标题显示「订单管理 (9条 第1/1页)」,即筛选结果共9条记录,只有1页。最后一页(即第1页)最后一行是 SO-1050。\n\n**结论:筛选「已完成」后结果共 1 页,最后一页最后一行的订单编号是 SO-1050。**",
-          "id": "last-page-order",
-          "tier": "hard",
-          "round": 1,
-          "passed": true,
-          "mcp_tokens": 4855,
-          "calls_n": 11
-        },
-        {
-          "ok": false,
-          "note": "README 标题应含 nexus-demo",
-          "steps": 14,
-          "usage": {
-            "prompt": 96898,
-            "completion": 1422
-          },
-          "mcp_chars": 2232,
-          "ms": 107291,
-          "final": "多次尝试后,目标服务 `http://127.0.0.1:3000` 始终返回 `ERR_CONNECTION_REFUSED`(连接被拒绝),说明本地的 Gitea 服务当前没有运行或端口未监听,因此无法打开该仓库主页,也就无法读取 README.md 的第一行标题。请确认服务已启动后我再重试。",
-          "id": "gitea-readme",
-          "tier": "easy",
-          "round": 1,
-          "passed": false,
-          "mcp_tokens": 1058,
-          "calls_n": 14,
-          "failure_class": "verifier-fail"
-        },
-        {
-          "ok": false,
-          "note": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
-          "steps": 0,
-          "usage": {
-            "prompt": 0,
-            "completion": 0
-          },
-          "mcp_chars": 0,
-          "ms": 0,
-          "id": "gitea-milestone",
-          "tier": "medium",
-          "round": 1,
-          "passed": false,
-          "mcp_tokens": 909,
-          "calls_n": 13,
-          "failure_class": "no-final-answer"
-        }
-      ],
-      "calls": [
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 3623,
-          "tokens": 865,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 852,
-          "tokens": 19,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 20,
-          "tokens": 816,
+          "ms": 883,
+          "tokens": 572,
           "note": ""
         },
         {
           "tool": "browser_click",
           "ok": true,
           "ms": 849,
-          "tokens": 60,
+          "tokens": 14,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
+          "ms": 10,
+          "tokens": 272,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 58,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
           "ms": 17,
-          "tokens": 816,
+          "tokens": 21,
           "note": ""
         },
         {
-          "tool": "browser_read",
+          "tool": "browser_type",
           "ok": true,
-          "ms": 8,
-          "tokens": 440,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 30,
-          "tokens": 309,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_screenshot",
-          "ok": true,
-          "ms": 49,
-          "tokens": 28,
-          "note": ""
-        },
-        {
-          "tool": "browser_errors",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 6,
-          "tokens": 280,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 5,
-          "tokens": 630,
+          "ms": 15,
+          "tokens": 20,
           "note": ""
         },
         {
           "tool": "browser_click",
           "ok": true,
-          "ms": 829,
-          "tokens": 60,
+          "ms": 847,
+          "tokens": 14,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
-          "ms": 18,
-          "tokens": 823,
+          "ms": 11,
+          "tokens": 93,
           "note": ""
         },
         {
-          "tool": "browser_network",
+          "tool": "browser_read",
           "ok": true,
-          "ms": 2,
-          "tokens": 71,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": false,
-          "ms": 1,
-          "tokens": 25,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": true,
-          "ms": 2,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 5,
-          "tokens": 186,
+          "ms": 4,
+          "tokens": 26,
           "note": ""
         },
         {
           "tool": "browser_evaluate",
           "ok": true,
           "ms": 4,
-          "tokens": 724,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 24,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 850,
+          "tokens": 125,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 12,
+          "tokens": 102,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 6,
+          "tokens": 183,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 237,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 847,
+          "tokens": 917,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 840,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 12,
+          "tokens": 868,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 4,
+          "tokens": 446,
           "note": ""
         },
         {
@@ -738,565 +622,101 @@
           "note": ""
         },
         {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 2,
-          "tokens": 33,
-          "note": ""
-        },
-        {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 856,
-          "tokens": 484,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 841,
-          "tokens": 55,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 17,
-          "tokens": 1459,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 5,
-          "tokens": 360,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 853,
+          "ms": 837,
           "tokens": 350,
           "note": ""
         },
         {
-          "tool": "browser_snapshot",
+          "tool": "browser_type",
           "ok": true,
-          "ms": 20,
-          "tokens": 70,
+          "ms": 26,
+          "tokens": 22,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
           "ms": 12,
-          "tokens": 1488,
+          "tokens": 1026,
           "note": ""
         },
         {
-          "tool": "browser_select_option",
+          "tool": "browser_read",
           "ok": true,
-          "ms": 18,
+          "ms": 7,
+          "tokens": 141,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 1421,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 842,
+          "tokens": 319,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 27,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 14,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 828,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 10,
+          "tokens": 312,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 15,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 13,
           "tokens": 23,
           "note": ""
         },
         {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 15,
-          "tokens": 1245,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 8,
-          "tokens": 10,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 20,
-          "tokens": 31,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 9,
-          "tokens": 176,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 7,
-          "tokens": 26,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 9,
-          "tokens": 1410,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 6,
-          "tokens": 26,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2046,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2035,
-          "tokens": 145,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_pages",
-          "ok": true,
-          "ms": 4,
-          "tokens": 27,
-          "note": ""
-        },
-        {
-          "tool": "browser_tasks",
-          "ok": true,
-          "ms": 1,
-          "tokens": 9,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2060,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2026,
-          "tokens": 111,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_sessions",
-          "ok": true,
-          "ms": 4,
-          "tokens": 18,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 3018,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2027,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 10017,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2017,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_pages",
-          "ok": true,
-          "ms": 8,
-          "tokens": 33,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 15009,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2041,
-          "tokens": 134,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2052,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2050,
-          "tokens": 129,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 3002,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2034,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_list_pages",
-          "ok": true,
-          "ms": 4,
-          "tokens": 27,
-          "note": ""
-        },
-        {
-          "tool": "browser_tasks",
-          "ok": true,
-          "ms": 1,
-          "tokens": 9,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 8015,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2027,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2344,
-          "tokens": 94,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 15003,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2032,
-          "tokens": 118,
-          "note": ""
-        },
-        {
-          "tool": "browser_wait_ms",
-          "ok": true,
-          "ms": 20014,
-          "tokens": 15,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 2038,
-          "tokens": 118,
-          "note": ""
-        }
-      ]
-    },
-    {
-      "kind": "nexus",
-      "model": "deepseek-ai/DeepSeek-V4-Flash",
-      "round": 2,
-      "results": [
-        {
-          "ok": true,
-          "note": "hits=['buy-G17', 'buy-G17']",
-          "steps": 21,
-          "usage": {
-            "prompt": 174894,
-            "completion": 3070
-          },
-          "mcp_chars": 14814,
-          "ms": 140529,
-          "final": "让我检查网络请求和 console 输出,确认点击是否触发了加入购物车逻辑。",
-          "id": "grid-sort-buy",
-          "tier": "easy",
-          "round": 2,
-          "passed": false,
-          "mcp_tokens": 7653,
-          "calls_n": 22
-        },
-        {
-          "ok": true,
-          "note": "真值=陈静",
-          "steps": 4,
-          "usage": {
-            "prompt": 32240,
-            "completion": 434
-          },
-          "mcp_chars": 1500,
-          "ms": 39677,
-          "final": "KB-107 安全规范的负责人是**陈静**。",
-          "id": "kb-owner",
-          "tier": "medium",
-          "round": 2,
-          "passed": true,
-          "mcp_tokens": 1376,
-          "calls_n": 5
-        },
-        {
-          "ok": true,
-          "note": "pages=1 last=SO-1050 title=订单管理 (9条 第1/1页)",
-          "steps": 6,
-          "usage": {
-            "prompt": 54771,
-            "completion": 1749
-          },
-          "mcp_chars": 6992,
-          "ms": 51663,
-          "final": "页面标题显示「订单管理 (9条 第1/1页)」,筛选「已完成」后共9条订单,只有1页。快照中分页按钮也仅显示\"第1页\"(disabled),确认只有1页。最后一行的订单编号是 SO-1050。\n\n筛选「已完成」后共 9 条订单,分 **1 页**;最后一页(即第 1 页)最后一行的订单编号是 **SO-1050**。",
-          "id": "last-page-order",
-          "tier": "hard",
-          "round": 2,
-          "passed": true,
-          "mcp_tokens": 5028,
-          "calls_n": 8
-        },
-        {
-          "ok": false,
-          "note": "README 标题应含 nexus-demo",
-          "steps": 12,
-          "usage": {
-            "prompt": 74290,
-            "completion": 1299
-          },
-          "mcp_chars": 1920,
-          "ms": 98787,
-          "final": "多次尝试后,`http://127.0.0.1:3000` 上的服务始终返回 `ERR_CONNECTION_REFUSED`(连接被拒绝),说明该 Gitea 服务当前未运行或端口不可达,因此无法打开仓库主页并读取 README.md 的标题。请确认服务已启动后我再重试。",
-          "id": "gitea-readme",
-          "tier": "easy",
-          "round": 2,
-          "passed": false,
-          "mcp_tokens": 903,
-          "calls_n": 12,
-          "failure_class": "verifier-fail"
-        },
-        {
-          "ok": false,
-          "note": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
-          "steps": 0,
-          "usage": {
-            "prompt": 0,
-            "completion": 0
-          },
-          "mcp_chars": 0,
-          "ms": 0,
-          "id": "gitea-milestone",
-          "tier": "medium",
-          "round": 2,
-          "passed": false,
-          "mcp_tokens": 815,
-          "calls_n": 12,
-          "failure_class": "no-final-answer"
-        }
-      ],
-      "calls": [
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 3641,
-          "tokens": 865,
-          "note": ""
-        },
-        {
           "tool": "browser_click",
           "ok": true,
-          "ms": 833,
-          "tokens": 19,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 12,
-          "tokens": 816,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 842,
-          "tokens": 60,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 12,
-          "tokens": 816,
-          "note": ""
-        },
-        {
-          "tool": "browser_read",
-          "ok": true,
-          "ms": 7,
-          "tokens": 446,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 22,
-          "tokens": 309,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 20,
-          "tokens": 35,
-          "note": ""
-        },
-        {
-          "tool": "browser_find",
-          "ok": true,
-          "ms": 15,
-          "tokens": 37,
+          "ms": 828,
+          "tokens": 14,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
           "ms": 11,
-          "tokens": 2186,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": false,
-          "ms": 2,
-          "tokens": 25,
-          "note": ""
-        },
-        {
-          "tool": "browser_errors",
-          "ok": true,
-          "ms": 1,
-          "tokens": 43,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 65,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 758,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 109,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 4,
-          "tokens": 719,
-          "note": ""
-        },
-        {
-          "tool": "browser_click",
-          "ok": true,
-          "ms": 850,
-          "tokens": 60,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 13,
-          "tokens": 90,
-          "note": ""
-        },
-        {
-          "tool": "browser_network",
-          "ok": true,
-          "ms": 3,
-          "tokens": 71,
-          "note": ""
-        },
-        {
-          "tool": "browser_console",
-          "ok": true,
-          "ms": 1,
-          "tokens": 48,
-          "note": ""
-        },
-        {
-          "tool": "browser_evaluate",
-          "ok": true,
-          "ms": 2,
-          "tokens": 33,
-          "note": ""
-        },
-        {
-          "tool": "browser_navigate",
-          "ok": true,
-          "ms": 835,
-          "tokens": 484,
+          "tokens": 302,
           "note": ""
         },
         {
@@ -1309,15 +729,260 @@
         {
           "tool": "browser_snapshot",
           "ok": true,
-          "ms": 9,
-          "tokens": 65,
+          "ms": 11,
+          "tokens": 305,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 2,
+          "tokens": 191,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 1,
+          "tokens": 191,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 826,
+          "tokens": 62,
           "note": ""
         },
         {
           "tool": "browser_read",
           "ok": true,
+          "ms": 4,
+          "tokens": 52,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 2,
+          "tokens": 19,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 10,
+          "tokens": 83,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait",
+          "ok": true,
+          "ms": 4,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait",
+          "ok": true,
+          "ms": 3323,
+          "tokens": 42,
+          "note": ""
+        },
+        {
+          "tool": "browser_network",
+          "ok": true,
+          "ms": 2,
+          "tokens": 195,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
           "ms": 3,
-          "tokens": 412,
+          "tokens": 53,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 876,
+          "tokens": 1701,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 41,
+          "tokens": 109,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 845,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 21,
+          "tokens": 2724,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 2,
+          "tokens": 43,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 1,
+          "tokens": 43,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 843,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 31,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 27,
+          "tokens": 1665,
+          "note": ""
+        },
+        {
+          "tool": "browser_hover",
+          "ok": true,
+          "ms": 57,
+          "tokens": 16,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 44,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 1,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 5,
+          "tokens": 283,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 846,
+          "tokens": 67,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 29,
+          "tokens": 3155,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 38,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 854,
+          "tokens": 484,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 836,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 16,
+          "tokens": 65,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 21,
+          "tokens": 65,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 9,
+          "tokens": 1267,
           "note": ""
         },
         {
@@ -1330,36 +995,36 @@
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 835,
+          "ms": 850,
           "tokens": 350,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
-          "ms": 13,
-          "tokens": 70,
-          "note": ""
-        },
-        {
-          "tool": "browser_snapshot",
-          "ok": true,
-          "ms": 10,
-          "tokens": 1883,
+          "ms": 12,
+          "tokens": 1878,
           "note": ""
         },
         {
           "tool": "browser_select_option",
           "ok": true,
-          "ms": 7,
+          "ms": 13,
           "tokens": 23,
           "note": ""
         },
         {
           "tool": "browser_snapshot",
           "ok": true,
-          "ms": 13,
-          "tokens": 1240,
+          "ms": 11,
+          "tokens": 1612,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 169,
           "note": ""
         },
         {
@@ -1379,176 +1044,3767 @@
         {
           "tool": "browser_evaluate",
           "ok": true,
-          "ms": 2,
+          "ms": 3,
           "tokens": 26,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2049,
-          "tokens": 134,
+          "ms": 843,
+          "tokens": 572,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 6,
+          "tokens": 176,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2041,
-          "tokens": 145,
+          "ms": 879,
+          "tokens": 1701,
           "note": ""
         },
         {
-          "tool": "browser_list_pages",
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 27,
+          "tokens": 101,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 36,
+          "tokens": 72,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 37,
+          "tokens": 1393,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 830,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 25,
+          "tokens": 2828,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 35,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 17,
+          "tokens": 3435,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 834,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 19,
+          "tokens": 2832,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 2,
+          "tokens": 138,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 1,
+          "tokens": 138,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 834,
+          "tokens": 61,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 48,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 45,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 5,
+          "tokens": 201,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 2,
+          "tokens": 47,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 30,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 6,
+          "tokens": 31,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 847,
+          "tokens": 350,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 29,
+          "tokens": 24,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 15,
+          "tokens": 780,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 6,
+          "tokens": 67,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 5,
+          "tokens": 1419,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1069,
+          "tokens": 1625,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 176,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 822,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 176,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 22,
+          "tokens": 70,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 3094,
+          "tokens": 87,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 6,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 915,
+          "tokens": 630,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 42,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 26,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 857,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 942,
+          "tokens": 1787,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
           "ok": true,
           "ms": 4,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 1006,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 46,
+          "tokens": 2132,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 899,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 33,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 39,
+          "tokens": 1855,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 30,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 21,
+          "tokens": 26,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 964,
+          "tokens": 19,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 46,
+          "tokens": 2184,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1013,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 836,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 55,
+          "tokens": 1700,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 840,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 1,
+          "tokens": 40,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 64,
+          "tokens": 74,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 26,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 53,
+          "tokens": 74,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 25,
+          "tokens": 2149,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 35,
+          "tokens": 1323,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 885,
+          "tokens": 17,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 2,
+          "tokens": 46,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 59,
+          "tokens": 2181,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1009,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 47,
+          "tokens": 1797,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 831,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 873,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 70,
+          "tokens": 2296,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5018,
+          "tokens": 52,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 44,
+          "tokens": 56,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 8,
+          "tokens": 252,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 897,
+          "tokens": 1070,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 41,
           "tokens": 27,
           "note": ""
         },
         {
-          "tool": "browser_tasks",
+          "tool": "browser_snapshot",
           "ok": true,
-          "ms": 1,
-          "tokens": 9,
+          "ms": 31,
+          "tokens": 1010,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 4,
+          "tokens": 109,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2056,
-          "tokens": 134,
+          "ms": 949,
+          "tokens": 1141,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2033,
-          "tokens": 111,
+          "ms": 925,
+          "tokens": 1788,
           "note": ""
         },
         {
-          "tool": "browser_wait_ms",
+          "tool": "browser_find",
           "ok": true,
-          "ms": 3008,
-          "tokens": 15,
+          "ms": 32,
+          "tokens": 54,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 27,
+          "tokens": 56,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2046,
-          "tokens": 134,
+          "ms": 946,
+          "tokens": 1141,
           "note": ""
         },
         {
-          "tool": "browser_list_sessions",
+          "tool": "browser_click",
           "ok": true,
-          "ms": 2,
-          "tokens": 18,
+          "ms": 838,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 41,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 877,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 52,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 42,
+          "tokens": 68,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 30,
+          "tokens": 2953,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 26,
+          "tokens": 2149,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 58,
+          "tokens": 31,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 42,
+          "tokens": 1579,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 894,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 62,
+          "tokens": 2562,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 37,
+          "tokens": 2134,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 32,
+          "tokens": 1930,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 40,
+          "tokens": 27,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 2182,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 851,
+          "tokens": 58,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 31,
+          "tokens": 2562,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 34,
+          "tokens": 2128,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 37,
+          "tokens": 1949,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 40341,
+          "tokens": 149,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 38,
+          "tokens": 2206,
           "note": ""
         },
         {
           "tool": "browser_list_pages",
           "ok": true,
           "ms": 3,
-          "tokens": 27,
+          "tokens": 64,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 40353,
+          "tokens": 180,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 42,
+          "tokens": 112,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 51,
+          "tokens": 60,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 1,
+          "tokens": 42,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 28,
+          "tokens": 4315,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 38,
+          "tokens": 101,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 46,
+          "tokens": 2567,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5015,
+          "tokens": 166,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 6,
+          "tokens": 18,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5019,
+          "tokens": 172,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 2,
+          "tokens": 73,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 49,
+          "tokens": 2562,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5016,
+          "tokens": 178,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 903,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 96,
+          "tokens": 41,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 34,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1025,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 832,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 45,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 840,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 59,
+          "tokens": 3456,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 847,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 27,
+          "tokens": 3549,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait",
+          "ok": true,
+          "ms": 2,
+          "tokens": 34,
           "note": ""
         },
         {
           "tool": "browser_wait_ms",
           "ok": true,
-          "ms": 8012,
+          "ms": 1508,
           "tokens": 15,
           "note": ""
         },
         {
-          "tool": "browser_navigate",
+          "tool": "browser_snapshot",
           "ok": true,
-          "ms": 2047,
-          "tokens": 134,
+          "ms": 17,
+          "tokens": 85,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 35,
+          "tokens": 57,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 31,
+          "tokens": 65,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 17,
+          "tokens": 2666,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 27,
+          "tokens": 56,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 27,
+          "tokens": 60,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 17,
+          "tokens": 2666,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 52,
+          "tokens": 30,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 39,
+          "tokens": 64,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 54,
+          "tokens": 56,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 53,
+          "tokens": 60,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2037,
-          "tokens": 118,
+          "ms": 1017,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 855,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 53,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 827,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 55,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 839,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 34,
+          "tokens": 1443,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 845,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 51,
+          "tokens": 1480,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5003,
+          "tokens": 36,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 142,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2034,
-          "tokens": 129,
+          "ms": 1068,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 824,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 36,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 889,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 31,
+          "tokens": 1216,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 19,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 3,
+          "tokens": 19,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 958,
+          "tokens": 19,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 23,
+          "tokens": 1395,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5012,
+          "tokens": 236,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 19,
+          "tokens": 85,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 926,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 49,
+          "tokens": 1790,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 968,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 59,
+          "tokens": 1664,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 842,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 45,
+          "tokens": 1603,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 880,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 63,
+          "tokens": 1664,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 973,
+          "tokens": 1141,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 920,
+          "tokens": 2207,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 833,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 40,
+          "tokens": 1561,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 846,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 74,
+          "tokens": 1571,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "kind": "nexus",
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "round": 1,
+      "results": [
+        {
+          "ok": true,
+          "note": "筛选值=已发货 首行=SO-1001 in答案=True",
+          "steps": 4,
+          "usage": {
+            "prompt": 37754,
+            "completion": 411
+          },
+          "mcp_chars": 6927,
+          "ms": 37568,
+          "final": "筛选已生效,表格中所有订单均为「已发货」状态,第一行的订单编号是 **SO-1001**。",
+          "id": "filter-first-row",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 4886,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "confirm=True data-ok=cheap",
+          "steps": 9,
+          "usage": {
+            "prompt": 54537,
+            "completion": 625
+          },
+          "mcp_chars": 1866,
+          "ms": 60523,
+          "final": "订单已成功提交。\n\n任务完成:在商城页面中找到了最便宜的商品\"护眼台灯\"(¥51),购买 2 件,收货人填张三、地址北京,订单已提交成功(订单号 NXP12282606)。",
+          "id": "buy-cheapest",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 1101,
+          "calls_n": 11
+        },
+        {
+          "ok": true,
+          "note": "真值=205",
+          "steps": 3,
+          "usage": {
+            "prompt": 18255,
+            "completion": 247
+          },
+          "mcp_chars": 550,
+          "ms": 17129,
+          "final": "「日活用户」的当前数值是 **205**(环比 -8.8%)。",
+          "id": "dash-read",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 654,
+          "calls_n": 4
+        },
+        {
+          "ok": true,
+          "note": "hits=['sort-price', 'buy-G17']",
+          "steps": 5,
+          "usage": {
+            "prompt": 43373,
+            "completion": 495
+          },
+          "mcp_chars": 3976,
+          "ms": 32674,
+          "final": "任务完成:已点击「价格排序」,排序后第一个商品是 G17「砧板」(¥29),已成功加入购物车,页面顶部显示「购物车 (1)」确认添加成功。",
+          "id": "grid-sort-buy",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 2302,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "真值=918",
+          "steps": 5,
+          "usage": {
+            "prompt": 33588,
+            "completion": 1038
+          },
+          "mcp_chars": 2874,
+          "ms": 50223,
+          "final": "过滤后张伟名下共7笔订单,金额分别为:333、316、383、333、301、880、918。其中最高的一笔是订单 SO-1041,金额为 **918**。\n\n张伟名下金额最高的一笔订单是 SO-1041,金额为 918。",
+          "id": "max-amt-of-name",
+          "tier": "medium",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 2970,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "",
+          "steps": 20,
+          "usage": {
+            "prompt": 128121,
+            "completion": 1808
+          },
+          "mcp_chars": 3489,
+          "ms": 224995,
+          "final": "",
+          "id": "wizard-flow",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 2168,
+          "calls_n": 21
+        },
+        {
+          "ok": true,
+          "note": "hits=['row3-del', 'row3-del']",
+          "steps": 20,
+          "usage": {
+            "prompt": 216348,
+            "completion": 2867
+          },
+          "mcp_chars": 23863,
+          "ms": 298283,
+          "final": "页面底部有「打开危险操作」按钮,删除操作可能需要先开启危险操作模式。点击它:",
+          "id": "row-action",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 11831,
+          "calls_n": 21
+        },
+        {
+          "ok": true,
+          "note": "真值=陈静",
+          "steps": 3,
+          "usage": {
+            "prompt": 26603,
+            "completion": 368
+          },
+          "mcp_chars": 3520,
+          "ms": 49095,
+          "final": "KB-107「安全规范」这篇文章的负责人是 **陈静**(更新日期 2026-07-23,阅读量 741)。",
+          "id": "kb-owner",
+          "tier": "medium",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 2370,
+          "calls_n": 4
+        },
+        {
+          "ok": true,
+          "note": "pages=1 last=SO-1050 title=订单管理 (9条 第1/1页)",
+          "steps": 6,
+          "usage": {
+            "prompt": 58852,
+            "completion": 999
+          },
+          "mcp_chars": 7875,
+          "ms": 62772,
+          "final": "筛选「已完成」后,页面标题显示「订单管理 (9条 第1/1页)」,分页区只有第1页按钮,确认筛选结果共 9 条、仅 1 页。\n\n**结论:筛选「已完成」后结果共 1 页(9 条订单),最后一页最后一行的订单编号是 SO-1050。**",
+          "id": "last-page-order",
+          "tier": "hard",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 5494,
+          "calls_n": 8
+        },
+        {
+          "ok": true,
+          "note": "人体工学椅 差21",
+          "steps": 1,
+          "usage": {
+            "prompt": 12308,
+            "completion": 250
+          },
+          "mcp_chars": 1118,
+          "ms": 29586,
+          "final": "商城页面已打开,商品列表中显示:「升降桌 ¥207」「人体工学椅 ¥228」。\n\n结论:人体工学椅更贵,比升降桌贵 21 元(228 - 207 = 21)。",
+          "id": "price-compare",
+          "tier": "hard",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 748,
+          "calls_n": 2
+        },
+        {
+          "ok": true,
+          "note": "hits=['modal-confirm', 'modal-confirm', 'modal-confirm']",
+          "steps": 20,
+          "usage": {
+            "prompt": 244709,
+            "completion": 1894
+          },
+          "mcp_chars": 27449,
+          "ms": 295079,
+          "final": "对话框仍在。先滚动到对话框位置,截图查看实际情况。",
+          "id": "modal-flow",
+          "tier": "hard",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 13232,
+          "calls_n": 21
+        },
+        {
+          "ok": true,
+          "note": "真值=3笔/¥725",
+          "steps": 5,
+          "usage": {
+            "prompt": 39176,
+            "completion": 595
+          },
+          "mcp_chars": 1905,
+          "ms": 187883,
+          "final": "过滤后李娜名下共 3 笔订单(SO-1002、SO-1014、SO-1017),金额分别为 96、396、233,合计 **725**。\n\n**结论:李娜名下共有 3 笔订单,订单金额合计 725。**",
+          "id": "multi-filter-read",
+          "tier": "hard",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 2458,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "README 标题应含 nexus-demo",
+          "steps": 10,
+          "usage": {
+            "prompt": 83970,
+            "completion": 1511
+          },
+          "mcp_chars": 9200,
+          "ms": 77476,
+          "final": "已确认 README.md 原始文件内容:第一行是 `# nexus-demo`。\n\n仓库根目录 README.md 的第一行标题是 **nexus-demo**。",
+          "id": "gitea-readme",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 3827,
+          "calls_n": 10
+        },
+        {
+          "ok": true,
+          "note": "issues=15 命中=True",
+          "steps": 18,
+          "usage": {
+            "prompt": 171546,
+            "completion": 1408
+          },
+          "mcp_chars": 21262,
+          "ms": 83774,
+          "final": "任务已完成:已成功登录 Gitea(benchadmin),并在 benchadmin/nexus-demo 仓库创建了 issue #16,标题为「修复登录页样式」,内容为「按钮圆角丢失」,页面已确认创建成功。",
+          "id": "gitea-create-issue",
+          "tier": "medium",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 8893,
+          "calls_n": 18
+        },
+        {
+          "ok": true,
+          "note": "labels=['bug']",
+          "steps": 20,
+          "usage": {
+            "prompt": 263695,
+            "completion": 3758
+          },
+          "mcp_chars": 53560,
+          "ms": 178190,
+          "final": "从错误信息中可以看到 Labels 区域内容包含 \"bug\"。让我精确读取 Labels 面板确认当前标签。",
+          "id": "gitea-label-issue",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 21570,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "labels=['enhancement'] assignees=['benchadmin']",
+          "steps": 11,
+          "usage": {
+            "prompt": 118322,
+            "completion": 2406
+          },
+          "mcp_chars": 19032,
+          "ms": 161056,
+          "final": "页面详情确认了 issue #14「v1.0 发布检查单」的完整状态:\n\n- **标题**: v1.0 发布检查单 ✓\n- **状态**: Open\n- **标签**: enhancement ✓(右侧 Labels 显示 enhancement)\n- **负责人 (Assignees)**: benchadmin ✓(活动记录显示 \"benchadmin self-assigned this\")",
+          "id": "gitea-create-label-assign",
+          "tier": "hard",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 7773,
+          "calls_n": 11
+        },
+        {
+          "ok": true,
+          "note": "探索页搜索应找到种子仓库",
+          "steps": 5,
+          "usage": {
+            "prompt": 43792,
+            "completion": 673
+          },
+          "mcp_chars": 5225,
+          "ms": 198067,
+          "final": "搜索 \"nexus\" 后找到了两个仓库,其中 **benchadmin/nexus-demo** 的描述是\"基准种子仓库\",**benchadmin/nexus-lib** 的描述是\"工具库\"。",
+          "id": "gitea-search",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 2247,
+          "calls_n": 5
+        },
+        {
+          "ok": true,
+          "note": "stars=1",
+          "steps": 6,
+          "usage": {
+            "prompt": 49343,
+            "completion": 3354
+          },
+          "mcp_chars": 11282,
+          "ms": 88329,
+          "final": "页面状态已确认: 星标按钮显示为 **\"Unstar\"**(而非 \"Star\"), 星数为 **1**。这说明当前登录用户 benchadmin 已经给 nexus-lib 加过星了, 任务目标已达成, 无需再点击(点击反而会取消星标)。\n\n任务完成: 已登录 benchadmin 并打开 benchadmin/nexus-lib 仓库主页, 该仓库当前已处于加星状态(按钮显示 \"Unstar\",",
+          "id": "gitea-star",
+          "tier": "easy",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 4686,
+          "calls_n": 6
+        },
+        {
+          "ok": true,
+          "note": "comments=6",
+          "steps": 20,
+          "usage": {
+            "prompt": 316411,
+            "completion": 2525
+          },
+          "mcp_chars": 56852,
+          "ms": 204664,
+          "final": "评论输入框区域需要重新定位。滚动到底部:",
+          "id": "gitea-issue-comment",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 23109,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "state=closed",
+          "steps": 20,
+          "usage": {
+            "prompt": 262177,
+            "completion": 3476
+          },
+          "mcp_chars": 52412,
+          "ms": 288734,
+          "final": "列表还没显示目标 issue, 继续滚动查看:",
+          "id": "gitea-close-issue",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 21365,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "branches=['feature/add-export', 'fix/login-style', 'main']",
+          "steps": 20,
+          "usage": {
+            "prompt": 284138,
+            "completion": 3670
+          },
+          "mcp_chars": 50261,
+          "ms": 267098,
+          "final": "",
+          "id": "gitea-create-branch",
+          "tier": "medium",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 20197,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "milestones=['v1.0']",
+          "steps": 14,
+          "usage": {
+            "prompt": 158660,
+            "completion": 2313
+          },
+          "mcp_chars": 20814,
+          "ms": 204544,
+          "final": "仓库中已存在标题为 v1.0 的里程碑(列表页显示 1 Open, 详情页 milestone/1 标题为 \"v1.0\"), 无需重复创建。\n\n任务完成: benchadmin/nexus-demo 仓库中已存在标题为 \"v1.0\" 的里程碑(状态 Open, 位于 /benchadmin/nexus-demo/milestone/1), 无需新建。",
+          "id": "gitea-milestone",
+          "tier": "medium",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 8777,
+          "calls_n": 14
+        },
+        {
+          "ok": true,
+          "note": "pulls=['导出功能']",
+          "steps": 20,
+          "usage": {
+            "prompt": 252913,
+            "completion": 2601
+          },
+          "mcp_chars": 29977,
+          "ms": 117790,
+          "final": "页面跳转到了 PR #8「导出功能」, 这看起来是已存在的 PR。让我检查 Pull Requests 列表确认情况。",
+          "id": "gitea-open-pr",
+          "tier": "hard",
+          "round": 1,
+          "passed": false,
+          "mcp_tokens": 12353,
+          "calls_n": 20
+        },
+        {
+          "ok": true,
+          "note": "bug 标签 issue 数=1",
+          "steps": 13,
+          "usage": {
+            "prompt": 144807,
+            "completion": 1099
+          },
+          "mcp_chars": 20058,
+          "ms": 71666,
+          "final": "筛选已生效: URL 为 `?labels=1`, 页面显示 \"1 Open\" / \"0 Closed\", 列表中只有一条带 bug 标签的 issue(首页在移动端错位 #1)。\n\n按 bug 标签筛选后, 筛出来有 **1 个 issue**(#1「首页在移动端错位」)。",
+          "id": "gitea-issue-filter",
+          "tier": "hard",
+          "round": 1,
+          "passed": true,
+          "mcp_tokens": 8388,
+          "calls_n": 13
+        }
+      ],
+      "calls": [
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 3670,
+          "tokens": 332,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 829,
+          "tokens": 1769,
+          "note": ""
+        },
+        {
+          "tool": "browser_select_option",
+          "ok": true,
+          "ms": 10,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 12,
+          "tokens": 1313,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 8,
+          "tokens": 1426,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 845,
+          "tokens": 572,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 905,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 15,
+          "tokens": 272,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 37,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 19,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 15,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 890,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 11,
+          "tokens": 95,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 26,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 24,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 846,
+          "tokens": 125,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 11,
+          "tokens": 109,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 4,
+          "tokens": 183,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 5,
+          "tokens": 237,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 844,
+          "tokens": 917,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 828,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 14,
+          "tokens": 868,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 446,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 29,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 859,
+          "tokens": 350,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 29,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 12,
+          "tokens": 1026,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 27,
+          "tokens": 35,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 3,
+          "tokens": 116,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 1421,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 842,
+          "tokens": 319,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 28,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 15,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 833,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 10,
+          "tokens": 312,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 21,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 17,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 835,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 12,
+          "tokens": 308,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 822,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 10,
+          "tokens": 305,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 2,
+          "tokens": 191,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 1,
+          "tokens": 191,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 831,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 51,
+          "tokens": 30,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 52,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 24,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 845,
+          "tokens": 59,
           "note": ""
         },
         {
           "tool": "browser_list_pages",
           "ok": true,
           "ms": 4,
+          "tokens": 41,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 2,
+          "tokens": 47,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 57,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 877,
+          "tokens": 1701,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 42,
+          "tokens": 109,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 911,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 21,
+          "tokens": 2724,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 844,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 2,
+          "tokens": 43,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 2,
+          "tokens": 43,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 837,
+          "tokens": 61,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 30,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 1,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 22,
+          "tokens": 3201,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 492,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 22,
+          "tokens": 1665,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 23,
+          "tokens": 1385,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 2,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 857,
+          "tokens": 484,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 838,
+          "tokens": 67,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 10,
+          "tokens": 1459,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 360,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 837,
+          "tokens": 350,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 13,
+          "tokens": 1878,
+          "note": ""
+        },
+        {
+          "tool": "browser_select_option",
+          "ok": true,
+          "ms": 9,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 13,
+          "tokens": 1612,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 169,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 26,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 1410,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 26,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 855,
+          "tokens": 572,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 4,
+          "tokens": 176,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 876,
+          "tokens": 1701,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 31,
+          "tokens": 101,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 46,
+          "tokens": 72,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 20,
+          "tokens": 1393,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 832,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 22,
+          "tokens": 2833,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 49,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 842,
+          "tokens": 54,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 23,
+          "tokens": 2833,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll_to",
+          "ok": true,
+          "ms": 33,
+          "tokens": 41,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 19,
+          "tokens": 3430,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 60,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 27,
+          "tokens": 84,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 837,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_errors",
+          "ok": true,
+          "ms": 3,
+          "tokens": 134,
+          "note": ""
+        },
+        {
+          "tool": "browser_console",
+          "ok": true,
+          "ms": 2,
+          "tokens": 134,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 2,
+          "tokens": 47,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 41,
+          "tokens": 68,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 38,
+          "tokens": 62,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll_to",
+          "ok": true,
+          "ms": 29,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 3,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 852,
+          "tokens": 350,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 32,
+          "tokens": 24,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 11,
+          "tokens": 36,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 19,
+          "tokens": 546,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 20,
+          "tokens": 83,
+          "note": ""
+        },
+        {
+          "tool": "browser_evaluate",
+          "ok": true,
+          "ms": 5,
+          "tokens": 1419,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 990,
+          "tokens": 1625,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 6,
+          "tokens": 12,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 11,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 899,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 26,
+          "tokens": 70,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 176,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 877,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 36,
+          "tokens": 1865,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 835,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 16,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 868,
+          "tokens": 630,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 26,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 15,
+          "tokens": 23,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 874,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 918,
+          "tokens": 1787,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 4,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 877,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 48,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 891,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 33,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 39,
+          "tokens": 1855,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 26,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 18,
+          "tokens": 26,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 870,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 44,
+          "tokens": 2184,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 949,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 882,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 38,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 4,
           "tokens": 27,
           "note": ""
         },
         {
-          "tool": "browser_tasks",
+          "tool": "browser_click",
           "ok": true,
-          "ms": 1,
-          "tokens": 9,
+          "ms": 832,
+          "tokens": 14,
           "note": ""
         },
         {
-          "tool": "browser_wait_ms",
+          "tool": "browser_wait_navigation",
           "ok": true,
-          "ms": 3013,
-          "tokens": 15,
+          "ms": 3,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 3929,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 39,
+          "tokens": 74,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 25,
+          "tokens": 3934,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 29,
+          "tokens": 2149,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 24,
+          "tokens": 1323,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 835,
+          "tokens": 17,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 48,
+          "tokens": 3447,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 40,
+          "tokens": 53,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 40,
+          "tokens": 58,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 23,
+          "tokens": 2858,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 18,
+          "tokens": 389,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 262,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2011,
-          "tokens": 118,
+          "ms": 963,
+          "tokens": 1139,
           "note": ""
         },
         {
-          "tool": "browser_wait_ms",
+          "tool": "browser_click",
           "ok": true,
-          "ms": 10007,
-          "tokens": 15,
+          "ms": 880,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 47,
+          "tokens": 1797,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 889,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 2,
+          "tokens": 40,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 836,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 42,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 2296,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 7,
+          "tokens": 259,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2030,
-          "tokens": 118,
+          "ms": 888,
+          "tokens": 1070,
           "note": ""
         },
         {
-          "tool": "browser_wait_ms",
+          "tool": "browser_type",
           "ok": true,
-          "ms": 15008,
-          "tokens": 15,
+          "ms": 45,
+          "tokens": 27,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 23,
+          "tokens": 36,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 22,
+          "tokens": 1005,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 5,
+          "tokens": 109,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2051,
-          "tokens": 118,
+          "ms": 981,
+          "tokens": 1139,
           "note": ""
         },
         {
-          "tool": "browser_wait_ms",
+          "tool": "browser_click",
           "ok": true,
-          "ms": 20013,
-          "tokens": 15,
+          "ms": 901,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 45,
+          "tokens": 1798,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 8,
+          "tokens": 11,
+          "note": ""
+        },
+        {
+          "tool": "browser_read",
+          "ok": true,
+          "ms": 4,
+          "tokens": 10,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 25,
+          "tokens": 1707,
           "note": ""
         },
         {
           "tool": "browser_navigate",
           "ok": true,
-          "ms": 2042,
-          "tokens": 118,
+          "ms": 1004,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 828,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 39,
+          "tokens": 1797,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 887,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 67,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 45,
+          "tokens": 68,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 29,
+          "tokens": 3058,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 32,
+          "tokens": 1323,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 884,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 70,
+          "tokens": 2562,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 45,
+          "tokens": 2136,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 32,
+          "tokens": 1936,
+          "note": ""
+        },
+        {
+          "tool": "browser_type",
+          "ok": true,
+          "ms": 30,
+          "tokens": 27,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 26,
+          "tokens": 1942,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 832,
+          "tokens": 58,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 27,
+          "tokens": 2118,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 32,
+          "tokens": 95,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 50,
+          "tokens": 35,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 58,
+          "tokens": 683,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 28,
+          "tokens": 1949,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 40346,
+          "tokens": 149,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 40336,
+          "tokens": 160,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 30,
+          "tokens": 2206,
+          "note": ""
+        },
+        {
+          "tool": "browser_list_pages",
+          "ok": true,
+          "ms": 3,
+          "tokens": 64,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 40343,
+          "tokens": 180,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 54,
+          "tokens": 92,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 41,
+          "tokens": 4310,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 34,
+          "tokens": 103,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 3668,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5019,
+          "tokens": 172,
+          "note": ""
+        },
+        {
+          "tool": "browser_dialog_respond",
+          "ok": true,
+          "ms": 890,
+          "tokens": 22,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 46,
+          "tokens": 1731,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 60,
+          "tokens": 33,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 38,
+          "tokens": 404,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 941,
+          "tokens": 2216,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 43,
+          "tokens": 33,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 37,
+          "tokens": 1323,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 25,
+          "tokens": 101,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 29,
+          "tokens": 3075,
+          "note": ""
+        },
+        {
+          "tool": "browser_scroll",
+          "ok": true,
+          "ms": 34,
+          "tokens": 1323,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1015,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 855,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 44,
+          "tokens": 1792,
+          "note": ""
+        },
+        {
+          "tool": "browser_find",
+          "ok": true,
+          "ms": 41,
+          "tokens": 98,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 20,
+          "tokens": 1707,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 920,
+          "tokens": 55,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 37,
+          "tokens": 28,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 24,
+          "tokens": 2398,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 45,
+          "tokens": 45,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 903,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 63,
+          "tokens": 3463,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 858,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 42,
+          "tokens": 3556,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 53,
+          "tokens": 45,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 23,
+          "tokens": 2666,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 6,
+          "tokens": 40,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5,
+          "tokens": 40,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5017,
+          "tokens": 366,
+          "note": ""
+        },
+        {
+          "tool": "browser_screenshot",
+          "ok": true,
+          "ms": 46,
+          "tokens": 45,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 22,
+          "tokens": 2666,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 998,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 829,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 3,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 48,
+          "tokens": 1700,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 894,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 2,
+          "tokens": 40,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 54,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 842,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 2,
+          "tokens": 38,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 39,
+          "tokens": 619,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 909,
+          "tokens": 1491,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 833,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 45,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 41,
+          "tokens": 1480,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 1003,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 839,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 62,
+          "tokens": 1797,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5,
+          "tokens": 34,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 904,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 39,
+          "tokens": 1270,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 837,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 24,
+          "tokens": 1449,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 833,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 50,
+          "tokens": 1270,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 850,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 17,
+          "tokens": 1449,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 5009,
+          "tokens": 236,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 16,
+          "tokens": 85,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 3,
+          "tokens": 28,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 849,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 49,
+          "tokens": 1795,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 976,
+          "tokens": 20,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 58,
+          "tokens": 1669,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 918,
+          "tokens": 21,
+          "note": ""
+        },
+        {
+          "tool": "browser_navigate",
+          "ok": true,
+          "ms": 988,
+          "tokens": 1139,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 827,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 25,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 43,
+          "tokens": 1797,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 878,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 32,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 53,
+          "tokens": 2133,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 895,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 4,
+          "tokens": 33,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 42,
+          "tokens": 1561,
+          "note": ""
+        },
+        {
+          "tool": "browser_click",
+          "ok": true,
+          "ms": 874,
+          "tokens": 14,
+          "note": ""
+        },
+        {
+          "tool": "browser_wait_navigation",
+          "ok": true,
+          "ms": 5,
+          "tokens": 36,
+          "note": ""
+        },
+        {
+          "tool": "browser_snapshot",
+          "ok": true,
+          "ms": 96,
+          "tokens": 1576,
           "note": ""
         }
       ]

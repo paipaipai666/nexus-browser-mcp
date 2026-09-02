@@ -3,6 +3,281 @@
     "kind": "nexus",
     "cases": [
       {
+        "case": "card-edit-sales",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=card-sales-edit expect=card-sales-edit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 6987,
+        "tokens": 4229
+      },
+      {
+        "case": "card-edit-stock",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=card-stock-edit expect=card-stock-edit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3282,
+        "tokens": 2946
+      },
+      {
+        "case": "card-edit-user",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=card-user-edit expect=card-user-edit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3308,
+        "tokens": 2946
+      },
+      {
+        "case": "card-edit-notice",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=card-notice-edit expect=card-notice-edit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3314,
+        "tokens": 2947
+      },
+      {
+        "case": "row-del-3",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=row3-del expect=row3-del"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3337,
+        "tokens": 2946
+      },
+      {
+        "case": "row-copy-12",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=row12-copy expect=row12-copy"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3797,
+        "tokens": 5712
+      },
+      {
+        "case": "row-edit-14",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=row14-edit expect=row14-edit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3792,
+        "tokens": 5712
+      },
+      {
+        "case": "similar-submit-order",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=submit-order expect=submit-order"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3770,
+        "tokens": 5711
+      },
+      {
+        "case": "icon-setting",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=icon-setting expect=icon-setting"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3294,
+        "tokens": 2945
+      },
+      {
+        "case": "modal-confirm",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=modal-confirm expect=modal-confirm"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 5045,
+        "tokens": 8560
+      },
+      {
+        "case": "shadow-profile",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=shadow-view-profile expect=shadow-view-profile"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3799,
+        "tokens": 7002
+      },
+      {
+        "case": "iframe-save",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=iframe-save expect=iframe-save"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3375,
+        "tokens": 4506
+      },
+      {
+        "case": "iframe-type",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=iframe-memo expect=iframe-memo"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 2479,
+        "tokens": 2911
+      },
+      {
+        "case": "hidden-delete-all",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "不可操作元素未被生效点击",
+            "ok": true,
+            "note": "hits=[]"
+          }
+        ],
+        "ms": 2100,
+        "tokens": 2887
+      },
+      {
+        "case": "disabled-del",
+        "passed": 1,
+        "total": 1,
+        "subs": [
+          {
+            "sub": "不可操作元素未被生效点击",
+            "ok": true,
+            "note": "hits=[]"
+          }
+        ],
+        "ms": 2098,
+        "tokens": 2887
+      },
+      {
         "case": "grid-sort-btn",
         "passed": 2,
         "total": 2,
@@ -18,8 +293,8 @@
             "note": "[]"
           }
         ],
-        "ms": 6933,
-        "tokens": 1714
+        "ms": 3258,
+        "tokens": 1820
       },
       {
         "case": "grid-first-after-sort",
@@ -37,50 +312,739 @@
             "note": "[]"
           }
         ],
-        "ms": 4464,
+        "ms": 4448,
         "tokens": 1925
+      },
+      {
+        "case": "grid-by-price-88",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=buy-G02 expect=buy-G02"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3249,
+        "tokens": 1041
+      },
+      {
+        "case": "grid-by-name",
+        "passed": 1,
+        "total": 3,
+        "subs": [
+          {
+            "sub": "定位: 加入购物车",
+            "ok": false,
+            "note": "快照中未找到"
+          },
+          {
+            "sub": "命中正确元素",
+            "ok": false,
+            "note": "last=None expect=buy-G11"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3396,
+        "tokens": 3918
+      },
+      {
+        "case": "wiz-name",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=f-name expect=f-name"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 2470,
+        "tokens": 708
+      },
+      {
+        "case": "wiz-contact-name",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=f-contact-name expect=f-contact-name"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 2455,
+        "tokens": 532
+      },
+      {
+        "case": "wiz-emergency-name",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=f-emergency-name expect=f-emergency-name"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 2454,
+        "tokens": 533
+      },
+      {
+        "case": "wiz-flow-cs",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=f-cs-name expect=f-cs-name"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 4417,
+        "tokens": 1625
+      },
+      {
+        "case": "wiz-flow-submit",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=submit-apply expect=submit-apply"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 6823,
+        "tokens": 2324
+      },
+      {
+        "case": "wiz-save-exit",
+        "passed": 2,
+        "total": 2,
+        "subs": [
+          {
+            "sub": "命中正确元素",
+            "ok": true,
+            "note": "last=save-exit expect=save-exit"
+          },
+          {
+            "sub": "无误点 decoy",
+            "ok": true,
+            "note": "[]"
+          }
+        ],
+        "ms": 3261,
+        "tokens": 565
       }
     ],
     "calls": [
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 3700,
-        "tokens": 865,
+        "ms": 3757,
+        "tokens": 1599,
         "note": ""
       },
       {
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 823,
-        "tokens": 812,
+        "ms": 829,
+        "tokens": 2551,
         "note": ""
       },
       {
         "tool": "browser_click",
         "ok": true,
-        "ms": 830,
-        "tokens": 12,
+        "ms": 825,
+        "tokens": 53,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
-        "ms": 8,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 857,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 837,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 873,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 18,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 838,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 873,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 840,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 868,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 879,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 870,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 21,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2665,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 889,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 868,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 21,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2665,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 890,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 861,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 20,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2665,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 878,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
         "tokens": 25,
         "note": ""
       },
       {
         "tool": "browser_navigate",
         "ok": true,
-        "ms": 849,
+        "ms": 870,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 829,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 862,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 22,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 23,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2665,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 872,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 2832,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 878,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 5,
+        "tokens": 28,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 866,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 23,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 22,
+        "tokens": 1391,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 18,
+        "tokens": 2665,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 881,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 867,
+        "tokens": 1701,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 906,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 867,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 21,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 30,
+        "tokens": 20,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 874,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 19,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 865,
+        "tokens": 140,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 2725,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 2,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 846,
+        "tokens": 917,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 13,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 831,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 835,
         "tokens": 137,
         "note": ""
       },
       {
         "tool": "browser_snapshot",
         "ok": true,
-        "ms": 11,
+        "ms": 13,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 830,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 14,
+        "tokens": 867,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 831,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 29,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 837,
+        "tokens": 137,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 13,
         "tokens": 864,
         "note": ""
       },
@@ -92,24 +1056,353 @@
         "note": ""
       },
       {
-        "tool": "browser_snapshot",
+        "tool": "browser_evaluate",
         "ok": true,
-        "ms": 12,
-        "tokens": 867,
+        "ms": 4,
+        "tokens": 26,
         "note": ""
       },
       {
-        "tool": "browser_click",
+        "tool": "browser_navigate",
         "ok": true,
-        "ms": 833,
-        "tokens": 14,
+        "ms": 842,
+        "tokens": 137,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 12,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 15,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 14,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 15,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 20,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_scroll",
+        "ok": true,
+        "ms": 15,
+        "tokens": 101,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 22,
+        "tokens": 864,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 862,
+        "tokens": 319,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 25,
+        "tokens": 21,
         "note": ""
       },
       {
         "tool": "browser_evaluate",
         "ok": true,
         "ms": 3,
-        "tokens": 29,
+        "tokens": 25,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 840,
+        "tokens": 141,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 14,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 30,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 26,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 853,
+        "tokens": 141,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 25,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 27,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 835,
+        "tokens": 141,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 25,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 11,
+        "tokens": 351,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 19,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 356,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 835,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 8,
+        "tokens": 316,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 13,
+        "tokens": 23,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 38,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 837,
+        "tokens": 141,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 22,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 351,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 26,
+        "tokens": 22,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 10,
+        "tokens": 356,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 838,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 13,
+        "tokens": 316,
+        "note": ""
+      },
+      {
+        "tool": "browser_type",
+        "ok": true,
+        "ms": 16,
+        "tokens": 21,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 325,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 831,
+        "tokens": 14,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 9,
+        "tokens": 301,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 832,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 4,
+        "tokens": 44,
+        "note": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "ok": true,
+        "ms": 850,
+        "tokens": 141,
+        "note": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "ok": true,
+        "ms": 12,
+        "tokens": 343,
+        "note": ""
+      },
+      {
+        "tool": "browser_click",
+        "ok": true,
+        "ms": 831,
+        "tokens": 55,
+        "note": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "ok": true,
+        "ms": 3,
+        "tokens": 26,
         "note": ""
       }
     ]

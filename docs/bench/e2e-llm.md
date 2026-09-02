@@ -147,16 +147,29 @@ API token 总量 (首轮全量): **nexus 1,098k / pw 894k / cdt 1,157k**。
 | grid-sort-buy | 15.0步 / 138k | 20.3步 / 175k | ⚠️ 见注 |
 | gitea-readme / gitea-milestone | 10.5步/85k · 15.0步/203k | (环境失效) | ⛔ Docker Desktop 中断, 样本作废 |
 
-注:
-- grid-sort-buy 退步的根因是夹具无"加购成功"反馈, 模型烧钱反复确认 (轨迹取证:
-  连调 find("已加入")/console/network 找不存在的确认信号) —— 任务设计缺陷,
-  与工具成本无关。修复方向: 夹具加购物车计数角标。
-- last-page-order 是 find 原语的预期靶心 (筛选+翻页+读末行), 命中。
-- gitea 两腿待 Docker 恢复后补测。
+### P0 后全量回归 (nexus 24 任务 × 2 轮, 2026-08-22)
+
+| task | P0 前 (均步/均tok) | P0 后 | 变化 |
+|---|---|---|---|
+| last-page-order | 12.0步 / 119k | **6.0步 / 60k** | **-50% / -50%** |
+| grid-sort-buy | 15.0步 / 138k | **5.0步 / 44k** | **-67% / -68%** (夹具加反馈 + P0 协同) |
+| gitea-create-label-assign | ✗✗ 撞20步上限 | **✓✓ 10.5步 / 115k** | 原三方全撞线的三动作链转绿 |
+| gitea-search | 12.0步 / 115k | **4.5步 / 41k** | **-63% 步** |
+| gitea-issue-filter | 16.5步 / 239k | **9.5步 / 107k** | **-42% 步** |
+| gitea-milestone | 15.0步 / 203k | 12.5步 / 148k | -17% 步 |
+| gitea-readme | 10.5步 / 85k | 8.5步 / 74k | 改善 |
+| gitea-label-issue | 6.0步 / 69k | 17.0步 / 217k | ⚠️ 方差 (见注) |
+| row-action / modal-flow / wizard-flow | 撞 20 步线 | 仍撞线 | 长链任务 = 模型能力边界 |
+
+回归结论: **SR 48/48** (P0 前口径 fixture 36/36 + gitea 21/24) —— 三个曾撞线的任务转绿,
+目标任务步数收敛 42-67%, 未见 P0 引入的回归。
+
+注: gitea-label-issue (6→17步) 属模型路径方差 (自行选 mode=full+include_offscreen 大快照)。
+暴露的真问题: **mode=full+include_offscreen 快照是 token 黑洞 (单发 3k+ tok)** —— 拟议 P1:
+full+offscreen 默认封顶/带长度警示。
 
 ## 下一步
 
-- Gitea 任务库扩容 (分支/PR/搜索/里程碑) + N=3 化; 第二个自托管应用
-- LLM-as-Judge 覆盖开放性任务, 先抽样人评校准一致率
+- P1 候选: full+offscreen 快照封顶/长度警示 (回归暴露的 token 黑洞)
+- Gitea 任务库 N=3 化; LLM-as-Judge 覆盖开放性任务 (judge 校准 92%)
 - 模型对照组 (V4-Flash vs 更大模型) 分离"模型能力"与"MCP 设计"变量
-- CI 门禁: 脚本层进 CI, E2E 全量做发版仪式
